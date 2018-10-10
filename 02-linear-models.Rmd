@@ -1,0 +1,9 @@
+# Linear models
+
+```{r, echo=FALSE}
+IMG <- "_img/index" # image path
+```
+
+## Motivation
+
+Why are we doing this.

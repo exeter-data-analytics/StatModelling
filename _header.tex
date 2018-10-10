@@ -1,0 +1,47 @@
+% latex macro to create task boxes
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable}
+
+\definecolor{taskCol}{HTML}{404040}
+\definecolor{taskCol1}{HTML}{808080}
+
+\tcbset{colback=white,colframe=taskCol,arc=0mm}
+
+%trick to fool markdown into compiling
+\newcommand{\bblockT}[1]{\begin{tcolorbox}[title = Task #1, parbox = false]}
+\newcommand{\eblockT}{\end{tcolorbox}}
+\newcommand{\bblockS}[1]{\begin{tcolorbox}[title = Solution #1, colframe=taskCol1, breakable, parbox = false]}
+\newcommand{\eblockS}{\end{tcolorbox}}
+
+%set solution button link
+\usepackage{tikz}
+
+\newcommand{\buttonT}[1]{
+    \begin{tikzpicture}
+    \node[
+        inner sep=5pt,
+        draw=taskCol,
+        fill=taskCol,
+        rounded corners=2pt,
+        text=white
+    ] (c1) {#1};
+    \end{tikzpicture}
+}
+
+\newcommand{\buttonS}[1]{
+    \begin{tikzpicture}
+    \node[
+        inner sep=5pt,
+        draw=taskCol1,
+        fill=taskCol1,
+        rounded corners=2pt,
+        text=white
+    ] (c1) {#1};
+    \end{tikzpicture}
+}
+
+\newcommand{\colpageref}[1]{\hypersetup{linkcolor=white}\pageref{#1}}
+
+
+
+

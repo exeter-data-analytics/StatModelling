@@ -1,0 +1,42 @@
+```{r include = FALSE, purl = F, cache = F}
+library(knitr)
+
+## set knitr options
+opts_chunk$set(cache = FALSE, tidy.opts = list(width.cutoff = 55), tidy = F, fig.align = "center")
+
+## variables to help save latex answers for appendix
+taskCtr <- 0
+solLabels <- list()
+
+## custom engine for tasks
+knit_engines$set(task = function(options) {
+    ## increment counter
+    assign("taskCtr", taskCtr + 1, pos = 1)
+    solLabels[[taskCtr]] <- c(taskCtr, NA)
+    assign("solLabels", solLabels, pos = 1)
+    ## knit child
+    out <- gsub("``", "```", options$code)
+    out <- knit_child(text = out)
+    ## set up output
+    if(opts_knit$get("rmarkdown.pandoc.to") == "html") {
+        out <- paste("<div class=\"panel panel-default\"><div class=\"panel-heading\"> Task </div><div class=\"panel-body\">", out, "</div></div>")
+    } else {
+        out <- paste0("\\hypertarget{tsk", taskCtr, "}{}\\bblockT{\\phantomsection\\label{sol", taskCtr, "}", taskCtr, "}\n", out, "\n\\eblockT\n")
+    }
+    out
+})
+
+## custom engine for solutions
+knit_engines$set(solution = function(options) {
+    out <- gsub("``", "```", options$code)
+    out <- knit_child(text = out)
+    if(opts_knit$get("rmarkdown.pandoc.to") == "html") {
+        out <- paste0("<button id=\"displayText", options$label, "\" onclick=\"javascript:toggle('", options$label, "');\">Show Solution</button>\n\n<div id=\"toggleText", options$label, "\" style=\"display: none\"><div class=\"panel panel-default\"><div class=\"panel-heading panel-heading1\"> Solution </div><div class=\"panel-body\">", out, "</div></div></div>\n")
+    } else {
+        solLabels[[taskCtr]][2] <- out
+        assign("solLabels", solLabels, pos = 1)
+        out <- paste0("\\hyperlink{sol", taskCtr, "}{\\buttonS{Show Solution on P\\colpageref{tsk", taskCtr, "}}}")
+    }
+    out
+})
+```

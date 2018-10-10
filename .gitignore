@@ -1,0 +1,6 @@
+#ignore backup files
+*~
+.Rhistory
+
+
+_site

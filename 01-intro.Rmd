@@ -1,0 +1,30 @@
+# Introduction
+
+```{r, echo=FALSE}
+IMG <- "_img" # image path
+```
+
+## Motivation
+
+Scientists acquire knolwedge about the state of nature (the real-world) by collecting data.
+For example:
+
+```{r, echo=FALSE, out.width="720px"}
+knitr::include_graphics(file.path(IMG, "01-data.png"))
+```
+
+How do we make sense of all of these numbers and text? Visualising the data can 
+give us a lot of insight into the underlying structure of the data (covered in a previous workshop).
+The next step is to *summarise* the data by means of a model. 
+
+## What is a model?
+
+A **model** is a human construct/abstraction that summarises the data. A scientific paper can be used 
+as an analogy. The paper together with any supplementary material represents our data, whilst
+the paper's abstract is the model; a summarised version of the paper (data)
+
+Developing a model requires us to make **assumptions**. We cannot build models
+
+
+
+## What is a statistical model?

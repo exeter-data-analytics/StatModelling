@@ -1,0 +1,16 @@
+<script language="javascript"> 
+    function toggle(id) {
+        var ele = document.getElementById("toggleText" + id);
+        var text = document.getElementById("displayText" + id);
+        if(ele.style.display == "block") {
+            ele.style.display = "none";
+            text.innerHTML = "Show Solution";
+        } else {
+            ele.style.display = "block";
+            text.innerHTML = "Hide Solution";
+        }
+    } 
+</script>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+

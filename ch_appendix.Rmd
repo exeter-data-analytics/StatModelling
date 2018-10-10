@@ -1,0 +1,15 @@
+# Answers
+
+```{r, echo = F, results = "asis"}
+for(i in 1:length(solLabels)) {
+    if(!is.na(solLabels[[i]][2][1])) {
+        taskCtr <- solLabels[[i]][1]
+        refLabel <- solLabels[[i]][2]
+        cat(paste0("\\hypertarget{sol", taskCtr, "}{}\n\\bblockS{\\phantomsection\\label{tsk", taskCtr, "}", taskCtr, "}\n"))
+        cat(refLabel)
+        cat(paste0("\n\n\\vspace{\\baselineskip}\\hyperlink{tsk", taskCtr, "}{\\buttonT{Return to task on P\\colpageref{sol", taskCtr, "}}}"))
+        cat("\n\\eblockS\n")
+    }
+}
+```
+
