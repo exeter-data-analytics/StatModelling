@@ -51,7 +51,7 @@ I highly recommend the following books:
 * [An Introduction to Statistical Learning](http://www-bcf.usc.edu/~gareth/ISL/)
 * **ASK TJ ABOUT OTHER BOOKS**
 
-## Acknowledgements
+## Acknowledgements {-}
 
 A big thanks to [TJ McKinley](http://emps.exeter.ac.uk/mathematics/staff/tm389) for sharing a lot of
 material with me!

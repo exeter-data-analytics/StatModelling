@@ -1,9 +1,7 @@
 # Linear mixed effect models
 
 ```{r, echo=FALSE}
-IMG <- "_img/index" # image path
+IMG <- "_img" # image path
 ```
 
-## Motivation
-
-Why are we doing this.
+## Under construction
