@@ -1,9 +1,415 @@
 # Linear models
 
 ```{r, echo=FALSE}
-IMG <- "_img/index" # image path
+IMG <- "_img" # image path
 ```
 
-## Motivation
+## Simple linear regression
 
-Why are we doing this.
+In many scientific applications we are interested in exploring the relationship
+between a single **response** variable and multiple **explanatory** variables (predictors).
+Linear models *per se* do not infer *causality*, i.e defining a variable as response or
+explanatory is somewhat arbitrary and depends on what the researcher is interested in.
+*Causality* can however be inferred through careful experimental design in a well-controlled setting.
+
+Consider again the case of one response and one explanatory variable. From the previous
+chapter we know that this boils down to the equation of a line ($y = mx +c$).
+Let's rename the parameters $c$ and $m$ to $\beta_0$ and $\beta_1$, in line
+with statistical naming convention ^[this notation is such that we can have any arbitrary 
+large number of explantory variables i.e $\beta_1$, $\beta_2$, $\beta_3$...etc., without running
+out of letters in the alphabet!]. It is just a change in name:
+
+$$
+\begin{aligned}
+y = c + mx\\
+y = \beta_0 + \beta_1x
+\end{aligned}
+$$
+
+```{r, echo=FALSE, fig.height=6, fig.width=6}
+set.seed(1201)
+N <- 50
+x <- runif(N, min=0, max=10)
+y <- 2*x + 5 + rnorm(N, mean=0, sd=3)
+fit <- lm(y ~ x)
+plot(x, y, pch=19, xlab='Hours spent wathcing Game of Thrones (GoT) at the weekend',
+     ylab='Minutes spent on monday talking about GoT at work', col='grey')
+abline(lm(y~x), col='black', lwd=3)
+arrows(0.1, 0.5, 0.1, coef(fit)[1], angle=20, lwd=3, col='red', code=3, length=0.15)
+text(0.4, coef(fit)[1]/2, expression(beta[0]), col='red', font=2, cex=1.2)
+segments(7.5, predict(fit, data.frame(x=7.5)), 7.5, predict(fit, data.frame(x=7.5))-6, col='red', lwd=3)
+segments(7.5, predict(fit, data.frame(x=7.5))-6, -7.5 + coef(fit)[2]*(6), 
+         predict(fit, data.frame(x=7.5))-6, col='red', lwd=3)
+text(7.4, 16, expression(beta[1], '    = gradient'), col='red', font=2, cex=1.2, pos=4)
+```
+
+Now suppose we measure $n$ independent and identically distributed (i.i.d) normally distributed
+outcomes $y_1,\ldots,y_n$ (e.g height of people) and we want to model their relationship 
+with some explanatory variable $x$ (e.g weight of people). The linear regression model
+is defined as follows:
+
+$$
+\begin{aligned}
+y_i & = \beta_0 + \beta_1x_i + \epsilon_i \\
+\epsilon_i & \sim \mathcal{N}(0, \sigma^2)
+\end{aligned}
+$$
+$i$ is an index that goes from 1 to $n$ (the total number of observations). The equation is the same as before ($y = \beta_0 + \beta_1x$),
+but now we have added an error term $\epsilon$. This term is needed because the straight line cannot go through *all* the data points
+(unless you have a very questionable dataset!).
+It represents the discrepancy between the model (the fitted straight line) and the observed data (grey points). $\epsilon$ is also
+known as the **noise** term. The reason is that in general our response variable has some uncertainty 
+associated with it (e.g counting the number of birds in an area, quantifying gene expression using microarrays or RNA-seq, etc.). 
+The statistical assumption in linear modelling is that these errors are normally distributed with mean
+zero and some standard deviation $\sigma^2$. This means that the **response** variable is also assumed to be normally distributed.
+For the maths aficionados it means that:
+
+$$
+y_i \sim \mathcal{N}(\beta_0 + \beta_1x_i, \sigma^2)
+$$
+Note that we do not make explicit assumptions on the **explanatory** variables (the $x_i$'s) i.e they don't need to be normal. 
+
+The workflow in linear regression is as follows:
+
+1. Infer the model's parameters $\beta_0$ and $\beta_1$
+2. Check the model fit
+3. Interpret the practical significance of the estimated parameters
+
+## Doing it in R
+
+Luckily for us, we do not need to worry about the mathematical intricacies of estimating the model's parameters, 
+R will do it for us. Let's generate some fake data just to get things started.
+
+```{r, fig.height=6, fig.width=6}
+N <- 100 # no. of observations
+weight <- runif(n=N, min=60, max=100) # hypothetical weights in kg
+height <- 2.2*weight + rnorm(n=N, mean=0, sd=10) # hypothetical heights in cm
+plot(weight, height, pch=19, xlab='Weight (kg)', ylab='Height (cm)', col='grey')
+```
+To fit a linear model we use the [`lm()`](https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/lm) function 
+(always read the documentation of a function before using it!). 
+This function requires a **formula** object which has the form of
+`response ~ explanatory`. So in our case this will be `height ~ weight`. R will then fit the following model
+^[weight is our explanatory variable ($x_i$) and height the response variable ($y_i$)]:
+
+$$
+\mathrm{height}_i = \beta_0 + \beta_1\mathrm{weight}_i + \epsilon_i
+$$
+Let's call the R function, plot the model fit and print the output.
+
+
+```{r, fig.height=6, fig.width=6}
+# Linear model fit
+fit <- lm(height ~ weight)
+
+# Plot model fit
+plot(weight, height, pch=19, xlab='Weight (kg)', ylab='Height (cm)', col='grey')
+lines(weight, predict(fit), col='black', lwd=3)
+
+# Print result
+print(fit)
+```
+
+This outputs two numbers, the `(Intercept)=` `r format(coef(fit)[1], digits=4)` and `weight=` `r format(coef(fit)[2], digits=4)`. 
+These are the $\beta_0$ and $\beta_1$ parameters. 
+
+The $\beta_0$ parameter (intercept) is not
+very useful in this case, it basically tells us what's the expected height of someone that weighs 0kg (`r format(coef(fit)[1], digits=4)`cm here).
+This is of course nonsense, but I'm highlighting it as a reminder that data-driven models only make sense where we have data, in general
+extrapolating is bad! 
+
+The $\beta_1$ parameter (gradient) is typically what we are interested in. It tells us about the 
+relationship between the outcome and explanatory variable. In this case, for every 1kg increase in weight on *average* 
+the height increases by `r format(coef(fit)[2], digits=4)`cm.
+
+**Note**: the notation used by R, can come across as confusing. Although the $\beta_1$ parameter is called `weight`, 
+the *units* of this parameter is actually `cm/kg` as it respresents a **gradient**. Recall that the equation for the
+mean line is $\mathrm{height} = \beta_0 + \beta_1\times\mathrm{weight}$. The units of $\beta_0$ are cm and in order
+for $\beta_1 \times \mathrm{weight}$ to return cm, $\beta_1$ needs to be cm/kg (i.e you have $\text{kg}\frac{\text{cm}}{\text{kg}}=\text{cm}$)
+
+### Using data frames
+
+The `lm()` function also accepts **data frames** as input arguments.
+
+```{r}
+# Create data frame
+df <- data.frame(height=height, weight=weight)
+head(df)
+
+# Fit linear model
+fit <- lm(height ~ weight, df)
+```
+
+### Extended summary
+
+The object returned by the `lm()` contains further information that we can display using the `summary()` function.
+
+```{r}
+summary(fit)
+```
+
+That's a lot of information, let's unpick it line by line:
+
+* **Call**
+
+This just states the arguments that were passed to the `lm()` function. Remember it's `response ~ explanatory`
+
+* **Residuals**
+
+Some basic stats about the residuals (i.e the differences between the model fit and the observed data points).
+It is easier to plot a histogram of the residuals (shown in the next section), but these basic stats
+can already give us an indication of whether we have a symmetric distribution with zero mean (i.e we want the median
+to be close to zero, the third quartile (3Q) to be roughly equal to -1Q (first quartile) and the max to be approximately
+-min)
+
+* **Coefficients**
+    + **`Estimate`**
+    
+    The `(Intercept)=` `r format(coef(fit)[1], digits=4)` and `weight=` `r format(coef(fit)[2], digits=4)` 
+    are the $\beta_0$ and $\beta_1$ parameters as discussed earlier. 
+    
+    + **`Std. Error`**
+    
+    The standard error for that parameter. It tells us how confident we are in estimating that particular parameter. 
+    If the standard error is comparable or greater than the actual parameter estimate then that parameter should not
+    be trusted. We can also show to the confidence intervals for model parameters to highlight the uncertainty aroung
+    the parameter estimate using the `confint()` function:
+    
+    ```{r}
+    confint(fit, level=0.97) # pick the 97% confidence intervals
+    ```
+    
+    + **`t value`** and **`Pr(>|t|)`**
+    
+    Hypothesis testing on the parameter estimate being *statistically significantly* different from zero
+
+* **Residual standard error**
+
+The square root of (residual sum of squares/degress of freedom)
+```{r}
+# Residual standard error
+sqrt(sum(residuals(fit)^2) / fit$df.residual) 
+```
+
+* **Multiple R-squared**
+
+Total variation = **Regression** (explained) variation + **Residual** (unexplained) variation
+
+The $R^2$ statistic (also known as the **coefficient of determination**) is the proportion
+of the total variation that is explained by the regression. In regression with a single
+explanatory variable, this is the same as the Pearson correlation coefficient squared:
+
+```{r}
+cor(height, weight)^2
+```
+
+* **F-statistic**
+
+$$
+\text{F-statistic} = \frac{\text{Regression (explained) variation}}{\text{Residual (unexplained) variation}}
+$$
+
+The F-statistic tests whether the amount of variation explained by the regression is *statistically significant* compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data).
+
+$$
+\begin{aligned}
+M_0:~~~~~Y_i &= \beta_0 + \epsilon_i\\  
+M_1:~~~~~Y_i &= \beta_0 + \beta_1 W_i + \epsilon_i
+\end{aligned}
+$$
+## Model checking
+
+The extended summary leads us nicely to the concept of model checking. In theory, we can fit an infinite
+number of different models to the same data by placing different assumptions/constraints. Recall:
+
+> All models are wrong but some are useful - **George E.P. Box**
+
+In order to make **robust** inference, we must **check** the model fit
+
+Model checking boils down to confirming whether or not the assumptions that we have placed on the model
+are reasonable or not. Our main assumption is that the residuals are normally distributed centred
+around zero. Let's plot this:
+
+```{r}
+hist(fit$residuals)
+```
+
+The residuals are fairly normally distributed which is a good sign. R also provides us with the following
+diagnostic plots:
+
+```{r, fig.height=8, fig.width=8}
+par(mfrow=c(2, 2))
+plot(fit, pch=19, col='darkgrey')
+```
+
+
+```{r, echo=FALSE}
+par(mfrow=c(1, 1))
+```
+
+### Residuals vs fitted values
+
+```{r fig.height=5, fig.width=5}
+plot(fit, pch=19, col='darkgrey', which=1)
+```
+
+Here we are checking that the variance is constant along the fitted line, 
+and that there are no systematic patterns in the residuals.
+
+A couple of example where this assumption is violated.
+
+```{r, echo=FALSE, out.width="600px"}
+knitr::include_graphics(file.path(IMG, "02-funnel.png"))
+```
+
+### Residuals vs fitted values (scale-location)
+
+```{r fig.height=5, fig.width=5}
+plot(fit, pch=19, col='darkgrey', which=3)
+```
+
+This is similar to the first plot but on a different scale.
+
+### Residuals vs. leverage
+
+```{r fig.height=5, fig.width=5}
+plot(fit, pch=19, col='darkgrey', which=5)
+```
+
+* **Leverage**: a measure of how isolated individual points are in relation to other points
+* **Cook's Distance**: a measure of how influential a point is to the regression
+
+These measures help us identify potential outliers
+
+### QQ plots
+
+```{r fig.height=5, fig.width=5}
+plot(fit, pch=19, col='darkgrey', which=2)
+```
+
+Here we are checking that the assumption of normally distributed errors is reasonable. 
+Points should follow the dashed line.
+
+## Practical 1
+
+We will use the fruitfly dataset ([Partridge and Farquhar (1981)](https://www.nature.com/articles/294580a0)) 
+introduced in the "Advanced Visualisation and Data Wrangling in R",
+which is summarised again here (do not worry about the details of the study for now, this
+is only included for the sake of completness):
+
+A cost of increased reproduction in terms of reduced longevity has been shown for female fruitflies, 
+but not for males. We have data from an experiment that used a factorial design to assess whether 
+increased sexual activity affected the lifespan of male fruitflies.
+
+The flies used were an outbred stock. Sexual activity was manipulated by supplying individual 
+males with one or eight receptive virgin females per day. The longevity of these males was compared 
+with that of two control types. The first control consisted of two sets of individual males kept with 
+one or eight newly inseminated females. Newly inseminated females will not usually remate for at least two days, 
+and thus served as a control for any effect of competition with the male for food or space. The second control 
+was a set of individual males kept with no females. There were 25 males in each of the five groups, which 
+were treated identically in number of anaesthetizations (using $\mathrm{CO}_2$) and provision of fresh food medium.
+
+The data has the following columns:
+
+```{r}
+ff <- readRDS("_data/ff.rds")
+head(ff)
+```
+
+* **id**: a ID for each fly in each group (1--25).
+* **partners**: number of companions (0, 1 or 8).
+* **type**: type of companion (inseminated female; virgin female; not applicable (when 'partners = 0')).
+* **longevity**: lifespan, in days.
+* **thorax**: length of thorax, in mm.
+
+```{task}
+
+1. Fit a linear model with lifespan as response variable and thorax length as explanatory variable
+2. Display a summary of the fit, together with the 97% confidence interval for the estimated parameters
+3. Show the diagnostic plots for the model
+
+```
+
+```{solution}
+
+``{r, fig.height=6, fig.width=6}
+fit <- lm(longevity ~ thorax, ff)
+summary(fit)
+confint(fit, level=0.97)
+par(mfrow=c(2, 2))
+plot(fit, pch=19, col='darkgrey')
+par(mfrow=c(1, 1))
+``
+
+```
+
+## Multiple linear regression
+
+So far we have looked at examples with one response and one explanatory variable. In most applications
+we will have several variables that affect our outcome. Extending our simple linear regression model
+to accommodate multiple explanatory variables is straightforward, we just add them to the model.
+
+Using our illustrative example of height vs weight, let's add another explanatory variable, for example,
+the mean height of the individual's parents (`heightParents`). Our linear model is defined as follows:
+
+$$
+\begin{aligned}
+y_i & = \beta_0 + \beta_1x_{1i} + \beta_2x_{2i} + \epsilon_i \\
+\epsilon_i & \sim \mathcal{N}(0, \sigma^2)
+\end{aligned}
+$$
+Or in English:
+
+$$
+\begin{aligned}
+\mathrm{height}_i & = \beta_0 + \beta_1\mathrm{weight}_i + + \beta_2\mathrm{heightParents}_i+ \epsilon_i \\
+\epsilon_i & \sim \mathcal{N}(0, \sigma^2)
+\end{aligned}
+$$
+
+Let us make up some data again and plot it.
+ 
+```{r, fig.height=6, fig.width=6}
+N <- 100 # no. of observations
+weight <- runif(n=N, min=60, max=100) # hypothetical weights in kg
+heightParents <- runif(n=N, min=130, max=210) # hypothetical mean heights of parents in cm
+height <- 0.1*weight + 1.05*heightParents + rnorm(n=N, mean=0, sd=10) # hypothetical heights in cm
+df <- data.frame(weight=weight, heightParents=heightParents, height=height) # store in a data frame
+
+# Plot
+library(scatterplot3d)
+scatterplot3d(weight, heightParents, height, pch=19, xlab='Weight (kg)', 
+              ylab='Height of Parents (cm)', zlab='Height (cm)', color='grey')
+```
+
+Note how by adding another explanatory variable we are *spreading* the observations across an additional dimension.
+That is, we went from a 2D plot to a 3D plot (if we add a third explanatory variable we would need a 4D plot). 
+It is important to keep this in mind; the more explanatory variables
+we add the more we spread our data thinly across multiple dimensions.
+
+The objective of linear modelling is still the same, finding the "best" straight line, or in this case a **hyperplane** 
+(a line in higher dimensions). You can think of a **hyperplane** as a (rigid) sheet of paper, where the objective
+is to place it such that it goes as close as possible to your observations.
+
+To fit a multiple linear regression model we use the [`lm()`](https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/lm) function 
+again and pass the appropriate **formula** object which has the form of
+`response ~ explanatory1 + explanatory2`, which in our case this will be `height ~ weight + heightParents`.
+
+
+
+## Model checking
+
+
+## Example 2
+
+## Summary
+
+**Linear regression** is a powerful tool:
+
+* It splits the data into **signal** (trend / mean), and **noise** (residual error).
+* It can cope with **multiple variables**.
+* It can incorporate different **types** of variable
+* It can be used to produce **point** and **interval** estimates for the parameters.
+* It can be used to assess the importance of variables.
+
+**But** always check that model results make sense, and investigate thoroughly if they do not!!
