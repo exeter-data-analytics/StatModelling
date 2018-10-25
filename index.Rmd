@@ -9,11 +9,11 @@ output:
             sharing: null
         css: '_style.css'
         includes:
-            in_header: _toggle.html
+            in_header: '_toggle.html'
     bookdown::pdf_book:
         keep_tex: yes
         includes:
-            in_header: _header.tex
+            in_header: '_header.tex'
 linkcolor: blue
 documentclass: book
 link-citations: yes
@@ -49,122 +49,8 @@ I highly recommend the following books:
 * [Statistics: An Introduction using R](https://www.wiley.com/en-gb/Statistics%3A+An+Introduction+using+R-p-9780470022986)
 * [Linear models with R](https://www.crcpress.com/Linear-Models-with-R/Faraway/p/book/9781439887332)
 * [An Introduction to Statistical Learning](http://www-bcf.usc.edu/~gareth/ISL/)
-* **ASK TJ ABOUT OTHER BOOKS**
 
 ## Acknowledgements {-}
 
 A big thanks to [TJ McKinley](http://emps.exeter.ac.uk/mathematics/staff/tm389) for sharing a lot of
 material with me!
-
-***************************************************************************
-***************************************************************************
-
-There are a couple of useful special blocks. A `task` block, and a `solution` block. These can be used as e.g.
-
-````
-```{task}`r ''`
-Here is a task written in **markdown**.
-```
-````
-
-which renders as:
-
-```{task}
-Here is a task written in **markdown**.
-```
-
-You can include chunks within the `task` chunk, but you need to use double backticks *within* the chunk, and leave carriage returns around the internal chunk e.g.
-
-````
-
-```{task}`r ''`
-
-``{r}
-x <- 2 + 2
-x
-``
-
-```
-
-````
-
-which renders as:
-
-```{task}
-
-``{r}
-x <- 2 + 2
-x
-``
-
-```
-
-Be careful to have suitable carriage returns around e.g. `enumerate` or `itemize` environments inside the chunk also. For example:
-
-````
-
-```{task}`r ''`
-Here is a list:
-1. item 1
-2. item 2
-```
-
-```` 
-
-will not render nicely. But
-
-````
-
-```{task}`r ''`
-Here is a list:
-
-1. item 1
-2. item 2
-
-```
-
-```` 
-
-will:
-
-```{task}
-Here is a list:
-
-1. item 1
-2. item 2
-
-```
-
-The `solution` chunk works in the same way, and the numbers will follow the previous `task` chunk (so you can set tasks without solutions) e.g.
-
-````
-
-```{task}`r ''`
-Add 2 and 2 together
-```
-
-```{solution}`r ''`
-
-``{r}
-2 + 2
-``
-
-```
-
-````
-
-gives:
-
-```{task}
-Add 2 and 2 together
-```
-
-```{solution}
-
-``{r}
-2 + 2
-``
-
-```
-
-To compile, run the `_build.sh` script which will compile into multiple formats. 
