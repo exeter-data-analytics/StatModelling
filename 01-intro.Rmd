@@ -134,7 +134,7 @@ lines(d$x, d$y, lwd=3)
 **Model checking** involves confirming that our statistical assumptions are sensible. 
 We will delve into this in much detail later on, but just remember that when you hear people saying
 "check that your data is normal", in the context of linear regression, what this means is that
-the **residuals** are normal.
+the **residuals** are normal (which also means that the **response** variable is normal).
 
 ## Summary
 
