@@ -18,7 +18,7 @@ knit_engines$set(task = function(options) {
     out <- gsub("``", "```", options$code)
     out <- knit_child(text = out)
     ## set up output
-    if(opts_knit$get("rmarkdown.pandoc.to") == "html") {
+    if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
         out <- paste("<div class=\"panel panel-default\"><div class=\"panel-heading\"> Task </div><div class=\"panel-body\">", out, "</div></div>")
     } else {
         out <- paste0("\\hypertarget{tsk", taskCtr, "}{}\\bblockT{\\phantomsection\\label{sol", taskCtr, "}", taskCtr, "}\n", out, "\n\\eblockT\n")
@@ -30,7 +30,7 @@ knit_engines$set(task = function(options) {
 knit_engines$set(solution = function(options) {
     out <- gsub("``", "```", options$code)
     out <- knit_child(text = out)
-    if(opts_knit$get("rmarkdown.pandoc.to") == "html") {
+    if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
         out <- paste0("<button id=\"displayText", options$label, "\" onclick=\"javascript:toggle('", options$label, "');\">Show Solution</button>\n\n<div id=\"toggleText", options$label, "\" style=\"display: none\"><div class=\"panel panel-default\"><div class=\"panel-heading panel-heading1\"> Solution </div><div class=\"panel-body\">", out, "</div></div></div>\n")
     } else {
         solLabels[[taskCtr]][2] <- out
