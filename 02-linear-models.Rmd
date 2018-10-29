@@ -142,7 +142,7 @@ fit <- lm(height ~ weight, df)
 
 ### Extended summary
 
-The object returned by the `lm()` contains further information that we can display using the `summary()` function.
+The object returned by `lm()` contains further information that we can display using the `summary()` function.
 
 ```{r}
 summary(fit)
@@ -171,9 +171,8 @@ to be close to zero, the third quartile (3Q) to be roughly equal to -1Q (first q
     + **`Std. Error`**
     
     The standard error for that parameter. It tells us how confident we are in estimating that particular parameter. 
-    If the standard error is comparable or greater than the actual parameter estimate then that parameter should not
-    be trusted. We can also show to the confidence intervals for model parameters to highlight the uncertainty aroung
-    the parameter estimate using the `confint()` function:
+    If the standard error is comparable or greater than the actual parameter estimate then that point estimate should not
+    be trusted. We can also show the confidence intervals for the model parameters to highlight their uncertainty using the `confint()` function:
     
     ```{r}
     confint(fit, level=0.97) # pick the 97% confidence intervals
@@ -185,7 +184,7 @@ to be close to zero, the third quartile (3Q) to be roughly equal to -1Q (first q
 
 * **Residual standard error**
 
-The square root of (residual sum of squares/degress of freedom)
+The square root of residual sum of squares/degress of freedom
 ```{r}
 # Residual standard error
 sqrt(sum(residuals(fit)^2) / fit$df.residual) 
@@ -217,6 +216,7 @@ M_0:~~~~~Y_i &= \beta_0 + \epsilon_i\\
 M_1:~~~~~Y_i &= \beta_0 + \beta_1 W_i + \epsilon_i
 \end{aligned}
 $$
+
 ## Model checking
 
 The extended summary leads us nicely to the concept of model checking. In theory, we can fit an infinite
@@ -374,10 +374,10 @@ N <- 100 # no. of observations
 weight <- runif(n=N, min=60, max=100) # hypothetical weights in kg
 heightParents <- runif(n=N, min=130, max=210) # hypothetical mean heights of parents in cm
 height <- 0.1*weight + 1.05*heightParents + rnorm(n=N, mean=0, sd=10) # hypothetical heights in cm
-df <- data.frame(weight=weight, heightParents=heightParents, height=height) # store in a data frame
+df <- data.frame(weight=weight, heightParents=heightParents, height=height) # store as df
 
 # Plot
-library(scatterplot3d)
+library(scatterplot3d) # library needed for 3D plotting
 scatterplot3d(weight, heightParents, height, pch=19, xlab='Weight (kg)', 
               ylab='Height of Parents (cm)', zlab='Height (cm)', color='grey')
 ```
@@ -393,14 +393,64 @@ is to place it such that it goes as close as possible to your observations.
 
 To fit a multiple linear regression model we use the [`lm()`](https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/lm) function 
 again and pass the appropriate **formula** object which has the form of
-`response ~ explanatory1 + explanatory2`, which in our case this will be `height ~ weight + heightParents`.
+`response ~ explanatory1 + explanatory2`. In in our case this will be `height ~ weight + heightParents`.
 
+```{r}
+fit <- lm(height ~ weight + heightParents, df)
+```
 
+Let us plot the resultant model first (i.e the hyperplane).
 
-## Model checking
+```{r, fig.height=6, fig.width=6}
+hFig <- scatterplot3d(weight, heightParents, height, pch=19, xlab='Weight (kg)', 
+                      ylab='Height of Parents (cm)', zlab='Height (cm)', color='grey')
+hFig$plane3d(fit, draw_polygon=TRUE)
+```
 
+Let us look at the fit's summary
 
-## Example 2
+```{r}
+summary(fit)
+```
+
+Same as before, the `(Intercept)=` `r format(coef(fit)[1], digits=4)`, `weight=` `r format(coef(fit)[2], digits=4)` and `heightParents=` `r format(coef(fit)[3], digits=4)`
+are the $\beta_0$, $\beta_1$ and $\beta_2$ parameters. 
+
+The $\beta_0$ parameter (intercept) is the expected height of someone that weighs 0kg *and* whose parents have a mean height of 0cm. Again, this parameter is not useful in this case.
+
+The $\beta_1$ parameter tells us about the 
+relationship between the `height` and `weight`. In this case, for every 1kg increase in weight on *average* 
+the height increases by `r format(coef(fit)[2], digits=4)`cm.
+
+The $\beta_2$ parameter tells us about the 
+relationship between the `height` and `heightParents`. In this case, for every 1cm increase in mean height of parents on *average* 
+the height increases by `r format(coef(fit)[3], digits=4)`cm.
+
+As before we look at the model diagnostic plots to check the model fit.
+
+```{r, fig.height=8, fig.width=8}
+par(mfrow=c(2, 2))
+plot(fit, pch=19, col='darkgrey')
+```
+
+```{r, echo=FALSE}
+par(mfrow=c(1, 1))
+```
+
+We can extend this framework to an arbitrary large number of explanatory variables. Our model will be:
+
+$$
+\begin{aligned}
+y_i & = \beta_0 + \beta_1x_{1i} + \ldots + \beta_px_{pi} + \epsilon_i \\
+\epsilon_i & \sim \mathcal{N}(0, \sigma^2)
+\end{aligned}
+$$
+Where $i$ is an index that goes from 1 to $n$ (the total number of observations) and
+$p$ is the total number of explanatory variables. 
+
+## Practical 2
+
+To be determined
 
 ## Summary
 
