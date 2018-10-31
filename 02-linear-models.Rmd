@@ -1,13 +1,15 @@
 # Linear models
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE}
 IMG <- "_img" # image path
+library(tidyverse)
 ```
 
 ## Simple linear regression
 
 In many scientific applications we are interested in exploring the relationship
 between a single **response** variable and multiple **explanatory** variables (predictors).
+We can do this by fitting a linear model.
 Linear models *per se* do not infer *causality*, i.e defining a variable as response or
 explanatory is somewhat arbitrary and depends on what the researcher is interested in.
 *Causality* can however be inferred through careful experimental design in a well-controlled setting.
@@ -62,12 +64,12 @@ known as the **noise** term. The reason is that in general our response variable
 associated with it (e.g counting the number of birds in an area, quantifying gene expression using microarrays or RNA-seq, etc.). 
 The statistical assumption in linear modelling is that these errors are normally distributed with mean
 zero and some standard deviation $\sigma^2$. This means that the **response** variable is also assumed to be normally distributed.
-For the maths aficionados it means that:
+For the maths aficionados amongst you:
 
 $$
 y_i \sim \mathcal{N}(\beta_0 + \beta_1x_i, \sigma^2)
 $$
-Note that we do not make explicit assumptions on the **explanatory** variables (the $x_i$'s) i.e they don't need to be normal. 
+Note that we do not make explicit assumptions about the **explanatory** variables (the $x$'s) i.e they don't need to be normal. 
 
 The workflow in linear regression is as follows:
 
@@ -81,13 +83,14 @@ Luckily for us, we do not need to worry about the mathematical intricacies of es
 R will do it for us. Let's generate some fake data just to get things started.
 
 ```{r, fig.height=6, fig.width=6}
+set.seed(1453)
 N <- 100 # no. of observations
 weight <- runif(n=N, min=60, max=100) # hypothetical weights in kg
 height <- 2.2*weight + rnorm(n=N, mean=0, sd=10) # hypothetical heights in cm
 plot(weight, height, pch=19, xlab='Weight (kg)', ylab='Height (cm)', col='grey')
 ```
 To fit a linear model we use the [`lm()`](https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/lm) function 
-(always read the documentation of a function before using it!). 
+(**always** read the documentation of a function before using it!). 
 This function requires a **formula** object which has the form of
 `response ~ explanatory`. So in our case this will be `height ~ weight`. R will then fit the following model
 ^[weight is our explanatory variable ($x_i$) and height the response variable ($y_i$)]:
@@ -110,22 +113,22 @@ lines(weight, predict(fit), col='black', lwd=3)
 print(fit)
 ```
 
-This outputs two numbers, the `(Intercept)=` `r format(coef(fit)[1], digits=4)` and `weight=` `r format(coef(fit)[2], digits=4)`. 
+This outputs two numbers, the `(Intercept)=` `r format(coef(fit)[1], digits=4)` cm and `weight=` `r format(coef(fit)[2], digits=4)` cm/kg. 
 These are the $\beta_0$ and $\beta_1$ parameters. 
 
 The $\beta_0$ parameter (intercept) is not
-very useful in this case, it basically tells us what's the expected height of someone that weighs 0kg (`r format(coef(fit)[1], digits=4)`cm here).
-This is of course nonsense, but I'm highlighting it as a reminder that data-driven models only make sense where we have data, in general
+very useful in this case, it basically tells us what's the expected height of someone that weighs 0 kg (`r format(coef(fit)[1], digits=4)` cm here).
+This is of course nonsense, but I'm highlighting it as a reminder that data-driven models only make sense close to the observed data, in general
 extrapolating is bad! 
 
-The $\beta_1$ parameter (gradient) is typically what we are interested in. It tells us about the 
-relationship between the outcome and explanatory variable. In this case, for every 1kg increase in weight on *average* 
-the height increases by `r format(coef(fit)[2], digits=4)`cm.
+The $\beta_1$ parameter (gradient) tells us about the 
+relationship between the outcome and explanatory variable. In this case, for every 1 kg increase in weight on *average* 
+the height increases by `r format(coef(fit)[2], digits=4)` cm.
 
 **Note**: the notation used by R, can come across as confusing. Although the $\beta_1$ parameter is called `weight`, 
 the *units* of this parameter is actually `cm/kg` as it respresents a **gradient**. Recall that the equation for the
 mean line is $\mathrm{height} = \beta_0 + \beta_1\times\mathrm{weight}$. The units of $\beta_0$ are cm and in order
-for $\beta_1 \times \mathrm{weight}$ to return cm, $\beta_1$ needs to be cm/kg (i.e you have $\text{kg}\frac{\text{cm}}{\text{kg}}=\text{cm}$)
+for $\beta_1 \times \mathrm{weight}$ to return cm, $\beta_1$ needs to be cm/kg (i.e you have $\frac{\text{cm}}{\text{kg}}\text{kg}=\text{cm}$)
 
 ### Using data frames
 
@@ -165,13 +168,13 @@ to be close to zero, the third quartile (3Q) to be roughly equal to -1Q (first q
 * **Coefficients**
     + **`Estimate`**
     
-    The `(Intercept)=` `r format(coef(fit)[1], digits=4)` and `weight=` `r format(coef(fit)[2], digits=4)` 
+    The `(Intercept)=` `r format(coef(fit)[1], digits=4)` cm and `weight=` `r format(coef(fit)[2], digits=4)` cm/kg 
     are the $\beta_0$ and $\beta_1$ parameters as discussed earlier. 
     
     + **`Std. Error`**
     
     The standard error for that parameter. It tells us how confident we are in estimating that particular parameter. 
-    If the standard error is comparable or greater than the actual parameter estimate then that point estimate should not
+    If the standard error is comparable or greater than the actual parameter estimate itself then that point estimate should not
     be trusted. We can also show the confidence intervals for the model parameters to highlight their uncertainty using the `confint()` function:
     
     ```{r}
@@ -208,12 +211,12 @@ $$
 \text{F-statistic} = \frac{\text{Regression (explained) variation}}{\text{Residual (unexplained) variation}}
 $$
 
-The F-statistic tests whether the amount of variation explained by the regression is *statistically significant* compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data).
+The F-statistic tests whether the amount of variation explained by the regression is *statistically significant* compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data i.e the gradient is zero).
 
 $$
 \begin{aligned}
-M_0:~~~~~Y_i &= \beta_0 + \epsilon_i\\  
-M_1:~~~~~Y_i &= \beta_0 + \beta_1 W_i + \epsilon_i
+M_0:~~~~~y_i &= \beta_0 + \epsilon_i\\  
+M_1:~~~~~y_i &= \beta_0 + \beta_1 W_i + \epsilon_i
 \end{aligned}
 $$
 
@@ -309,19 +312,30 @@ and thus served as a control for any effect of competition with the male for foo
 was a set of individual males kept with no females. There were 25 males in each of the five groups, which 
 were treated identically in number of anaesthetizations (using $\mathrm{CO}_2$) and provision of fresh food medium.
 
-The data has the following columns:
+Download the data file from [here](https://exeter-data-analytics.github.io/StatModelling/_data/fruitfly.rds) and save it
+to your working directory.
+
+```{r, eval=FALSE}
+ff <- readRDS("fruitfly.rds")
+```
+
+```{r, echo=FALSE, eval=TRUE}
+ff <- readRDS("_data/fruitfly.rds")
+```
 
 ```{r}
-ff <- readRDS("_data/ff.rds")
 head(ff)
 ```
 
-* **id**: a ID for each fly in each group (1--25).
-* **partners**: number of companions (0, 1 or 8).
-* **type**: type of companion (inseminated female; virgin female; not applicable (when 'partners = 0')).
-* **longevity**: lifespan, in days.
-* **thorax**: length of thorax, in mm.
+For the purpose of this practical we will assume that the no female case is the control case, whilst
+the inseminated and virgin female cases are the treatment cases.
 
+* **partners**: number of companions (0, 1 or 8)
+* **type**: type of companion (inseminated female; virgin female; control (when partners = 0))
+* **longevity**: lifespan, in days
+* **thorax**: length of thorax, in mm
+* **sleep**: percentage of each day spent sleeping
+                       
 ```{task}
 
 1. Fit a linear model with lifespan as response variable and thorax length as explanatory variable
@@ -370,6 +384,7 @@ $$
 Let us make up some data again and plot it.
  
 ```{r, fig.height=6, fig.width=6}
+set.seed(451)
 N <- 100 # no. of observations
 weight <- runif(n=N, min=60, max=100) # hypothetical weights in kg
 heightParents <- runif(n=N, min=130, max=210) # hypothetical mean heights of parents in cm
@@ -389,11 +404,11 @@ we add the more we spread our data thinly across multiple dimensions.
 
 The objective of linear modelling is still the same, finding the "best" straight line, or in this case a **hyperplane** 
 (a line in higher dimensions). You can think of a **hyperplane** as a (rigid) sheet of paper, where the objective
-is to place it such that it goes as close as possible to your observations.
+is to place it such that it passes as close as possible to the observed data.
 
 To fit a multiple linear regression model we use the [`lm()`](https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/lm) function 
 again and pass the appropriate **formula** object which has the form of
-`response ~ explanatory1 + explanatory2`. In in our case this will be `height ~ weight + heightParents`.
+`response ~ explanatory_1 + explanatory_2`. In in our case this will be `height ~ weight + heightParents`.
 
 ```{r}
 fit <- lm(height ~ weight + heightParents, df)
@@ -413,18 +428,18 @@ Let us look at the fit's summary
 summary(fit)
 ```
 
-Same as before, the `(Intercept)=` `r format(coef(fit)[1], digits=4)`, `weight=` `r format(coef(fit)[2], digits=4)` and `heightParents=` `r format(coef(fit)[3], digits=4)`
+Same as before, the `(Intercept)=` `r format(coef(fit)[1], digits=4)` cm, `weight=` `r format(coef(fit)[2], digits=4)` cm/kg and `heightParents=` `r format(coef(fit)[3], digits=4)` cm/cm
 are the $\beta_0$, $\beta_1$ and $\beta_2$ parameters. 
 
-The $\beta_0$ parameter (intercept) is the expected height of someone that weighs 0kg *and* whose parents have a mean height of 0cm. Again, this parameter is not useful in this case.
+The $\beta_0$ parameter (intercept) is the expected height of someone that weighs 0kg *and* whose parents have a mean height of 0 cm. Again, this parameter is not useful in this case.
 
 The $\beta_1$ parameter tells us about the 
-relationship between the `height` and `weight`. In this case, for every 1kg increase in weight on *average* 
-the height increases by `r format(coef(fit)[2], digits=4)`cm.
+relationship between `height` and `weight`. For every 1 kg increase in weight on *average* 
+the height increases by `r format(coef(fit)[2], digits=4)` cm.
 
 The $\beta_2$ parameter tells us about the 
-relationship between the `height` and `heightParents`. In this case, for every 1cm increase in mean height of parents on *average* 
-the height increases by `r format(coef(fit)[3], digits=4)`cm.
+relationship between `height` and `heightParents`. For every 1 cm increase in mean height of parents on *average* 
+the person's height increases by `r format(coef(fit)[3], digits=4)` cm.
 
 As before we look at the model diagnostic plots to check the model fit.
 
@@ -437,7 +452,7 @@ plot(fit, pch=19, col='darkgrey')
 par(mfrow=c(1, 1))
 ```
 
-We can extend this framework to an arbitrary large number of explanatory variables. Our model will be:
+We can extend this framework to any arbitrary large number of explanatory variables. The model is:
 
 $$
 \begin{aligned}
@@ -446,11 +461,373 @@ y_i & = \beta_0 + \beta_1x_{1i} + \ldots + \beta_px_{pi} + \epsilon_i \\
 \end{aligned}
 $$
 Where $i$ is an index that goes from 1 to $n$ (the total number of observations) and
-$p$ is the total number of explanatory variables. 
+$p$ is the total number of explanatory variables. Hopefully it is now clearer why statisticians
+use Greek letters $\beta_0, \ldots, \beta_p$, else the equation would be too
+long to write in English (i.e outcome = intercept + ((gradient outcome vs explanatory variable 1) x (explanatory variable 1)) + ((gradient outcome vs explanatory variable 2) x (explanatory variable 2)) + ...)
 
 ## Practical 2
 
-To be determined
+We will use the fruitfly dataset ([Partridge and Farquhar (1981)](https://www.nature.com/articles/294580a0)) as we did in the previous practical
+
+```{task}
+
+1. Fit a linear model with lifespan as response variable and thorax length and sleep as explanatory variables
+2. Display a summary of the fit, together with the 97% confidence intervals for the estimated parameters
+3. What's the practical significance of the estimated parameters?
+4. Show the diagnostic plots for the model, what can you say about the model fit?
+5. What is the total variation explained by `thorax` and `sleep`?
+
+```
+
+```{solution}
+
+``{r, fig.height=6, fig.width=6}
+fit <- lm(longevity ~ thorax + sleep, ff)
+summary(fit)
+confint(fit, level=0.97)
+par(mfrow=c(2, 2))
+plot(fit, pch=19, col='darkgrey')
+par(mfrow=c(1, 1))
+``
+
+**Practical significance of estimated parameters**
+
+The `intercept` parameter (`r format(coef(fit)[1], digits=3)` days) represents the expected longevity for a fruitfly that 
+has a thorax length of zero and that spends no time sleeping. This is of course 
+biologically implausible, but again acts as a reminder that the linearity assumption
+is not necessarily true outside the range of the observed data
+
+The `thorax` parameter (`r format(coef(fit)[2], digits=3)` days/mm) is the expected increase
+in longevity for every 1mm increase in `thorax`. A 1mm increase in thorax length is huge
+and so for ease of interpretation we can instead state it as `r format(coef(fit)[2]*0.1, digits=3)` days per 0.1mm increase in thorax length. The confidence intervals around this
+parameter is relatively narrow and always positive, suggesting that having a longer
+thorax is associated with an increased lifespan.
+
+The `sleep` parameter (`r format(coef(fit)[3], digits=3)`days/%) is the expected increase
+in longevity for every 1% increase in `sleep`. This parameter has a standard error
+which is comparable to the parameter estimate itself, suggesting a huge uncertainty
+around this estimate. This is reflected in the 97% confidence intervals which spans
+from a negative to a positive value. It is therefore unlikely that `sleep` is
+associated with `longevity`.
+
+**Model fit**
+    
+All of the diagnostic plots look sensible, suggesting that our model assumptions
+are satisfied.
+
+**Explained variation**
+
+The $R^2$ statistic (also known as the **coefficient of determination**) is the proportion
+of the total variation that is explained by the regression. Which in this case 
+is `r format(summary(fit)$adj.r.squared*100, digits=3)`%. This is essentially
+the same as the previous model which only contained `thorax`, suggesting that `sleep` is not an important predictor of `longevity`.
+
+```
+
+## Categorical explanatory variables
+
+So far we have only considered **continuous** explanatory variables. How
+do we include **categorical** explanatory variables? Let's go back
+to our `height` vs `weight` toy example and consider
+`sex` as an additional categorical variable. Let us simulate some data.
+
+```{r, fig.height=6, fig.width=6}
+set.seed(101)
+N <- 50 # no. of observations
+weightMale <- runif(n=N, min=60, max=100) # hypothetical weights in kg
+weightFemale <- runif(n=N, min=60, max=100) # hypothetical weights in kg
+heightMale <- 2.2*weightMale + rnorm(n=N, mean=0, sd=10) + 40  # hypothetical heights in cm
+heightFemale <- 2.2*weightFemale + rnorm(n=N, mean=0, sd=10) + 2 # hypothetical heights in cm
+height <- c(heightMale, heightFemale)
+weight <- c(weightMale, weightFemale)
+sex <- c(rep('Male', N), rep('Female', N))
+
+# Store in data frame
+df <- data.frame(weight=weight, sex=sex, height=height)
+
+# Plot
+plot(height ~ weight, data=df, pch=19, xlab='Weight (kg)', ylab='Height (cm)', col='grey')
+```
+
+Data looks similar as before, albeit with a larger variation. We can fit a model as we have done
+before and assess the relationship between `height` and `weight`.
+
+```{r, fig.height=6, fig.width=6}
+# Linear model fit
+fit <- lm(height ~ weight, data=df)
+
+# Plot model fit
+plot(weight, height, pch=19, xlab='Weight (kg)', ylab='Height (cm)', col='grey')
+lines(weight, predict(fit), col='black', lwd=3)
+
+# Print result
+summary(fit)
+```
+
+If we colour the data by sex it becomes obvious that this extra variation is due to sex.
+
+```{r, fig.height=6, fig.width=6}
+print(ggplot(df, aes(x=weight, y=height, col=sex)) + geom_point())
+```
+
+`sex` is an important covariate and should therefore be
+added to the model. That is, we need a model that has different regression lines for each 
+sex. The *syntax* for the R formula remains exactly the same `response ~ explanatory_1 + ... + explanatory_p`, but behind the scenes categorical variables are treated differently to continuous variables.
+
+To cope with categorical variables (known as **factors** in R's lingo), we introduce a 
+**dummy** variable.
+
+$$
+S_i = \left\{\begin{array}{ll}
+        1 & \mbox{if $i$ is male},\\
+        0 & \mbox{otherwise}
+        \end{array}
+        \right.
+$$
+
+Here, female is known as the **baseline**/**reference level**
+
+The regression is:
+
+$$
+y_i = \beta_0 + \beta_1 S_i + \beta_2 x_i + \epsilon_i
+$$
+Or in English:
+
+$$
+\begin{aligned}
+\mathrm{height}_i & = \beta_0 + \beta_1\mathrm{sex}_i + \beta_2\mathrm{weight}_i + \epsilon_i \\
+\end{aligned}
+$$
+Where `sex` is the dummy variable `S_i` that can take the value of 0 (female) or 1 (male)
+
+The mean regression lines for male and female now look like this:
+
+* **Female** (`sex=0`)
+
+$$
+\begin{aligned}
+    \mathrm{height}_i & = \beta_0 + (\beta_1 \times 0) + \beta_2\mathrm{weight}_i\\
+    \mathrm{height}_i & = \beta_0 + \beta_2\mathrm{weight}_i
+\end{aligned}
+$$
+
+* **Male** (`sex=1`)
+
+$$
+\begin{aligned}
+    \mathrm{height}_i & = \beta_0 + (\beta_1 \times 1) + \beta_2\mathrm{weight}_i\\
+    \mathrm{height}_i & = (\beta_0 + \beta_1) + \beta_2\mathrm{weight}_i
+\end{aligned}
+$$
+By introducing a dummy variable, we have now simplified the problem into **two** regression
+lines, where the **intercept** is:
+
+* **Female**: $\beta_0$
+* **Male**: $\beta_0 + \beta_1$
+
+Whilst the **gradient** is $\beta_2$ in both cases.
+
+```{r, fig.height=6, fig.width=6}
+# Linear model fit
+fit <- lm(height ~ sex + weight, data=df)
+
+# Print result
+summary(fit)
+```
+
+The `sexMale` coefficient is $\beta_1$ in the equations above and it represents 
+the *difference* in intercept between males and females (remember that the gradient
+is the same for both sexes). Thus for the *same* weight, 
+men on average will be `sexMale`=`r format(coef(fit)[1], digits=3)` cm taller than females.
+
+```{r, fig.height=6, fig.width=6}
+print(ggplot(df, aes(x=weight, y=height, col=sex)) + 
+          geom_point() + geom_smooth(method='lm', se=FALSE))
+```
+
+```{task}
+
+Compare the total variation explained by the model with just weight 
+to the one which considers weight *and* sex. What gives rise to 
+this difference?
+
+```
+
+```{solution}
+
+By omitting `sex` from our model, we have no other alternatives but to treat 
+this extra variation as **noise**, $\epsilon_i \sim \mathcal{N}(0, \sigma^2)$. 
+The unexplained variation ($\sigma^2$) is due to observation noise *and* sex. 
+Once we put `sex` into our model,
+it will "soak" up the variation that is due to sex which improves
+our model considerably. The unexplained variation ($\sigma^2$) is now
+only due to the observation error (and other factors that we might be omitting).
+
+```
+
+**Note** the baseline/reference level in R is automatically taken to be the *first* factor level.
+
+```{r}
+levels(df$sex)
+```
+
+We can change this by re-ordering the levels if we wanted to.
+
+```{r}
+df$sex <- factor(df$sex, levels = c('Male', 'Female'))
+```
+
+```{r, fig.height=6, fig.width=6}
+# Linear model fit
+fit <- lm(height ~ sex + weight, data=df)
+
+# Print result
+summary(fit)
+```
+
+As expected this change simply changes the sign of the $\beta_1$ parameter, because the dummy
+variable now takes the value of 0 for male and 1 for female (i.e we switched things around).
+
+## Practical 3
+
+We will use the fruitfly dataset ([Partridge and Farquhar (1981)](https://www.nature.com/articles/294580a0)) as we did in the previous practical
+
+```{task}
+
+1. Fit a linear model with lifespan as response variable and thorax length and type of companion as explanatory variables
+2. Display a summary of the fit, together with the 97% confidence intervals for the estimated parameters
+3. Why do we get two parameters for type of companion and what do they mean in practice?
+4. Plot the mean regression line for each type of companion together with the observed data
+5. Show the diagnostic plots for the model, what can you say about the model fit?
+6. Compare the total variation explained by this model with the one that only used `thorax` as a covariate. What can you say about the importance of the type of companion?
+
+```
+
+```{solution}
+
+``{r, fig.height=6, fig.width=6}
+fit <- lm(longevity ~ type + thorax, ff)
+summary(fit)
+confint(fit, level=0.97)
+print(ggplot(ff, aes(x=thorax, y=longevity, col=type)) + 
+          geom_point() + geom_smooth(method='lm', se=FALSE))
+par(mfrow=c(2, 2))
+plot(fit, pch=19, col='darkgrey')
+par(mfrow=c(1, 1))
+``
+
+**The type of companion parameters**
+
+In our toy example we introduced one dummy variable because the variable `sex`
+only had two factors (male or female). Type of companion has
+three factors (inseminated, virgin and control), we therefore need **two** dummy
+variables as follows:
+    
+$$
+S_{1i} = \left\{\begin{array}{ll}
+        1 & \mbox{if $i$ is inseminated},\\
+        0 & \mbox{otherwise}
+        \end{array}
+        \right.
+$$
+
+$$
+S_{2i} = \left\{\begin{array}{ll}
+        1 & \mbox{if $i$ is virgin},\\
+        0 & \mbox{otherwise}
+        \end{array}
+        \right.
+$$
+         
+Here, control is the **baseline**/**reference level** for type of companion
+
+The mean regression line is:
+
+$$
+y_i = \beta_0 + \beta_1 S_{1i} + \beta_2 S_{2i} + \beta_3 x_i
+$$
+    
+Or in English:
+
+$$
+\begin{aligned}
+\mathrm{longevity}_i & = \beta_0 + \beta_1\mathrm{inseminated}_i + \beta_2\mathrm{virgin}_i + \beta_3\mathrm{thorax}_i
+\end{aligned}
+$$
+    
+Where `inseminated` is a dummy variable that takes the value of 1 (inseminated) or 0 (otherwise) and `virgin` is another dummy variable that takes the value of 1 (virgin) 
+or 0 (otherwise). For `control` both dummy variables are zero.
+
+The mean regression lines for the three cases is as follows:
+
+* **Control** (`inseminated=0` and `virgin=0`)
+
+$$
+\begin{aligned}
+    \mathrm{longevity}_i & = \beta_0 + (\beta_1 \times 0) + (\beta_2 \times 0) + \beta_3\mathrm{thorax}_i\\
+        \mathrm{longevity}_i & = \beta_0 + \beta_3\mathrm{thorax}_i
+\end{aligned}
+$$
+
+* **Inseminated** (`inseminated=1` and `virgin=0`)
+
+$$
+\begin{aligned}
+    \mathrm{longevity}_i & = \beta_0 + (\beta_1 \times 1) + (\beta_2 \times 0) + \beta_3\mathrm{thorax}_i\\
+        \mathrm{longevity}_i & = (\beta_0 + \beta_1) + \beta_3\mathrm{thorax}_i
+\end{aligned}
+$$
+    
+* **Virgin** (`inseminated=0` and `virgin=1`)
+
+$$
+\begin{aligned}
+    \mathrm{longevity}_i & = \beta_0 + (\beta_1 \times 0) + (\beta_2 \times 1) + \beta_3\mathrm{thorax}_i\\
+        \mathrm{longevity}_i & = (\beta_0 + \beta_2) + \beta_3\mathrm{thorax}_i
+\end{aligned}
+$$
+
+The **intercept** for these three regression lines is therefore:
+
+* **Cotrol**: $\beta_0$ = `intercept`=`r format(coef(fit)[1], digits=3)` days
+* **Inseminated**: $\beta_0 + \beta_1$ = `intercept` + `typeInesminated` = `r format(coef(fit)[1], digits=3)` + `r format(coef(fit)[2], digits=3)` = `r format(coef(fit)[1]+coef(fit)[2], digits=3)` days
+* **Virgin**: $\beta_0 + \beta_2$ = `intercept` + `typeVirgin` = `r format(coef(fit)[1], digits=3)` + `r format(coef(fit)[3], digits=3)` = `r format(coef(fit)[1]+coef(fit)[3], digits=3)` days
+    
+The intercepts *per se* are not a useful measure as they represent the expected longevity of
+a fruitfly which has a thorax length of zero, which is clearly absurd. What is important is the *difference*
+between these intercepts as it represents a vertical shift in the regression line for the three conditions (see plot).
+
+`typeInseminated` = `r format(coef(fit)[2], digits=3)` days is the expected increase in longevity for inseminated with respect to
+control for *any* thorax length. Similarly, `typeVirgin` = `r format(coef(fit)[3], digits=3)` days, is the expected increase in 
+longevity for virgin with respect to control. We can also compute the expected increase in longevity for virgin with respect to inseminated which is `typeVirgin` - `typeInseminated` = `r format(coef(fit)[3], digits=3)` + `r format(coef(fit)[2], digits=3)` = `r format(coef(fit)[3]-coef(fit)[2], digits=3)` days
+
+**Model fit**
+    
+All of the diagnostic plots look sensible, suggesting that our model assumptions
+are satisfied.
+
+**Explained variation**
+
+The $R^2$ statistic (also known as the **coefficient of determination**) is the proportion
+of the total variation that is explained by the regression. Which in this case 
+is `r format(summary(fit)$adj.r.squared*100, digits=3)`%. This is considerably higher 
+than the 40% achieved with just `thorax`, suggesting that type of companion is indeed
+an important covariate and thus should be included in the model.
+
+```
+
+## Practical issues
+
+The most common issues when trying to fit simple linear regression models is that our response
+variable is not normal which violates our modelling assumption. There are two things we can do
+in this case:
+
+1. **Variable transformation**
+    + Can sometimes fix linearity
+    + Can sometimes fix non-normality and heteroscedasticity (i.e non-constant variance)
+
+2. ***Generalised* Linear Models (GLMs)** to change the **error** structure (i.e the assumption that residuals need to be normal)
 
 ## Summary
 
@@ -462,4 +839,5 @@ To be determined
 * It can be used to produce **point** and **interval** estimates for the parameters.
 * It can be used to assess the importance of variables.
 
-**But** always check that model results make sense, and investigate thoroughly if they do not!!
+**But** always **check** that the model fit is sensible and that the results 
+make sense within the context of the problem at hand. Investigate thoroughly if they do not!!
