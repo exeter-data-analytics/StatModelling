@@ -21,6 +21,10 @@ The next step is to further *summarise* the data by means of a model.
 
 > A **model** is a human construct/abstraction that summarises the data in a useful manner
 
+**[I'D ARGUE THAT A MODEL DOESN'T REALLY SUMMARISE THE DATA SO MUCH AS TRIES TO APPROXIMATE THE data generating process (SO WE CAN LEARN SOMETHING ABOUT THE UNDELRYING PROCESS). Nate Silver has a good quote: (or at least attributed to him) "Raw data, not matter how extensive, are useless without a model." Link [here](https://www.newyorker.com/books/page-turner/what-nate-silver-gets-wrong")]**
+
+[A longer, but also good quote is from Wojtek Krzanowski: "In order to make such statements, we need first to abstract the essence of the data-producing mechanism into a form that is amenable to mathematical and statistical treatment... This is the **statistical model** of the system. Fitting a model to a given set of data will then provide a framework for **extrapolating** the results to a wider context or for **predicting** future outcomes, and can often lead to an **explanation** of the system."]
+
 Much like the abstract of a scientific paper encapsulates the main message of the paper,
 a model captures the **salient** features/structure of the data. 
 
@@ -70,6 +74,12 @@ version of the real-world with many (many) caveats!!
 In this workshop we will solely focus on **linear** models. In a nutshell, this means
 that we will be "simply" fitting straight lines (hyperplanes if we have multiple explanatory variables) 
 through some data points.
+
+[Not strictly true: linear models are linear in the *parameters*. Polynomial regression is still linear regression. That is why linear regression is so powerful, it is very general. I'd argue very strongly to alter this line! I would suggest something like:
+
+> In this workshop we will solely focus on **linear** models. In their simplest form these models can be used to fit "straight lines" (or hyperplanes) through data points. However, this modelling framework is much more general, and can model relationships between continuous and categorical variables, and can also be used to fit curved relationships. So it provides a much richer class of models than it first appears.
+
+Or something like this...]
 
 ## Illustrative example
 
@@ -138,6 +148,6 @@ the **residuals** are normal (which also means that the **response** variable is
 
 ## Summary
 
-* Models are useful abstractions of the data that can help us understand the underlying system
-* Linear regression simply means fitting a "best" straight line (hyperplane) through the observed data points 
-* Model checking is the process of verifying the statistical assumptions made
+* Models are useful abstractions of the data that can help us understand the underlying system.
+* Linear regression simply means fitting a "best" straight line (hyperplane) through the observed data points. [CHANGE]
+* Model checking is the process of verifying the statistical assumptions made.
