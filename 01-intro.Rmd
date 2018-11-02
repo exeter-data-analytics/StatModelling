@@ -26,10 +26,10 @@ a model captures the **salient** features/structure of the data.
 
 Models are built for various reasons:
 
-* to enchance understanding of a complex phenomenon (e.g how does antibiotic resistance develop)
-* to execute "what if" scenarios (e.g what happens if interest rates go up)
-* to predict/forecast an outcome (e.g how many people will get influenza next winter)
-* to control a system (e.g autonomous vehicles)
+* to enhance understanding of a complex phenomenon (e.g how does antibiotic resistance develop?);
+* to execute "what if" scenarios (e.g what happens if interest rates go up?);
+* to predict/forecast an outcome (e.g how many people will get influenza next winter?);
+* to control a system (e.g autonomous vehicles).
 
 Models come in all kinds of "languages":
 
@@ -61,7 +61,7 @@ version of the real-world with many (many) caveats!!
 
 > All models are wrong but some are useful - **George E.P. Box**
 
-> For every complex question there is a simple and wrong solution - **A. Einstein**
+> For every complex question there is a simple and wrong solution - **Albert Einstein**
 
 ## What is a statistical (stochastic) model?
 
@@ -81,17 +81,17 @@ set.seed(1201)
 N <- 50
 x <- runif(N, min=0, max=10)
 y <- 2*x + 5 + rnorm(N, mean=0, sd=3)
-plot(x, y, pch=19, xlab='Hours spent wathcing Game of Thrones (GoT) at the weekend',
+plot(x, y, pch=19, xlab='Hours spent watching Game of Thrones (GoT) at the weekend',
      ylab='Minutes spent on monday talking about GoT at work', col='grey')
 ```
 
 Once you plotted out all of the data points, you were asked to grab a ruler 
 (a rigid, straight object) and find the line of best fit. To do this, you
-used to try and get equal number of data points on each side of the line.
+used to try and get a roughly equal number of data points on each side of the line.
 
 ```{r, echo=FALSE, fig.height=6, fig.width=6}
 fit <- lm(y ~ x)
-plot(x, y, pch=19, xlab='Hours spent wathcing Game of Thrones (GoT) at the weekend',
+plot(x, y, pch=19, xlab='Hours spent watching Game of Thrones (GoT) at the weekend',
      ylab='Minutes spent on monday talking about GoT at work', col='grey')
 abline(lm(y~x), col='black', lwd=3)
 ```
@@ -105,7 +105,7 @@ The fitted linear model is of the form $y = mx + c$. Where $m$ is the gradient a
 $c$ is the intercept.
 
 ```{r, echo=FALSE, fig.height=6, fig.width=6}
-plot(x, y, pch=19, xlab='Hours spent wathcing Game of Thrones (GoT) at the weekend',
+plot(x, y, pch=19, xlab='Hours spent watching Game of Thrones (GoT) at the weekend',
      ylab='Minutes spent on monday talking about GoT at work', col='grey')
 abline(lm(y~x), col='black', lwd=3)
 arrows(0.1, 0.5, 0.1, coef(fit)[1], angle=20, lwd=3, col='red', code=3, length=0.15)
@@ -117,12 +117,12 @@ text(7.4, 16, 'm = gradient', col='red', font=2, cex=1.2, pos=4)
 ```
 
 At school you were inferring the parameters $m$ and $c$ by hand. In this workshop you will learn
-how to do that in R. 
+how to do this in R. 
 
 What are the statistical assumptions in this case? As we will see in the 
 next chapter, in linear regression/modelling we assume that the **residuals** 
 i.e the differences between the model (black line) and "reality" (observed data points), 
-follow a normal/Gaussian distribution (a bell curve).
+follow a [normal/Gaussian distribution](https://en.wikipedia.org/wiki/Normal_distribution) (a bell curve).
 
 ```{r, echo=FALSE}
 d <- density(fit$residuals, kernel='gaussian')

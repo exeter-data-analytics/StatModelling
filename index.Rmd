@@ -28,7 +28,7 @@ description: "Statistical modelling in R"
 An introductory workshop on the field of statistical modelling in R. The focus will be on how to fit
 statistical models in R, rather than on the rigorous underlying mathematics. The target audience
 is anyone who wants to learn how to fit linear models in R. The progression will be
-linear models, generalised linear models and linear mixed effects model.
+linear models, generalised linear models and linear mixed effects models.
 
 ## Prerequisites {-}
 
