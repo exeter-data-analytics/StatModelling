@@ -362,6 +362,113 @@ par(mfrow=c(1, 1))
 
 ```
 
+## Prediction
+
+One of the key benefits of fitting a statistical model is that we can use it to produce predictions of the response variable for new values of the explanatory variable(s). We can do this using the `predict()` function in R. For example, in the fruitflies example above, we may want to produce estimates of average `longevity` for given values of `thorax`. To do this we must create a new `data.frame` object containing all the values of **explanatory** variables that we want to use for our prediction.
+
+> **Note**: we only require the ***explanatory*** variables in this new data frame, the ***response*** variable will be generated from the model.
+
+For example, if we wanted to produce an estimate of `longevity` for an average individual with a `thorax` length of 0.8mm, we can run:
+
+```{r}
+## produce predicted longevity for thorax = 0.8mm
+newdata <- data.frame(thorax = 0.8)
+predict(fit, newdata)
+```
+
+We can also use this to produce **confidence** or **prediction** intervals as follows:
+
+```{r}
+## produce predicted longevity for thorax = 0.8mm
+newdata <- data.frame(thorax = 0.8)
+predict(fit, newdata, interval = "confidence", level = 0.97)
+```
+
+> **Note**: If you predict *without* an `interval` argument, the `predict()` function returns a `vector`, otherwise it returns a `matrix`.
+
+> **Aside**: there are two types of interval that you might want to produce: **confidence** intervals or **prediction** intervals.
+> 
+> * **Confidence** intervals: these correspond to the uncertainty surrounding our estimate of an **average** individual (i.e. it represents the uncertainty in the **mean**: $y = \beta_0 + \beta_1 x$
+> * **Prediction** intervals: these correspond to the uncertainty surrounding an **individual** observation: $y_i = \beta_0 + \beta_1 x_i + \epsilon_i$.
+> 
+> If the model fits well, then we would expect $100(1 - \alpha)$% of the individual measurements to lie within the **prediction** interval, where $\alpha$ is the significance level.
+
+The `predict()` function can be used as a very general way to produce plots of the fitted values over the observed data. For example, let's consider that we wish to add our fitted regression line to our observed data plot.
+
+```{r}
+ggplot(ff) + 
+    geom_point(aes(x = thorax, y = longevity))
+```
+There are various ways to add the correct regression line to this plot, but we will show you a general way that can be used for lots of different types of models. Firstly, we generate a range of $x$-coordinates that we wish to predict to e.g.
+
+```{r}
+## create new data frame to predict to
+newdata <- data.frame(
+    thorax = seq(min(ff$thorax), max(ff$thorax), length.out = 50)
+)
+```
+
+We then have to use the model to predict the mean `longevity` at each of these `thorax` values:
+
+```{r}
+## predict longevity form the model
+newdata <- cbind(newdata, longevity = predict(fit, newdata))
+```
+
+Just as an illustration we will overlay these predictions onto the original scatterplot as points:
+
+```{r}
+## add predicted points to original plot
+ggplot(mapping = aes(x = thorax, y = longevity)) +
+    geom_point(data = ff) +
+    geom_point(data = newdata, colour = "red")
+```
+So we have used the `predict()` function to produce predicted coordinates that we can overlay on the original scatterplot. In practice we would usually plot these predictions as a **line** rather than points. This approach is particularly useful if the predictions that we wish to plot are not straight lines (such as when we generate **confidence** or **prediction** intervals). To complete this example we will now plot the fitted line and associated confidence interval as follows:
+
+```{r}
+## create new data frame to predict to
+newdata <- data.frame(
+    thorax = seq(min(ff$thorax), max(ff$thorax), length.out = 50)
+)
+
+## produce predictions and intervals
+newdata <- cbind(newdata, predict(fit, newdata, interval = "confidence", level = 0.97)) %>%
+    rename(longevity = fit)
+
+## plot fitted  line against the raw data
+ggplot(mapping = aes(x = thorax, y = longevity)) +
+    geom_point(data = ff) +
+    geom_line(data = newdata) +
+    geom_ribbon(aes(ymin = lwr, ymax = upr), data = newdata, alpha = 0.5) +
+    ggtitle("Fitted regression line with 97% confidence interval")
+```
+
+```{task}
+Produce the same plot but with a 97% **prediction** interval
+```
+
+```{solution}
+
+``{r}
+## create new data frame to predict to
+newdata <- data.frame(
+    thorax = seq(min(ff$thorax), max(ff$thorax), length.out = 50)
+)
+
+## produce predictions and intervals
+newdata <- cbind(newdata, predict(fit, newdata, interval = "prediction", level = 0.97)) %>%
+    rename(longevity = fit)
+
+## plot fitted  line against the raw data
+ggplot(mapping = aes(x = thorax, y = longevity)) +
+    geom_point(data = ff) +
+    geom_line(data = newdata) +
+    geom_ribbon(aes(ymin = lwr, ymax = upr), data = newdata, alpha = 0.5) +
+    ggtitle("Fitted regression line with 97% prediction interval")
+``
+
+```
+
 ## Multiple linear regression
 
 So far we have looked at examples with one response and one explanatory variable. In most applications
