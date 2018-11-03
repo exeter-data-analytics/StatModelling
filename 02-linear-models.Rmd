@@ -119,9 +119,7 @@ These are the $\beta_0$ and $\beta_1$ parameters.
 The $\beta_0$ parameter (intercept) is not
 very useful in this case, it basically tells us what's the expected height of someone that weighs 0kg (`r format(coef(fit)[1], digits=4)`cm here).
 This is of course nonsense, but I'm highlighting it as a reminder that data-driven models only make sense where we have data, in general
-extrapolating is bad!
-
-[I disagree: extrapolating is not bad. Sometimes it is incredibly useful and sometimes it is the principal reason **why** we fit the model. It is however, dangerous. So It's not that it only makes sense where we have observed data, it's rather that we can only assess the assumptions of the model over the range of the observed data. When extrapolating we have to assume that these relationships hold beyond the range of the data, which may or may not be reasonable (hence why weather forecast over short-time periods are OK, but climate forecasts are much more uncertain). Hence the model is an approximation, that in this case is not sensible where $x = 0$, but we don't care about when $x = 0$, so it's probably OK for our purposes. If we did care then we'd have to change the model so that we assume some behaviour at other points in the range.]
+extrapolating is bad! 
 
 The $\beta_1$ parameter (gradient) tells us about the 
 relationship between the outcome and explanatory variable. In this case, for every 1 kg increase in weight on *average* 
@@ -131,8 +129,6 @@ the height increases by `r format(coef(fit)[2], digits=4)` cm.
 the *units* of this parameter is actually `cm/kg` as it respresents a **gradient**. Recall that the equation for the
 mean line is $\mathrm{height} = \beta_0 + \beta_1\times\mathrm{weight}$. The units of $\beta_0$ are cm and in order
 for $\beta_1 \times \mathrm{weight}$ to return cm, $\beta_1$ needs to be cm/kg (i.e you have $\frac{\text{cm}}{\text{kg}}\text{kg}=\text{cm}$)
-
-[This gradient / units argument is a bit confusing. I'd remove the **note**, and just say that R calls the coefficient by the name of the variable for ease of understanding.]
 
 ### Using data frames
 
@@ -188,8 +184,6 @@ to be close to zero, the third quartile (3Q) to be roughly equal to -1Q (first q
     + **`t value`** and **`Pr(>|t|)`**
     
     Hypothesis testing on the parameter estimate being *statistically significantly* different from zero
-    
-[I just wonder here whether you should say that this performs a hypothesis test for the null hypothesis that the coefficient is zero. Whether it's statistically significant or not depends on what significance level you choose. This will always chuck out a p-value regardless of your pre-defined level of significance. (i.e. separate the test result from the interpretation of the test result).]
 
 * **Residual standard error**
 
@@ -217,7 +211,7 @@ $$
 \text{F-statistic} = \frac{\text{Regression (explained) variation}}{\text{Residual (unexplained) variation}}
 $$
 
-The F-statistic can be used to assess [SEE COMMENT ABOVE] whether the amount of variation explained by the regression is *statistically significant* compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data).
+The F-statistic tests whether the amount of variation explained by the regression is *statistically significant* compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data).
 
 $$
 \begin{aligned}
@@ -316,9 +310,7 @@ with that of two control types. The first control consisted of two sets of indiv
 one or eight newly inseminated females. Newly inseminated females will not usually remate for at least two days, 
 and thus served as a control for any effect of competition with the male for food or space. The second control 
 was a set of individual males kept with no females. There were 25 males in each of the five groups, which 
-were treated identically in number of anaesthetisations (using $\mathrm{CO}_2$) and provision of fresh food medium.
-
-[No data link here, so I guess you haven't pushed to repo.]
+were treated identically in number of anaesthetizations (using $\mathrm{CO}_2$) and provision of fresh food medium.
 
 Download the data file from [here](https://exeter-data-analytics.github.io/StatModelling/_data/fruitfly.rds) and save it
 to your working directory.
@@ -349,8 +341,6 @@ the inseminated and virgin female cases are the treatment cases.
 1. Fit a linear model with lifespan as response variable and thorax length as explanatory variable.
 2. Display a summary of the fit, together with the 97% confidence interval for the estimated parameters.
 3. Show the diagnostic plots for the model.
-
-[Could you add here a first task to plot the data before fitting the linear model.]
 
 ```
 
