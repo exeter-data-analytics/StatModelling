@@ -19,7 +19,11 @@ The next step is to further *summarise* the data by means of a model.
 
 ## What is a model?
 
-> A **model** is a human construct/abstraction that summarises the data in a useful manner
+> A **model** is a human construct/abstraction that tries to approximate the **data generating process** in some useful manner.
+
+Some people go even further:
+
+> "Raw data, no matter how extensive, are useless without a model."---[Nate Silver](https://www.newyorker.com/books/page-turner/what-nate-silver-gets-wrong"):
 
 Much like the abstract of a scientific paper encapsulates the main message of the paper,
 a model captures the **salient** features/structure of the data. 
@@ -67,9 +71,7 @@ version of the real-world with many (many) caveats!!
 
 > A **statistical model** is a mathematical model that makes a set of statistical assumptions in the form of probability distributions (i.e we assume that some variables follow a pre-defined probability distribution).
 
-In this workshop we will solely focus on **linear** models. In a nutshell, this means
-that we will be "simply" fitting straight lines (hyperplanes if we have multiple explanatory variables) 
-through some data points.
+In this workshop we will solely focus on **linear** models. In their simplest form these models can be used to fit "straight lines" (or hyperplanes) through data points. However, this modelling framework is much more general, and can model relationships between continuous and categorical variables, and can also be used to fit curved relationships. So it provides a much richer class of models than it first appears (though we will only focus on simple cases in this workshop.)
 
 ## Illustrative example
 
@@ -138,6 +140,6 @@ the **residuals** are normal (which also means that the **response** variable is
 
 ## Summary
 
-* Models are useful abstractions of the data that can help us understand the underlying system
-* Linear regression simply means fitting a "best" straight line (hyperplane) through the observed data points 
-* Model checking is the process of verifying the statistical assumptions made
+* Models are useful abstractions of the data that can help us understand the underlying system.
+* Linear regression is simply a flexible way to put a line-of-best-fit (or hyperplane) through the observed data points.
+* Model checking is the process of verifying the statistical assumptions made.

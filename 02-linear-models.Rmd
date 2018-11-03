@@ -118,17 +118,15 @@ These are the $\beta_0$ and $\beta_1$ parameters.
 
 The $\beta_0$ parameter (intercept) is not
 very useful in this case, it basically tells us what's the expected height of someone that weighs 0kg (`r format(coef(fit)[1], digits=4)`cm here).
-This is of course nonsense, but I'm highlighting it as a reminder that data-driven models only make sense where we have data, in general
-extrapolating is bad! 
+This is of course nonsense, but I'm highlighting it as a reminder that the assumptions that underlie these models can only be tested within the range of the observed data. 
+
+> **Aside**: using the model to predict outside of the range of the observed data is called **extrapolating**. Oftentimes, statistical models are developed *in order* to be used to extrapolate (e.g. climate modelling). This is however, dangerous. This is because we can only assess the assumptions of the model over the range of the observed data. When extrapolating we have to assume that these relationships hold beyond the range of the data, which may or may not be reasonable (hence why weather forecast over short-time periods are OK, but climate forecasts are much more uncertain). Hence we should always view the model as an approximation of the data generating process. In this particualr case, the interpretation of the parameters is not sensible where $x = 0$, but makes sense in the range that we are interested in exploring. If the case where $x = 0$ is important, then we would have to change the model to ensure that the predictions made sense at those values of $x$.
 
 The $\beta_1$ parameter (gradient) tells us about the 
 relationship between the outcome and explanatory variable. In this case, for every 1 kg increase in weight on *average* 
 the height increases by `r format(coef(fit)[2], digits=4)` cm.
 
-**Note**: the notation used by R, can come across as confusing. Although the $\beta_1$ parameter is called `weight`, 
-the *units* of this parameter is actually `cm/kg` as it respresents a **gradient**. Recall that the equation for the
-mean line is $\mathrm{height} = \beta_0 + \beta_1\times\mathrm{weight}$. The units of $\beta_0$ are cm and in order
-for $\beta_1 \times \mathrm{weight}$ to return cm, $\beta_1$ needs to be cm/kg (i.e you have $\frac{\text{cm}}{\text{kg}}\text{kg}=\text{cm}$)
+> **Warning**: the notation used by R can come across as confusing. Although the returned value is labelled as `weight`, in fact it corresponds to the $\beta_1$ parameter that relates to the strength of linear relationship between `weight` and `height`.
 
 ### Using data frames
 
@@ -140,7 +138,7 @@ df <- data.frame(height=height, weight=weight)
 head(df)
 
 # Fit linear model
-fit <- lm(height ~ weight, df)
+fit <- lm(height ~ weight, data=df)
 ```
 
 ### Extended summary
@@ -183,7 +181,7 @@ to be close to zero, the third quartile (3Q) to be roughly equal to -1Q (first q
     
     + **`t value`** and **`Pr(>|t|)`**
     
-    Hypothesis testing on the parameter estimate being *statistically significantly* different from zero
+    This is the result of a hypothesis testing against the null hypothesis that the coefficient is zero.
 
 * **Residual standard error**
 
@@ -211,7 +209,7 @@ $$
 \text{F-statistic} = \frac{\text{Regression (explained) variation}}{\text{Residual (unexplained) variation}}
 $$
 
-The F-statistic tests whether the amount of variation explained by the regression is *statistically significant* compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data).
+The F-statistic can be used to assess whether the amount of variation explained by the regression is *statistically significantly* different compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data). Large values of the F-statistic correspond to cases where the model fit is better for the more complex model compared to the null model. This test can be used to generate a p-value to assess whether the model fit is staitically significantly better given a pre-defined level of significance.
 
 $$
 \begin{aligned}
@@ -310,7 +308,7 @@ with that of two control types. The first control consisted of two sets of indiv
 one or eight newly inseminated females. Newly inseminated females will not usually remate for at least two days, 
 and thus served as a control for any effect of competition with the male for food or space. The second control 
 was a set of individual males kept with no females. There were 25 males in each of the five groups, which 
-were treated identically in number of anaesthetizations (using $\mathrm{CO}_2$) and provision of fresh food medium.
+were treated identically in number of anaesthetisations (using $\mathrm{CO}_2$) and provision of fresh food medium.
 
 Download the data file from [here](https://exeter-data-analytics.github.io/StatModelling/_data/fruitfly.rds) and save it
 to your working directory.
@@ -338,13 +336,20 @@ the inseminated and virgin female cases are the treatment cases.
                        
 ```{task}
 
-1. Fit a linear model with lifespan as response variable and thorax length as explanatory variable.
-2. Display a summary of the fit, together with the 97% confidence interval for the estimated parameters.
-3. Show the diagnostic plots for the model.
+1. Produce a scatterplot of `longevity` against `thorax`. What does the relationship look like?
+2. Fit a linear model with lifespan as response variable and thorax length as explanatory variable.
+3. Display a summary of the fit, together with the 97% confidence interval for the estimated parameters.
+4. Show the diagnostic plots for the model.
 
 ```
 
 ```{solution}
+
+``{r, fig.height=6, fig.width=6}
+plot(longevity ~ thorax, data = ff, pch=19, col='darkgrey')
+``
+
+The plot suggests that a linear relationship might exist between the two variables. So we can proceed by fitting a linear model in R.
 
 ``{r, fig.height=6, fig.width=6}
 fit <- lm(longevity ~ thorax, ff)
