@@ -391,13 +391,13 @@ predict(fit, newdata, interval = "confidence", level = 0.97)
 > * **Confidence** intervals: these correspond to the uncertainty surrounding our estimate of an **average** individual (i.e. it represents the uncertainty in the **mean**: $y = \beta_0 + \beta_1 x$
 > * **Prediction** intervals: these correspond to the uncertainty surrounding an **individual** observation: $y_i = \beta_0 + \beta_1 x_i + \epsilon_i$.
 > 
-> If the model fits well, then we would expect $100(1 - \alpha)$% of the individual measurements to lie within the **prediction** interval, where $\alpha$ is the significance level.
+> If the model fits well, then we would expect $100(1 - \alpha)$% of the individual measurements to lie within the **prediction** interval, where $\alpha$ is the significance level (so $alpha = 0.05$ corresponds to a 95% confidence interval).
 
 The `predict()` function can be used as a very general way to produce plots of the fitted values over the observed data. For example, let's consider that we wish to add our fitted regression line to our observed data plot.
 
 ```{r}
-ggplot(ff) + 
-    geom_point(aes(x = thorax, y = longevity))
+ggplot(ff, aes(x = thorax, y = longevity)) + 
+    geom_point()
 ```
 There are various ways to add the correct regression line to this plot, but we will show you a general way that can be used for lots of different types of models. Firstly, we generate a range of $x$-coordinates that we wish to predict to e.g.
 
