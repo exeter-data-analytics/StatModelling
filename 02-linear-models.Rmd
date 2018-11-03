@@ -17,7 +17,7 @@ explanatory is somewhat arbitrary and depends on what the researcher is interest
 Consider again the case of one response and one explanatory variable. From the previous
 chapter we know that this boils down to the equation of a line ($y = mx +c$).
 Let's rename the parameters $c$ and $m$ to $\beta_0$ and $\beta_1$, in line
-with statistical naming convention ^[this notation is such that we can have any arbitrary 
+with statistical naming convention^[this notation is such that we can have any arbitrary 
 large number of explantory variables i.e $\beta_1$, $\beta_2$, $\beta_3$...etc., without running
 out of letters in the alphabet!]. It is just a change in name:
 
@@ -34,7 +34,7 @@ N <- 50
 x <- runif(N, min=0, max=10)
 y <- 2*x + 5 + rnorm(N, mean=0, sd=3)
 fit <- lm(y ~ x)
-plot(x, y, pch=19, xlab='Hours spent wathcing Game of Thrones (GoT) at the weekend',
+plot(x, y, pch=19, xlab='Hours spent watching Game of Thrones (GoT) at the weekend',
      ylab='Minutes spent on monday talking about GoT at work', col='grey')
 abline(lm(y~x), col='black', lwd=3)
 arrows(0.1, 0.5, 0.1, coef(fit)[1], angle=20, lwd=3, col='red', code=3, length=0.15)
@@ -58,7 +58,7 @@ y_i & = \beta_0 + \beta_1x_i + \epsilon_i \\
 $$
 $i$ is an index that goes from 1 to $n$ (the total number of observations). The equation is the same as before ($y = \beta_0 + \beta_1x$),
 but now we have added an error term $\epsilon$. This term is needed because the straight line cannot go through *all* the data points
-(unless you have a very questionable dataset!).
+(unless you have a very questionable dataset)!
 It represents the discrepancy between the model (the fitted straight line) and the observed data (grey points). $\epsilon$ is also
 known as the **noise** term. The reason is that in general our response variable has some uncertainty 
 associated with it (e.g counting the number of birds in an area, quantifying gene expression using microarrays or RNA-seq, etc.). 
@@ -73,9 +73,9 @@ Note that we do not make explicit assumptions about the **explanatory** variable
 
 The workflow in linear regression is as follows:
 
-1. Infer the model's parameters $\beta_0$ and $\beta_1$
-2. Check the model fit
-3. Interpret the practical significance of the estimated parameters
+1. Infer the model's parameters $\beta_0$ and $\beta_1$.
+2. Check the model fit.
+3. Interpret the practical significance of the estimated parameters.
 
 ## Doing it in R
 
@@ -117,9 +117,17 @@ This outputs two numbers, the `(Intercept)=` `r format(coef(fit)[1], digits=4)` 
 These are the $\beta_0$ and $\beta_1$ parameters. 
 
 The $\beta_0$ parameter (intercept) is not
+<<<<<<< HEAD
 very useful in this case, it basically tells us what's the expected height of someone that weighs 0 kg (`r format(coef(fit)[1], digits=4)` cm here).
 This is of course nonsense, but I'm highlighting it as a reminder that data-driven models only make sense close to the observed data, in general
 extrapolating is bad! 
+=======
+very useful in this case, it basically tells us what's the expected height of someone that weighs 0kg (`r format(coef(fit)[1], digits=4)`cm here).
+This is of course nonsense, but I'm highlighting it as a reminder that data-driven models only make sense where we have data, in general
+extrapolating is bad!
+
+[I disagree: extrapolating is not bad. Sometimes it is incredibly useful and sometimes it is the principal reason **why** we fit the model. It is however, dangerous. So It's not that it only makes sense where we have observed data, it's rather that we can only assess the assumptions of the model over the range of the observed data. When extrapolating we have to assume that these relationships hold beyond the range of the data, which may or may not be reasonable (hence why weather forecast over short-time periods are OK, but climate forecasts are much more uncertain). Hence the model is an approximation, that in this case is not sensible where $x = 0$, but we don't care about when $x = 0$, so it's probably OK for our purposes. If we did care then we'd have to change the model so that we assume some behaviour at other points in the range.]
+>>>>>>> 10bc3b1b4024c8607363a383c16a418711f4ef84
 
 The $\beta_1$ parameter (gradient) tells us about the 
 relationship between the outcome and explanatory variable. In this case, for every 1 kg increase in weight on *average* 
@@ -129,6 +137,8 @@ the height increases by `r format(coef(fit)[2], digits=4)` cm.
 the *units* of this parameter is actually `cm/kg` as it respresents a **gradient**. Recall that the equation for the
 mean line is $\mathrm{height} = \beta_0 + \beta_1\times\mathrm{weight}$. The units of $\beta_0$ are cm and in order
 for $\beta_1 \times \mathrm{weight}$ to return cm, $\beta_1$ needs to be cm/kg (i.e you have $\frac{\text{cm}}{\text{kg}}\text{kg}=\text{cm}$)
+
+[This gradient / units argument is a bit confusing. I'd remove the **note**, and just say that R calls the coefficient by the name of the variable for ease of understanding.]
 
 ### Using data frames
 
@@ -184,6 +194,8 @@ to be close to zero, the third quartile (3Q) to be roughly equal to -1Q (first q
     + **`t value`** and **`Pr(>|t|)`**
     
     Hypothesis testing on the parameter estimate being *statistically significantly* different from zero
+    
+[I just wonder here whether you should say that this performs a hypothesis test for the null hypothesis that the coefficient is zero. Whether it's statistically significant or not depends on what significance level you choose. This will always chuck out a p-value regardless of your pre-defined level of significance. (i.e. separate the test result from the interpretation of the test result).]
 
 * **Residual standard error**
 
@@ -211,7 +223,11 @@ $$
 \text{F-statistic} = \frac{\text{Regression (explained) variation}}{\text{Residual (unexplained) variation}}
 $$
 
+<<<<<<< HEAD
 The F-statistic tests whether the amount of variation explained by the regression is *statistically significant* compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data i.e the gradient is zero).
+=======
+The F-statistic can be used to assess [SEE COMMENT ABOVE] whether the amount of variation explained by the regression is *statistically significant* compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data).
+>>>>>>> 10bc3b1b4024c8607363a383c16a418711f4ef84
 
 $$
 \begin{aligned}
@@ -282,7 +298,7 @@ plot(fit, pch=19, col='darkgrey', which=5)
 * **Leverage**: a measure of how isolated individual points are in relation to other points
 * **Cook's Distance**: a measure of how influential a point is to the regression
 
-These measures help us identify potential outliers
+These measures help us identify potential outliers.
 
 ### QQ plots
 
@@ -310,7 +326,9 @@ with that of two control types. The first control consisted of two sets of indiv
 one or eight newly inseminated females. Newly inseminated females will not usually remate for at least two days, 
 and thus served as a control for any effect of competition with the male for food or space. The second control 
 was a set of individual males kept with no females. There were 25 males in each of the five groups, which 
-were treated identically in number of anaesthetizations (using $\mathrm{CO}_2$) and provision of fresh food medium.
+were treated identically in number of anaesthetisations (using $\mathrm{CO}_2$) and provision of fresh food medium.
+
+[No data link here, so I guess you haven't pushed to repo.]
 
 Download the data file from [here](https://exeter-data-analytics.github.io/StatModelling/_data/fruitfly.rds) and save it
 to your working directory.
@@ -338,9 +356,11 @@ the inseminated and virgin female cases are the treatment cases.
                        
 ```{task}
 
-1. Fit a linear model with lifespan as response variable and thorax length as explanatory variable
-2. Display a summary of the fit, together with the 97% confidence interval for the estimated parameters
-3. Show the diagnostic plots for the model
+1. Fit a linear model with lifespan as response variable and thorax length as explanatory variable.
+2. Display a summary of the fit, together with the 97% confidence interval for the estimated parameters.
+3. Show the diagnostic plots for the model.
+
+[Could you add here a first task to plot the data before fitting the linear model.]
 
 ```
 
