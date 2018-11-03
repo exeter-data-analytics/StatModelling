@@ -117,17 +117,11 @@ This outputs two numbers, the `(Intercept)=` `r format(coef(fit)[1], digits=4)` 
 These are the $\beta_0$ and $\beta_1$ parameters. 
 
 The $\beta_0$ parameter (intercept) is not
-<<<<<<< HEAD
-very useful in this case, it basically tells us what's the expected height of someone that weighs 0 kg (`r format(coef(fit)[1], digits=4)` cm here).
-This is of course nonsense, but I'm highlighting it as a reminder that data-driven models only make sense close to the observed data, in general
-extrapolating is bad! 
-=======
 very useful in this case, it basically tells us what's the expected height of someone that weighs 0kg (`r format(coef(fit)[1], digits=4)`cm here).
 This is of course nonsense, but I'm highlighting it as a reminder that data-driven models only make sense where we have data, in general
 extrapolating is bad!
 
 [I disagree: extrapolating is not bad. Sometimes it is incredibly useful and sometimes it is the principal reason **why** we fit the model. It is however, dangerous. So It's not that it only makes sense where we have observed data, it's rather that we can only assess the assumptions of the model over the range of the observed data. When extrapolating we have to assume that these relationships hold beyond the range of the data, which may or may not be reasonable (hence why weather forecast over short-time periods are OK, but climate forecasts are much more uncertain). Hence the model is an approximation, that in this case is not sensible where $x = 0$, but we don't care about when $x = 0$, so it's probably OK for our purposes. If we did care then we'd have to change the model so that we assume some behaviour at other points in the range.]
->>>>>>> 10bc3b1b4024c8607363a383c16a418711f4ef84
 
 The $\beta_1$ parameter (gradient) tells us about the 
 relationship between the outcome and explanatory variable. In this case, for every 1 kg increase in weight on *average* 
@@ -223,11 +217,7 @@ $$
 \text{F-statistic} = \frac{\text{Regression (explained) variation}}{\text{Residual (unexplained) variation}}
 $$
 
-<<<<<<< HEAD
-The F-statistic tests whether the amount of variation explained by the regression is *statistically significant* compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data i.e the gradient is zero).
-=======
 The F-statistic can be used to assess [SEE COMMENT ABOVE] whether the amount of variation explained by the regression is *statistically significant* compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data).
->>>>>>> 10bc3b1b4024c8607363a383c16a418711f4ef84
 
 $$
 \begin{aligned}
