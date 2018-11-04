@@ -1,4 +1,4 @@
 rmd_files:
-    html: ['index.Rmd', '01-intro.Rmd', '02-linear-models.Rmd', '03-generalised-linear-models.Rmd', '04-linear-mixed-models.Rmd']
-    latex: ['index.Rmd','01-intro.Rmd', '02-linear-models.Rmd', '03-generalised-linear-models.Rmd', '04-linear-mixed-models.Rmd', 'ch_appendix.Rmd']
+    html: ['index.Rmd', '01-intro.Rmd', '02-linear-models.Rmd']
+    latex: ['index.Rmd','01-intro.Rmd', '02-linear-models.Rmd', 'ch_appendix.Rmd']
 output_dir: '_site'
