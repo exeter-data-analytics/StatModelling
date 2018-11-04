@@ -362,7 +362,7 @@ par(mfrow=c(1, 1))
 
 ```
 
-## Prediction
+## Prediction {#sec:prediction}
 
 One of the key benefits of fitting a statistical model is that we can use it to produce predictions of the response variable for new values of the explanatory variable(s). We can do this using the `predict()` function in R. For example, in the fruitflies example above, we may want to produce estimates of average `longevity` for given values of `thorax`. To do this we must create a new `data.frame` object containing all the values of **explanatory** variables that we want to use for our prediction.
 
@@ -396,8 +396,7 @@ predict(fit, newdata, interval = "confidence", level = 0.97)
 The `predict()` function can be used as a very general way to produce plots of the fitted values over the observed data. For example, let's consider that we wish to add our fitted regression line to our observed data plot.
 
 ```{r}
-ggplot(ff, aes(x = thorax, y = longevity)) + 
-    geom_point()
+plot(longevity ~ thorax, data = ff, pch = 19, col='darkgrey')
 ```
 There are various ways to add the correct regression line to this plot, but we will show you a general way that can be used for lots of different types of models. Firstly, we generate a range of $x$-coordinates that we wish to predict to e.g.
 
@@ -419,10 +418,10 @@ Just as an illustration we will overlay these predictions onto the original scat
 
 ```{r}
 ## add predicted points to original plot
-ggplot(mapping = aes(x = thorax, y = longevity)) +
-    geom_point(data = ff) +
-    geom_point(data = newdata, colour = "red")
+plot(longevity ~ thorax, data = ff, pch = 19, col='darkgrey')
+points(longevity ~ thorax, data = newdata, pch = 19, col = "red")
 ```
+
 So we have used the `predict()` function to produce predicted coordinates that we can overlay on the original scatterplot. In practice we would usually plot these predictions as a **line** rather than points. This approach is particularly useful if the predictions that we wish to plot are not straight lines (such as when we generate **confidence** or **prediction** intervals). To complete this example we will now plot the fitted line and associated confidence interval as follows:
 
 ```{r}
@@ -432,15 +431,16 @@ newdata <- data.frame(
 )
 
 ## produce predictions and intervals
-newdata <- cbind(newdata, predict(fit, newdata, interval = "confidence", level = 0.97)) %>%
-    rename(longevity = fit)
+newdata <- cbind(newdata, predict(fit, newdata, interval = "confidence", level = 0.97))
+newdata$longevity <- newdata$fit
+newdata$fit <- NULL
 
-## plot fitted  line against the raw data
-ggplot(mapping = aes(x = thorax, y = longevity)) +
-    geom_point(data = ff) +
-    geom_line(data = newdata) +
-    geom_ribbon(aes(ymin = lwr, ymax = upr), data = newdata, alpha = 0.5) +
-    ggtitle("Fitted regression line with 97% confidence interval")
+## plot fitted line against the raw data
+plot(longevity ~ thorax, data = ff, pch = 19, col='darkgrey',
+     main = "Fitted regression line with 97% confidence interval")
+lines(longevity ~ thorax, data = newdata)
+lines(lwr ~ thorax, data = newdata, lty = 2)
+lines(upr ~ thorax, data = newdata, lty = 2)
 ```
 
 ```{task}
@@ -456,15 +456,16 @@ newdata <- data.frame(
 )
 
 ## produce predictions and intervals
-newdata <- cbind(newdata, predict(fit, newdata, interval = "prediction", level = 0.97)) %>%
-    rename(longevity = fit)
+newdata <- cbind(newdata, predict(fit, newdata, interval = "prediction", level = 0.97))
+newdata$longevity <- newdata$fit
+newdata$fit <- NULL
 
-## plot fitted  line against the raw data
-ggplot(mapping = aes(x = thorax, y = longevity)) +
-    geom_point(data = ff) +
-    geom_line(data = newdata) +
-    geom_ribbon(aes(ymin = lwr, ymax = upr), data = newdata, alpha = 0.5) +
-    ggtitle("Fitted regression line with 97% prediction interval")
+## plot fitted line against the raw data
+plot(longevity ~ thorax, data = ff, pch = 19, col='darkgrey',
+     main = "Fitted regression line with 97% prediction interval")
+lines(longevity ~ thorax, data = newdata)
+lines(lwr ~ thorax, data = newdata, lty = 2)
+lines(upr ~ thorax, data = newdata, lty = 2)
 ``
 
 ```
@@ -679,7 +680,13 @@ summary(fit)
 If we colour the data by sex it becomes obvious that this extra variation is due to sex.
 
 ```{r, fig.height=6, fig.width=6}
-print(ggplot(df, aes(x=weight, y=height, col=sex)) + geom_point())
+plot(height ~ weight, data = df, pch = 19)
+points(height ~ weight, pch = 19, data = df[df$sex == "Female", ], col = "green")
+points(height ~ weight, pch = 19, data = df[df$sex == "Male", ], col = "blue")
+legend(par("usr")[1] * 1.1, par("usr")[4] * 0.9,
+       legend = c("Female", "Male"),
+       pch = c(19, 19),
+       col = c("green", "blue"))
 ```
 
 `sex` is an important covariate and should therefore be
@@ -753,9 +760,62 @@ the *difference* in intercept between males and females (remember that the gradi
 is the same for both sexes). Thus for the *same* weight, 
 men on average will be `sexMale`=`r format(coef(fit)[1], digits=3)` cm taller than females.
 
+To plot the fitted lines, we can use a similar trick using `predict()` as [before](#sec:prediction). This time we need to produce predictions using all relevant combinations of explanatory variables: `weight` and `sex` in this case. A useful function to do this is `expand.grid()`:
+
 ```{r, fig.height=6, fig.width=6}
-print(ggplot(df, aes(x=weight, y=height, col=sex)) + 
-          geom_point() + geom_smooth(method='lm', se=FALSE))
+## create dataset to predict to
+newdata <- expand.grid(
+    weight = seq(min(df$weight), max(df$weight), length.out = 50),
+    sex = c("Female", "Male"))
+
+## generate predictions
+newdata <- cbind(newdata, height = predict(fit, newdata))
+
+## plot fitted lines against the data
+plot(height ~ weight, data = df, pch = 19)
+points(height ~ weight, pch = 19, data = df[df$sex == "Female", ], col = "green")
+points(height ~ weight, pch = 19, data = df[df$sex == "Male", ], col = "blue")
+lines(height ~ weight, data = newdata[newdata$sex == "Female", ], col = "green")
+lines(height ~ weight, data = newdata[newdata$sex == "Male", ], col = "blue")
+legend(par("usr")[1] * 1.1, par("usr")[4] * 0.9,
+       legend = c("Female", "Male"),
+       pch = c(19, 19),
+       col = c("green", "blue"))
+```
+
+```{task}
+Add 97% confidence intervals to the fitted lines plots above.
+```
+
+```{solution}
+
+``{r, fig.height=6, fig.width=6}
+## create dataset to predict to
+newdata <- expand.grid(
+    weight = seq(min(df$weight), max(df$weight), length.out = 50),
+    sex = c("Female", "Male"))
+
+## generate predictions
+newdata <- cbind(newdata, predict(fit, newdata, interval = "confidence", level = 0.97))
+newdata$height <- newdata$fit
+newdata$fit <- NULL
+
+## plot fitted lines against the data
+plot(height ~ weight, data = df, pch = 19)
+points(height ~ weight, pch = 19, data = df[df$sex == "Female", ], col = "green")
+points(height ~ weight, pch = 19, data = df[df$sex == "Male", ], col = "blue")
+lines(height ~ weight, data = newdata[newdata$sex == "Female", ], col = "green")
+lines(height ~ weight, data = newdata[newdata$sex == "Male", ], col = "blue")
+lines(height ~ lwr, data = newdata[newdata$sex == "Female", ], col = "green", lty = 2)
+lines(height ~ lwr, data = newdata[newdata$sex == "Male", ], col = "blue", lty = 2)
+lines(height ~ upr, data = newdata[newdata$sex == "Female", ], col = "green", lty = 2)
+lines(height ~ upr, data = newdata[newdata$sex == "Male", ], col = "blue", lty = 2)
+legend(par("usr")[1] * 1.1, par("usr")[4] * 0.9,
+       legend = c("Female", "Male"),
+       pch = c(19, 19),
+       col = c("green", "blue"))
+``
+
 ```
 
 ```{task}
@@ -822,8 +882,15 @@ We will use the fruitfly dataset ([Partridge and Farquhar (1981)](https://www.na
 fit <- lm(longevity ~ type + thorax, ff)
 summary(fit)
 confint(fit, level=0.97)
-print(ggplot(ff, aes(x=thorax, y=longevity, col=type)) + 
-          geom_point() + geom_smooth(method='lm', se=FALSE))
+newdata <- expand.grid(
+    thorax = seq(min(ff$thorax), max(ff$thorax), length.out = 50),
+    type = levels(ff$type)
+)
+newdata <- cbind(newdata, longevity = predict(fit, newdata))
+plot(longevity ~ thorax, data = ff, pch = 19, col = as.numeric(ff$type))
+for(i in 1:3){
+    lines(longevity ~ thorax, data = newdata[newdata$type == levels(ff$type)[i], ], col = i)
+}
 par(mfrow=c(2, 2))
 plot(fit, pch=19, col='darkgrey')
 par(mfrow=c(1, 1))
@@ -902,7 +969,7 @@ $$
 
 The **intercept** for these three regression lines is therefore:
 
-* **Cotrol**: $\beta_0$ = `intercept`=`r format(coef(fit)[1], digits=3)` days
+* **Control**: $\beta_0$ = `intercept`=`r format(coef(fit)[1], digits=3)` days
 * **Inseminated**: $\beta_0 + \beta_1$ = `intercept` + `typeInesminated` = `r format(coef(fit)[1], digits=3)` + `r format(coef(fit)[2], digits=3)` = `r format(coef(fit)[1]+coef(fit)[2], digits=3)` days
 * **Virgin**: $\beta_0 + \beta_2$ = `intercept` + `typeVirgin` = `r format(coef(fit)[1], digits=3)` + `r format(coef(fit)[3], digits=3)` = `r format(coef(fit)[1]+coef(fit)[3], digits=3)` days
     
