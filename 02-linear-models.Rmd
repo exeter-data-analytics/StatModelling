@@ -28,7 +28,7 @@ y = \beta_0 + \beta_1x
 \end{aligned}
 $$
 
-```{r, echo=FALSE, fig.height=6, fig.width=6}
+```{r, echo=FALSE, fig.height=6, fig.width=6, out.width = "60%"}
 set.seed(1201)
 N <- 50
 x <- runif(N, min=0, max=10)
@@ -82,7 +82,7 @@ The workflow in linear regression is as follows:
 Luckily for us, we do not need to worry about the mathematical intricacies of estimating the model's parameters, 
 R will do it for us. Let's generate some fake data just to get things started.
 
-```{r, fig.height=6, fig.width=6}
+```{r, fig.height=6, fig.width=6, out.width = "60%"}
 set.seed(1453)
 N <- 100 # no. of observations
 weight <- runif(n=N, min=60, max=100) # hypothetical weights in kg
@@ -101,7 +101,7 @@ $$
 Let's call the R function, plot the model fit and print the output.
 
 
-```{r, fig.height=6, fig.width=6}
+```{r, fig.height=6, fig.width=6, out.width = "60%"}
 # Linear model fit
 fit <- lm(height ~ weight)
 
@@ -153,15 +153,17 @@ That's a lot of information, let's unpick it line by line:
 
 * **Call**
 
-This just states the arguments that were passed to the `lm()` function. Remember it's `response ~ explanatory`
+    This just states the arguments that were passed to the `lm()` function. Remember it's `response ~ explanatory`.
+
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
 
 * **Residuals**
 
-Some basic stats about the residuals (i.e the differences between the model fit and the observed data points).
-It is easier to plot a histogram of the residuals (shown in the next section), but these basic stats
-can already give us an indication of whether we have a symmetric distribution with zero mean (i.e we want the median
-to be close to zero, the third quartile (3Q) to be roughly equal to -1Q (first quartile) and the max to be approximately
--min)
+    Some basic stats about the residuals (i.e the differences between the model fit and the observed data points).
+    It is easier to plot a histogram of the residuals (shown in the next section), but these basic stats
+    can already give us an indication of whether we have a symmetric distribution with zero mean (i.e we want the median
+    to be close to zero, the third quartile (3Q) to be roughly equal to -1Q (first quartile) and the max to be approximately
+    -min).
 
 * **Coefficients**
     + **`Estimate`**
@@ -185,38 +187,38 @@ to be close to zero, the third quartile (3Q) to be roughly equal to -1Q (first q
 
 * **Residual standard error**
 
-The square root of residual sum of squares/degress of freedom
-```{r}
-# Residual standard error
-sqrt(sum(residuals(fit)^2) / fit$df.residual) 
-```
+    The square root of residual sum of squares/degress of freedom
+    ```{r}
+    # Residual standard error
+    sqrt(sum(residuals(fit)^2) / fit$df.residual) 
+    ```
 
 * **Multiple R-squared**
 
-Total variation = **Regression** (explained) variation + **Residual** (unexplained) variation
-
-The $R^2$ statistic (also known as the **coefficient of determination**) is the proportion
-of the total variation that is explained by the regression. In regression with a single
-explanatory variable, this is the same as the Pearson correlation coefficient squared:
-
-```{r}
-cor(height, weight)^2
-```
+    Total variation = **Regression** (explained) variation + **Residual** (unexplained) variation
+    
+    The $R^2$ statistic (also known as the **coefficient of determination**) is the proportion
+    of the total variation that is explained by the regression. In regression with a single
+    explanatory variable, this is the same as the Pearson correlation coefficient squared:
+    
+    ```{r}
+    cor(height, weight)^2
+    ```
 
 * **F-statistic**
 
-$$
-\text{F-statistic} = \frac{\text{Regression (explained) variation}}{\text{Residual (unexplained) variation}}
-$$
-
-The F-statistic can be used to assess whether the amount of variation explained by the regression is *statistically significantly* different compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data). Large values of the F-statistic correspond to cases where the model fit is better for the more complex model compared to the null model. This test can be used to generate a p-value to assess whether the model fit is staitically significantly better given a pre-defined level of significance.
-
-$$
-\begin{aligned}
-M_0:~~~~~y_i &= \beta_0 + \epsilon_i\\  
-M_1:~~~~~y_i &= \beta_0 + \beta_1 W_i + \epsilon_i
-\end{aligned}
-$$
+    $$
+    \text{F-statistic} = \frac{\text{Regression (explained) variation}}{\text{Residual (unexplained) variation}}
+    $$
+    
+    The F-statistic can be used to assess whether the amount of variation explained by the regression is *statistically significantly* different compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data). Large values of the F-statistic correspond to cases where the model fit is better for the more complex model compared to the null model. This test can be used to generate a p-value to assess whether the model fit is staitically significantly better given a pre-defined level of significance.
+    
+    $$
+    \begin{aligned}
+    M_0:~~~~~y_i &= \beta_0 + \epsilon_i\\  
+    M_1:~~~~~y_i &= \beta_0 + \beta_1 W_i + \epsilon_i
+    \end{aligned}
+    $$
 
 ## Model checking
 
@@ -250,7 +252,7 @@ par(mfrow=c(1, 1))
 
 ### Residuals vs fitted values
 
-```{r fig.height=5, fig.width=5}
+```{r }
 plot(fit, pch=19, col='darkgrey', which=1)
 ```
 
@@ -259,21 +261,23 @@ and that there are no systematic patterns in the residuals.
 
 A couple of example where this assumption is violated.
 
-```{r, echo=FALSE, out.width="600px"}
+```{r, echo=FALSE, out.width="90%"}
 knitr::include_graphics(file.path(IMG, "02-funnel.png"))
 ```
 
 ### Residuals vs fitted values (scale-location)
 
-```{r fig.height=5, fig.width=5}
+```{r }
 plot(fit, pch=19, col='darkgrey', which=3)
 ```
 
 This is similar to the first plot but on a different scale.
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
 ### Residuals vs. leverage
 
-```{r fig.height=5, fig.width=5}
+```{r }
 plot(fit, pch=19, col='darkgrey', which=5)
 ```
 
@@ -282,9 +286,11 @@ plot(fit, pch=19, col='darkgrey', which=5)
 
 These measures help us identify potential outliers.
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
 ### QQ plots
 
-```{r fig.height=5, fig.width=5}
+```{r }
 plot(fit, pch=19, col='darkgrey', which=2)
 ```
 
@@ -345,13 +351,13 @@ the inseminated and virgin female cases are the treatment cases.
 
 ```{solution}
 
-``{r, fig.height=6, fig.width=6}
+``{r, fig.height=6, fig.width=6, out.width = "60%"}
 plot(longevity ~ thorax, data = ff, pch=19, col='darkgrey')
 ``
 
 The plot suggests that a linear relationship might exist between the two variables. So we can proceed by fitting a linear model in R.
 
-``{r, fig.height=6, fig.width=6}
+``{r, fig.height=6, fig.width=6, out.width = "60%"}
 fit <- lm(longevity ~ thorax, ff)
 summary(fit)
 confint(fit, level=0.97)
@@ -386,18 +392,19 @@ predict(fit, newdata, interval = "confidence", level = 0.97)
 
 > **Note**: If you predict *without* an `interval` argument, the `predict()` function returns a `vector`, otherwise it returns a `matrix`.
 
-> **Aside**: there are two types of interval that you might want to produce: **confidence** intervals or **prediction** intervals.
-> 
-> * **Confidence** intervals: these correspond to the uncertainty surrounding our estimate of an **average** individual (i.e. it represents the uncertainty in the **mean**: $y = \beta_0 + \beta_1 x$
-> * **Prediction** intervals: these correspond to the uncertainty surrounding an **individual** observation: $y_i = \beta_0 + \beta_1 x_i + \epsilon_i$.
-> 
-> If the model fits well, then we would expect $100(1 - \alpha)$% of the individual measurements to lie within the **prediction** interval, where $\alpha$ is the significance level (so $alpha = 0.05$ corresponds to a 95% confidence interval).
+**Aside**: there are two types of interval that you might want to produce: **confidence** or **prediction** intervals.
+
+* **Confidence** intervals: these correspond to the uncertainty surrounding our estimate of an **average** individual (i.e. it represents the uncertainty in the **mean**: $y = \beta_0 + \beta_1 x$
+* **Prediction** intervals: these correspond to the uncertainty surrounding an **individual** observation: $y_i = \beta_0 + \beta_1 x_i + \epsilon_i$.
+
+If the model fits well, then we would expect $100(1 - \alpha)$% of the individual measurements to lie within the **prediction** interval, where $\alpha$ is the significance level (so $\alpha = 0.05$ corresponds to a 95% confidence interval).
 
 The `predict()` function can be used as a very general way to produce plots of the fitted values over the observed data. For example, let's consider that we wish to add our fitted regression line to our observed data plot.
 
 ```{r}
 plot(longevity ~ thorax, data = ff, pch = 19, col='darkgrey')
 ```
+
 There are various ways to add the correct regression line to this plot, but we will show you a general way that can be used for lots of different types of models. Firstly, we generate a range of $x$-coordinates that we wish to predict to e.g.
 
 ```{r}
@@ -496,7 +503,7 @@ $$
 
 Let us make up some data again and plot it.
  
-```{r, fig.height=6, fig.width=6}
+```{r, fig.height=6, fig.width=6, out.width = "60%"}
 set.seed(451)
 N <- 100 # no. of observations
 weight <- runif(n=N, min=60, max=100) # hypothetical weights in kg
@@ -529,11 +536,13 @@ fit <- lm(height ~ weight + heightParents, df)
 
 Let us plot the resultant model first (i.e the hyperplane).
 
-```{r, fig.height=6, fig.width=6}
+```{r, fig.height=6, fig.width=6, out.width = "60%"}
 hFig <- scatterplot3d(weight, heightParents, height, pch=19, xlab='Weight (kg)', 
                       ylab='Height of Parents (cm)', zlab='Height (cm)', color='grey')
 hFig$plane3d(fit, draw_polygon=TRUE)
 ```
+
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
 
 Let us look at the fit's summary
 
@@ -544,15 +553,15 @@ summary(fit)
 Same as before, the `(Intercept)=` `r format(coef(fit)[1], digits=4)` cm, `weight=` `r format(coef(fit)[2], digits=4)` cm/kg and `heightParents=` `r format(coef(fit)[3], digits=4)` cm/cm
 are the $\beta_0$, $\beta_1$ and $\beta_2$ parameters. 
 
-The $\beta_0$ parameter (intercept) is the expected height of someone that weighs 0kg *and* whose parents have a mean height of 0 cm. Again, this parameter is not useful in this case.
-
-The $\beta_1$ parameter tells us about the 
+* The $\beta_0$ parameter (intercept) is the expected height of someone that weighs 0kg *and* whose parents have a mean height of 0 cm. Again, this parameter is not useful in this case.
+* The $\beta_1$ parameter tells us about the 
 relationship between `height` and `weight`. For every 1 kg increase in weight on *average* 
 the height increases by `r format(coef(fit)[2], digits=4)` cm.
-
-The $\beta_2$ parameter tells us about the 
+* The $\beta_2$ parameter tells us about the 
 relationship between `height` and `heightParents`. For every 1 cm increase in mean height of parents on *average* 
 the person's height increases by `r format(coef(fit)[3], digits=4)` cm.
+
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
 
 As before we look at the model diagnostic plots to check the model fit.
 
@@ -594,7 +603,7 @@ We will use the fruitfly dataset ([Partridge and Farquhar (1981)](https://www.na
 
 ```{solution}
 
-``{r, fig.height=6, fig.width=6}
+``{r, fig.height=6, fig.width=6, out.width = "60%"}
 fit <- lm(longevity ~ thorax + sleep, ff)
 summary(fit)
 confint(fit, level=0.97)
@@ -637,6 +646,8 @@ the same as the previous model which only contained `thorax`, suggesting that `s
 
 ```
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
 ## Categorical explanatory variables
 
 So far we have only considered **continuous** explanatory variables. How
@@ -644,7 +655,7 @@ do we include **categorical** explanatory variables? Let's go back
 to our `height` vs `weight` toy example and consider
 `sex` as an additional categorical variable. Let us simulate some data.
 
-```{r, fig.height=6, fig.width=6}
+```{r, fig.height=6, fig.width=6, out.width = "60%"}
 set.seed(101)
 N <- 50 # no. of observations
 weightMale <- runif(n=N, min=60, max=100) # hypothetical weights in kg
@@ -665,7 +676,7 @@ plot(height ~ weight, data=df, pch=19, xlab='Weight (kg)', ylab='Height (cm)', c
 Data looks similar as before, albeit with a larger variation. We can fit a model as we have done
 before and assess the relationship between `height` and `weight`.
 
-```{r, fig.height=6, fig.width=6}
+```{r, fig.height=6, fig.width=6, out.width = "60%"}
 # Linear model fit
 fit <- lm(height ~ weight, data=df)
 
@@ -679,7 +690,7 @@ summary(fit)
 
 If we colour the data by sex it becomes obvious that this extra variation is due to sex.
 
-```{r, fig.height=6, fig.width=6}
+```{r, fig.height=6, fig.width=6, out.width = "60%"}
 plot(height ~ weight, data = df, pch = 19)
 points(height ~ weight, pch = 19, data = df[df$sex == "Female", ], col = "green")
 points(height ~ weight, pch = 19, data = df[df$sex == "Male", ], col = "blue")
@@ -731,6 +742,8 @@ $$
 \end{aligned}
 $$
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
 * **Male** (`sex=1`)
 
 $$
@@ -747,7 +760,7 @@ lines, where the **intercept** is:
 
 Whilst the **gradient** is $\beta_2$ in both cases.
 
-```{r, fig.height=6, fig.width=6}
+```{r, fig.height=6, fig.width=6, out.width = "60%"}
 # Linear model fit
 fit <- lm(height ~ sex + weight, data=df)
 
@@ -762,7 +775,7 @@ men on average will be `sexMale`=`r format(coef(fit)[1], digits=3)` cm taller th
 
 To plot the fitted lines, we can use a similar trick using `predict()` as [before](#sec:prediction). This time we need to produce predictions using all relevant combinations of explanatory variables: `weight` and `sex` in this case. A useful function to do this is `expand.grid()`:
 
-```{r, fig.height=6, fig.width=6}
+```{r, fig.height=6, fig.width=6, out.width = "60%"}
 ## create dataset to predict to
 newdata <- expand.grid(
     weight = seq(min(df$weight), max(df$weight), length.out = 50),
@@ -789,7 +802,7 @@ Add 97% confidence intervals to the fitted lines plots above.
 
 ```{solution}
 
-``{r, fig.height=6, fig.width=6}
+``{r, fig.height=6, fig.width=6, out.width = "60%"}
 ## create dataset to predict to
 newdata <- expand.grid(
     weight = seq(min(df$weight), max(df$weight), length.out = 50),
@@ -850,7 +863,7 @@ We can change this by re-ordering the levels if we wanted to.
 df$sex <- factor(df$sex, levels = c('Male', 'Female'))
 ```
 
-```{r, fig.height=6, fig.width=6}
+```{r, fig.height=6, fig.width=6, out.width = "60%"}
 # Linear model fit
 fit <- lm(height ~ sex + weight, data=df)
 
@@ -878,7 +891,7 @@ We will use the fruitfly dataset ([Partridge and Farquhar (1981)](https://www.na
 
 ```{solution}
 
-``{r, fig.height=6, fig.width=6}
+``{r, fig.height=6, fig.width=6, out.width = "60%"}
 fit <- lm(longevity ~ type + thorax, ff)
 summary(fit)
 confint(fit, level=0.97)
