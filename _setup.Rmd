@@ -74,4 +74,35 @@ knit_engines$set(solution = function(options) {
         return(out)
     }
 })
+
+## custom engine for tabbed box
+knit_engines$set(dupBox = function(options) {
+    ## split code
+    code <- grep("####", options$code)
+    if(length(code) != 1){
+        stop(paste("Can't split chunk", options$label, "into two equal parts"))
+    }
+    code <- list(options$code[1:(code - 1)], options$code[(code + 1):length(options$code)])
+    out <- lapply(code, function(x){
+        gsub("``", "```", x)
+    })
+    tempTidy <- options$tidy
+    tempTidyOpts <- options$tidy.opts
+    out <- lapply(out, function(x) {
+        if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
+            return(knit_child(text = x))
+        } else {
+            opts_chunk$set(tidy = T, tidy.opts = list(width.cutoff = 20))
+            x <- knit_child(text = x)
+            return(x)
+        }
+    })
+    opts_chunk$set(tidy = tempTidy, tidy.opts = tempTidyOpts)
+    if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
+        out <- paste0("<div class=\"tab\"><button class=\"tablinks active\" onclick=\"javascript:openCode(event, 'baseR", options$label, "');\">Base R</button><button class=\"tablinks\" onclick=\"javascript:openCode(event, 'tidyverse", options$label, "');\"><tt>tidyverse</tt></button></div><div id=\"baseR", options$label, "\" class=\"tabcontent\">", out[[1]], "</div><div id=\"tidyverse", options$label, "\" class=\"tabcontent\">", out[[2]], "</div><script> javascript:hide('tidyverse", options$label, "') </script>")
+    } else {
+        out <- paste0("\\bmp\n\\bblockST{Base R}\n", out[[1]], "\n\\eblockST\n\\emp\n\\hspace{0.01\\textwidth}\n\\bmp\\bblockST{\\texttt{tidyverse}}\n", out[[2]], "\n\\eblockST\n\\emp\n")
+    }
+    return(out)
+})
 ```
