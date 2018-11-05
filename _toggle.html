@@ -13,13 +13,13 @@
 </script>
 
 <script language="javascript">
-    function openCode(evt, codeName) {
+    function openCode(evt, codeName, id) {
         var i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tabcontent");
+        tabcontent = document.getElementsByClassName("tabcontent" + id);
         for (i = 0; i < tabcontent.length; i++) {
             tabcontent[i].style.display = "none";
         }
-        tablinks = document.getElementsByClassName("tablinks");
+        tablinks = document.getElementsByClassName("tablinks" + id);
         for (i = 0; i < tablinks.length; i++) {
             tablinks[i].className = tablinks[i].className.replace(" active", "");
         }

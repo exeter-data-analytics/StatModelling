@@ -62,7 +62,7 @@ knit_engines$set(solution = function(options) {
         })
         opts_chunk$set(tidy = tempTidy, tidy.opts = tempTidyOpts)
         if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
-            out <- paste0("<div class=\"tab\"><button class=\"tablinks active\" onclick=\"javascript:openCode(event, 'baseR", options$label, "');\">Base R</button><button class=\"tablinks\" onclick=\"javascript:openCode(event, 'tidyverse", options$label, "');\"><tt>tidyverse</tt></button></div><div id=\"baseR", options$label, "\" class=\"tabcontent\">", out[[1]], "</div><div id=\"tidyverse", options$label, "\" class=\"tabcontent\">", out[[2]], "</div><script> javascript:hide('tidyverse", options$label, "') </script>")
+            out <- paste0("<div class=\"tab\"><button class=\"tablinks", options$label, " active\" onclick=\"javascript:openCode(event, 'baseR", options$label, "', '", options$label, "');\">Base R</button><button class=\"tablinks", options$label, "\" onclick=\"javascript:openCode(event, 'tidyverse", options$label, "', '", options$label, "');\"><tt>tidyverse</tt></button></div><div id=\"baseR", options$label, "\" class=\"tabcontent", options$label, "\">", out[[1]], "</div><div id=\"tidyverse", options$label, "\" class=\"tabcontent", options$label, "\">", out[[2]], "</div><script> javascript:hide('tidyverse", options$label, "') </script>")
             out <- paste0("<button id=\"displayText", options$label, "\" onclick=\"javascript:toggle('", options$label, "');\">Show Solution</button>\n\n<div id=\"toggleText", options$label, "\" style=\"display: none\"><div class=\"panel panel-default\"><div class=\"panel-heading panel-heading1\"> Solution </div><div class=\"panel-body\">", out, "</div></div></div>\n")
             return(out)
         } else {
@@ -99,7 +99,7 @@ knit_engines$set(dupCode = function(options) {
     })
     opts_chunk$set(tidy = tempTidy, tidy.opts = tempTidyOpts)
     if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
-        out <- paste0("<div class=\"tab\"><button class=\"tablinks active\" onclick=\"javascript:openCode(event, 'baseR", options$label, "');\">Base R</button><button class=\"tablinks\" onclick=\"javascript:openCode(event, 'tidyverse", options$label, "');\"><tt>tidyverse</tt></button></div><div id=\"baseR", options$label, "\" class=\"tabcontent\">", out[[1]], "</div><div id=\"tidyverse", options$label, "\" class=\"tabcontent\">", out[[2]], "</div><script> javascript:hide('tidyverse", options$label, "') </script>")
+        out <- paste0("<div class=\"tab\"><button class=\"tablinks", options$label, " active\" onclick=\"javascript:openCode(event, 'baseR", options$label, "', '", options$label, "');\">Base R</button><button class=\"tablinks", options$label, "\" onclick=\"javascript:openCode(event, 'tidyverse", options$label, "', '", options$label, "');\"><tt>tidyverse</tt></button></div><div id=\"baseR", options$label, "\" class=\"tabcontent", options$label, "\">", out[[1]], "</div><div id=\"tidyverse", options$label, "\" class=\"tabcontent", options$label, "\">", out[[2]], "</div><script> javascript:hide('tidyverse", options$label, "') </script>")
     } else {
         out <- paste0("\\bmp\n\\bblockST{Base R}\n", out[[1]], "\n\\eblockST\n\\emp\n\\hspace{0.01\\textwidth}\n\\bmp\\bblockST{\\texttt{tidyverse}}\n", out[[2]], "\n\\eblockST\n\\emp\n")
     }
