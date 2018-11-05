@@ -335,12 +335,7 @@ the inseminated and virgin female cases are the treatment cases.
 * **sleep**: percentage of each day spent sleeping
                        
 ```{task}
-
-1. Produce a scatterplot of `longevity` against `thorax`. What does the relationship look like?
-2. Fit a linear model with lifespan as response variable and thorax length as explanatory variable.
-3. Display a summary of the fit, together with the 97% confidence interval for the estimated parameters.
-4. Show the diagnostic plots for the model.
-
+Produce a scatterplot of `longevity` against `thorax`. What does the relationship look like?
 ```
 
 ```{solution, dupCode = T, cache = F}
@@ -349,6 +344,8 @@ the inseminated and virgin female cases are the treatment cases.
 plot(longevity ~ thorax, data = ff, pch=19, col='darkgrey')
 ``
 
+The plot suggests that a linear relationship might exist between the two variables. So we can proceed by fitting a linear model in R.
+
 ####
 
 ``{r, fig.height=6, fig.width=6}
@@ -356,26 +353,30 @@ ggplot(ff) +
     geom_point(aes(x = thorax, y = longevity))
 ``
 
+The plot suggests that a linear relationship might exist between the two variables. So we can proceed by fitting a linear model in R.
+
+```
+            
+```{task}
+
+1. Fit a linear model with lifespan as response variable and thorax length as explanatory variable.
+2. Display a summary of the fit, together with the 97% confidence interval for the estimated parameters.
+3. Show the diagnostic plots for the model.
+
 ```
 
-<!-- ```{solution} -->
+```{solution}
 
-<!-- ``{r, fig.height=6, fig.width=6} -->
-<!-- plot(longevity ~ thorax, data = ff, pch=19, col='darkgrey') -->
-<!-- `` -->
+``{r, fig.height=6, fig.width=6}
+fit <- lm(longevity ~ thorax, ff)
+summary(fit)
+confint(fit, level=0.97)
+par(mfrow=c(2, 2))
+plot(fit, pch=19, col='darkgrey')
+par(mfrow=c(1, 1))
+``
 
-<!-- The plot suggests that a linear relationship might exist between the two variables. So we can proceed by fitting a linear model in R. -->
-
-<!-- ``{r, fig.height=6, fig.width=6} -->
-<!-- fit <- lm(longevity ~ thorax, ff) -->
-<!-- summary(fit) -->
-<!-- confint(fit, level=0.97) -->
-<!-- par(mfrow=c(2, 2)) -->
-<!-- plot(fit, pch=19, col='darkgrey') -->
-<!-- par(mfrow=c(1, 1)) -->
-<!-- `` -->
-
-<!-- ``` -->
+```
 
 ## Prediction {#sec:prediction}
 
