@@ -49,18 +49,18 @@ knit_engines$set(solution = function(options) {
         out <- lapply(code, function(x){
             gsub("``", "```", x)
         })
-        tempTidy <- options$tidy
-        tempTidyOpts <- options$tidy.opts
+        # tempTidy <- options$tidy
+        # tempTidyOpts <- options$tidy.opts
         out <- lapply(out, function(x) {
             if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
                 return(knit_child(text = x))
             } else {
-                opts_chunk$set(tidy = T, tidy.opts = list(width.cutoff = 20))
+                # opts_chunk$set(tidy = T, tidy.opts = list(width.cutoff = 20))
                 x <- knit_child(text = x)
                 return(x)
             }
         })
-        opts_chunk$set(tidy = tempTidy, tidy.opts = tempTidyOpts)
+        # opts_chunk$set(tidy = tempTidy, tidy.opts = tempTidyOpts)
         if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
             out <- paste0("<div class=\"tab\"><button class=\"tablinks", options$label, " active\" onclick=\"javascript:openCode(event, 'baseR", options$label, "', '", options$label, "');\">Base R</button><button class=\"tablinks", options$label, "\" onclick=\"javascript:openCode(event, 'tidyverse", options$label, "', '", options$label, "');\"><tt>tidyverse</tt></button></div><div id=\"baseR", options$label, "\" class=\"tabcontent", options$label, "\">", out[[1]], "</div><div id=\"tidyverse", options$label, "\" class=\"tabcontent", options$label, "\">", out[[2]], "</div><script> javascript:hide('tidyverse", options$label, "') </script>")
             out <- paste0("<button id=\"displayText", options$label, "\" onclick=\"javascript:toggle('", options$label, "');\">Show Solution</button>\n\n<div id=\"toggleText", options$label, "\" style=\"display: none\"><div class=\"panel panel-default\"><div class=\"panel-heading panel-heading1\"> Solution </div><div class=\"panel-body\">", out, "</div></div></div>\n")
@@ -86,18 +86,18 @@ knit_engines$set(multCode = function(options) {
     out <- lapply(code, function(x){
         gsub("``", "```", x)
     })
-    tempTidy <- options$tidy
-    tempTidyOpts <- options$tidy.opts
+    # tempTidy <- options$tidy
+    # tempTidyOpts <- options$tidy.opts
     out <- lapply(out, function(x) {
         if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
             return(knit_child(text = x))
         } else {
-            opts_chunk$set(tidy = T, tidy.opts = list(width.cutoff = 20))
+            # opts_chunk$set(tidy = T, tidy.opts = list(width.cutoff = 20))
             x <- knit_child(text = x)
             return(x)
         }
     })
-    opts_chunk$set(tidy = tempTidy, tidy.opts = tempTidyOpts)
+    # opts_chunk$set(tidy = tempTidy, tidy.opts = tempTidyOpts)
     if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
         out <- paste0("<div class=\"tab\"><button class=\"tablinks", options$label, " active\" onclick=\"javascript:openCode(event, 'baseR", options$label, "', '", options$label, "');\">Base R</button><button class=\"tablinks", options$label, "\" onclick=\"javascript:openCode(event, 'tidyverse", options$label, "', '", options$label, "');\"><tt>tidyverse</tt></button></div><div id=\"baseR", options$label, "\" class=\"tabcontent", options$label, "\">", out[[1]], "</div><div id=\"tidyverse", options$label, "\" class=\"tabcontent", options$label, "\">", out[[2]], "</div><script> javascript:hide('tidyverse", options$label, "') </script>")
     } else {
