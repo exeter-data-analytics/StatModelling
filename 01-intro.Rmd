@@ -9,7 +9,7 @@ IMG <- "_img" # image path
 Scientists acquire knolwedge about the state of nature (the real-world) by collecting data.
 For example:
 
-```{r, echo=FALSE, out.width="600px"}
+```{r, echo=FALSE, out.width="70%"}
 knitr::include_graphics(file.path(IMG, "01-data.png"))
 ```
 
@@ -38,12 +38,12 @@ Models are built for various reasons:
 Models come in all kinds of "languages":
 
 * a physical model e.g [medical training models](https://www.anatomystuff.co.uk/clinical-skills-training-models.html)
-```{r, echo=FALSE, out.width="480px"}
+```{r, echo=FALSE, out.width="45%"}
 knitr::include_graphics(file.path(IMG, "01-medical.png"))
 ```
 
 * a verbal/pictorial model e.g [Francischetti *et al. Microcirculation* (2008)](https://onlinelibrary.wiley.com/doi/pdf/10.1080/10739680701451516)
-```{r, echo=FALSE, out.width="480px"}
+```{r, echo=FALSE, out.width="50%"}
 knitr::include_graphics(file.path(IMG, "01-biological.png"))
 ```
 
@@ -78,7 +78,7 @@ In this workshop we will solely focus on **linear** models. In their simplest fo
 Remember when you used to run simple lab experiments at school and plot data
 onto graph paper? It used to look something like this (with different axes labels of course):
 
-```{r, echo=FALSE, fig.height=6, fig.width=6}
+```{r, echo=FALSE, fig.height=6, fig.width=6, out.width = "60%"}
 set.seed(1201)
 N <- 50
 x <- runif(N, min=0, max=10)
@@ -91,7 +91,7 @@ Once you plotted out all of the data points, you were asked to grab a ruler
 (a rigid, straight object) and find the line of best fit. To do this, you
 used to try and get a roughly equal number of data points on each side of the line.
 
-```{r, echo=FALSE, fig.height=6, fig.width=6}
+```{r, echo=FALSE, fig.height=6, fig.width=6, out.width = "60%"}
 fit <- lm(y ~ x)
 plot(x, y, pch=19, xlab='Hours spent watching Game of Thrones (GoT) at the weekend',
      ylab='Minutes spent on monday talking about GoT at work', col='grey')
@@ -104,9 +104,9 @@ which minimises the distance between the model (straight line) and your data poi
 But more on that later.
 
 The fitted linear model is of the form $y = mx + c$. Where $m$ is the gradient and 
-$c$ is the intercept.
+$c$ is the intercept. At school you were inferring the parameters $m$ and $c$ by hand. In this workshop you will learn how to do this in R. 
 
-```{r, echo=FALSE, fig.height=6, fig.width=6}
+```{r, echo=FALSE, fig.height=6, fig.width=6, out.width = "60%"}
 plot(x, y, pch=19, xlab='Hours spent watching Game of Thrones (GoT) at the weekend',
      ylab='Minutes spent on monday talking about GoT at work', col='grey')
 abline(lm(y~x), col='black', lwd=3)
@@ -117,9 +117,6 @@ segments(7.5, predict(fit, data.frame(x=7.5))-6, -7.5 + coef(fit)[2]*(6),
          predict(fit, data.frame(x=7.5))-6, col='red', lwd=3)
 text(7.4, 16, 'm = gradient', col='red', font=2, cex=1.2, pos=4)
 ```
-
-At school you were inferring the parameters $m$ and $c$ by hand. In this workshop you will learn
-how to do this in R. 
 
 What are the statistical assumptions in this case? As we will see in the 
 next chapter, in linear regression/modelling we assume that the **residuals** 
