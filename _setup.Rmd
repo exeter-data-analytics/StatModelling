@@ -76,7 +76,7 @@ knit_engines$set(solution = function(options) {
 })
 
 ## custom engine for tabbed box
-knit_engines$set(dupBox = function(options) {
+knit_engines$set(dupCode = function(options) {
     ## split code
     code <- grep("####", options$code)
     if(length(code) != 1){
