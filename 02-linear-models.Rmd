@@ -350,7 +350,8 @@ Produce a scatterplot of `longevity` against `thorax`. What does the relationshi
 ```{solution, multCode = T, cache = F}
 
 ``{r, fig.height=6, fig.width=6, out.width = "60%"}
-plot(longevity ~ thorax, data = ff, pch=19, col='darkgrey')
+plot(longevity ~ thorax, data = ff, 
+     pch=19, col='darkgrey')
 ``
 
 The plot suggests that a linear relationship might exist between the two variables. So we can proceed by fitting a linear model in R.
@@ -470,22 +471,28 @@ newdata$fit <- NULL
 
 ``{r}
 ## plot fitted line against the raw data
-plot(longevity ~ thorax, data = ff, pch = 19, col='darkgrey',
+plot(longevity ~ thorax, data = ff, 
+     pch = 19, col='darkgrey',
      main = "Fitted regression line
      with 97% confidence interval")
 lines(longevity ~ thorax, data = newdata)
-lines(lwr ~ thorax, data = newdata, lty = 2)
-lines(upr ~ thorax, data = newdata, lty = 2)
+lines(lwr ~ thorax, 
+      data = newdata, lty = 2)
+lines(upr ~ thorax, 
+      data = newdata, lty = 2)
 ``
 
 ####
 
 ``{r}
 ## plot fitted line against the raw data
-ggplot(mapping = aes(x = thorax, y = longevity)) +
+ggplot(mapping = 
+        aes(x = thorax, y = longevity)) +
     geom_point(data = ff) +
     geom_line(data = newdata) +
-    geom_ribbon(aes(ymin = lwr, ymax = upr), data = newdata, alpha = 0.5)
+    geom_ribbon(
+        aes(ymin = lwr, ymax = upr), 
+        data = newdata, alpha = 0.5)
 ``
 
 ```
@@ -499,20 +506,28 @@ Produce the same plot but with a 97% **prediction** interval
 ``{r}
 ## create new data frame to predict to
 newdata <- data.frame(
-    thorax = seq(min(ff$thorax), max(ff$thorax), length.out = 50)
+    thorax = seq(min(ff$thorax), 
+        max(ff$thorax), length.out = 50)
 )
 
 ## produce predictions and intervals
-newdata <- cbind(newdata, predict(fit, newdata, interval = "prediction", level = 0.97))
+newdata <- cbind(newdata, 
+    predict(fit, newdata, 
+        interval = "prediction", 
+        level = 0.97))
 newdata$longevity <- newdata$fit
 newdata$fit <- NULL
 
 ## plot fitted line against the raw data
-plot(longevity ~ thorax, data = ff, pch = 19, col='darkgrey',
-     main = "Fitted regression line with 97% prediction interval")
+plot(longevity ~ thorax, data = ff, 
+     pch = 19, col='darkgrey',
+     main = "Fitted regression line 
+     with 97% prediction interval")
 lines(longevity ~ thorax, data = newdata)
-lines(lwr ~ thorax, data = newdata, lty = 2)
-lines(upr ~ thorax, data = newdata, lty = 2)
+lines(lwr ~ thorax, data = newdata, 
+      lty = 2)
+lines(upr ~ thorax, data = newdata, 
+      lty = 2)
 ``
 
 ####
@@ -520,20 +535,27 @@ lines(upr ~ thorax, data = newdata, lty = 2)
 ``{r}
 ## create new data frame to predict to
 newdata <- data.frame(
-    thorax = seq(min(ff$thorax), max(ff$thorax), length.out = 50)
+    thorax = seq(min(ff$thorax), 
+        max(ff$thorax), length.out = 50)
 )
 
 ## produce predictions and intervals
-newdata <- cbind(newdata, predict(fit, newdata, interval = "prediction", level = 0.97))
+newdata <- cbind(newdata, 
+    predict(fit, newdata, 
+        interval = "prediction", 
+        level = 0.97))
 newdata$longevity <- newdata$fit
 newdata$fit <- NULL
 
 ## plot fitted line against the raw data
-ggplot(mapping = aes(x = thorax, y = longevity)) +
+ggplot(mapping = 
+        aes(x = thorax, y = longevity)) +
     geom_point(data = ff) +
     geom_line(data = newdata) + 
-    geom_ribbon(aes(ymin = lwr, ymax = upr), data = newdata, alpha = 0.5) +
-    ggtitle("Fitted regression line with 97% prediction interval")
+    geom_ribbon(aes(ymin = lwr, ymax = upr), 
+        data = newdata, alpha = 0.5) +
+    ggtitle("Fitted regression line
+        with 97% prediction interval")
 ``
 
 ```
@@ -566,11 +588,21 @@ Let us make up some data again and plot it.
  
 ```{r, fig.height=6, fig.width=6, out.width = "60%"}
 set.seed(451)
-N <- 100 ## no. of observations
-weight <- runif(n=N, min=60, max=100) ## hypothetical weights in kg
-heightParents <- runif(n=N, min=130, max=210) ## hypothetical mean heights of parents in cm
-height <- 0.1*weight + 1.05*heightParents + rnorm(n=N, mean=0, sd=10) ## hypothetical heights in cm
-df <- data.frame(weight=weight, heightParents=heightParents, height=height) ## store as df
+
+## no. of observations
+N <- 100 
+
+## hypothetical weights in kg
+weight <- runif(n=N, min=60, max=100) 
+
+## hypothetical mean heights of parents in cm
+heightParents <- runif(n=N, min=130, max=210) 
+
+## hypothetical heights in cm
+height <- 0.1*weight + 1.05*heightParents + rnorm(n=N, mean=0, sd=10) 
+
+## store as df
+df <- data.frame(weight=weight, heightParents=heightParents, height=height) 
 
 ## Plot
 library(scatterplot3d) ## library needed for 3D plotting
@@ -718,11 +750,21 @@ to our `height` vs `weight` toy example and consider
 
 ```{r, fig.height=6, fig.width=6, out.width = "60%"}
 set.seed(101)
-N <- 50 ## no. of observations
-weightMale <- runif(n=N, min=60, max=100) ## hypothetical weights in kg
-weightFemale <- runif(n=N, min=60, max=100) ## hypothetical weights in kg
-heightMale <- 2.2*weightMale + rnorm(n=N, mean=0, sd=10) + 40  ## hypothetical heights in cm
-heightFemale <- 2.2*weightFemale + rnorm(n=N, mean=0, sd=10) + 2 ## hypothetical heights in cm
+
+## no. of observations
+N <- 50 
+
+## hypothetical weights in kg
+weightMale <- runif(n=N, min=60, max=100) 
+
+ ## hypothetical weights in kg
+weightFemale <- runif(n=N, min=60, max=100)
+
+## hypothetical heights in cm
+heightMale <- 2.2*weightMale + rnorm(n=N, mean=0, sd=10) + 40  
+
+## hypothetical heights in cm
+heightFemale <- 2.2*weightFemale + rnorm(n=N, mean=0, sd=10) + 2 
 height <- c(heightMale, heightFemale)
 weight <- c(weightMale, weightFemale)
 sex <- c(rep('Male', N), rep('Female', N))
@@ -731,19 +773,25 @@ sex <- c(rep('Male', N), rep('Female', N))
 df <- data.frame(weight=weight, sex=sex, height=height)
 ```
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
 ```{multCode}
 
 ``{r, fig.height=6, fig.width=6}
 ## Plot
-plot(height ~ weight, data=df, pch=19, xlab='Weight (kg)', ylab='Height (cm)', col='grey')
+plot(height ~ weight, data=df, 
+     pch=19, xlab='Weight (kg)', 
+     ylab='Height (cm)', col='grey')
 ``
 
 ####
 
 ``{r, fig.height=6, fig.width=6}
 ggplot(df) + 
-    geom_point(aes(x = weight, y = height)) +
-    xlab("Weight (kg)") + ylab("Height (cm)")
+    geom_point(
+        aes(x = weight, y = height)) +
+    xlab("Weight (kg)") + 
+    ylab("Height (cm)")
 ``
 
 ```
@@ -763,12 +811,16 @@ fit <- lm(height ~ weight, data=df)
 ``{r, fig.height=6, fig.width=6}
 ## predictions
 newdata <- data.frame(
-    weight = seq(min(df$weight), max(df$weight), length.out = 50))
+    weight = seq(min(df$weight), 
+        max(df$weight), length.out = 50))
 newdata$height <- predict(fit, newdata)
 
 ## Plot model fit
-plot(height ~ weight, data = df, pch=19, xlab='Weight (kg)', ylab='Height (cm)', col='grey')
-lines(height ~ weight, data = newdata, col='black', lwd=3)
+plot(height ~ weight, data = df, 
+     pch=19, xlab='Weight (kg)', 
+     ylab='Height (cm)', col='grey')
+lines(height ~ weight, data = newdata, 
+     col='black', lwd=3)
 ``
 
 ####
@@ -776,15 +828,21 @@ lines(height ~ weight, data = newdata, col='black', lwd=3)
 ``{r, fig.height=6, fig.width=6}
 ## plot model fit
 newdata <- data.frame(
-    weight = seq(min(df$weight), max(df$weight), length.out = 50))
-newdata <- mutate(newdata, height = predict(fit, newdata))
-ggplot(mapping = aes(x = weight, y = height)) + 
+    weight = seq(min(df$weight), 
+        max(df$weight), length.out = 50))
+newdata <- mutate(newdata, 
+    height = predict(fit, newdata))
+ggplot(mapping = 
+        aes(x = weight, y = height)) + 
     geom_point(data = df) +
     geom_line(data = newdata) +
-    xlab("Weight (kg)") + ylab("Height (cm)")
+    xlab("Weight (kg)") + 
+    ylab("Height (cm)")
 ``
 
 ```
+
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
 
 ```{r}
 ## Print result
@@ -796,10 +854,18 @@ If we colour the data by sex it becomes obvious that this extra variation is due
 ```{multCode}
 
 ``{r, fig.height=6, fig.width=6, out.width = "60%"}
-plot(height ~ weight, data = df, pch = 19)
-points(height ~ weight, pch = 19, data = df[df$sex == "Female", ], col = "green")
-points(height ~ weight, pch = 19, data = df[df$sex == "Male", ], col = "blue")
-legend(par("usr")[1] * 1.1, par("usr")[4] * 0.9,
+plot(height ~ weight, data = df, 
+     pch = 19)
+points(height ~ weight, 
+       pch = 19, 
+       data = df[df$sex == "Female", ], 
+       col = "green")
+points(height ~ weight, 
+       pch = 19, 
+       data = df[df$sex == "Male", ], 
+       col = "blue")
+legend(par("usr")[1] * 1.1, 
+       par("usr")[4] * 0.9,
        legend = c("Female", "Male"),
        pch = c(19, 19),
        col = c("green", "blue"))
@@ -808,11 +874,15 @@ legend(par("usr")[1] * 1.1, par("usr")[4] * 0.9,
 ####
 
 ``{r, fig.height=6, fig.width=6}
-ggplot(df, aes(x = weight, y = height, colour = sex)) +
+ggplot(df, 
+       aes(x = weight, y = height, 
+           colour = sex)) +
     geom_point()
 ``
 
 ```
+
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
 
 `sex` is an important covariate and should therefore be
 added to the model. That is, we need a model that has different regression lines for each 
@@ -875,7 +945,11 @@ Whilst the **gradient** is $\beta_2$ in both cases.
 ```{r, fig.height=6, fig.width=6, out.width = "60%"}
 ## Linear model fit
 fit <- lm(height ~ sex + weight, data=df)
+```
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
+```{r}
 ## Print result
 summary(fit)
 ```
@@ -887,27 +961,45 @@ men on average will be `sexMale`=`r format(coef(fit)[1], digits=3)` cm taller th
 
 To plot the fitted lines, we can use a similar trick using `predict()` as [before](#sec:prediction). This time we need to produce predictions using all relevant combinations of explanatory variables: `weight` and `sex` in this case. A useful function to do this is `expand.grid()`:
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
 ```{multCode}
 
 ``{r, fig.height=6, fig.width=6, out.width = "60%"}
 ## create dataset to predict to
 newdata <- expand.grid(
-    weight = seq(min(df$weight), max(df$weight), length.out = 50),
+    weight = seq(min(df$weight), 
+        max(df$weight), length.out = 50),
     sex = c("Female", "Male"))
 
 ## generate predictions
-newdata <- cbind(newdata, height = predict(fit, newdata))
+newdata <- cbind(newdata, 
+    height = predict(fit, newdata))
 
 ## plot fitted lines against the data
-plot(height ~ weight, data = df, pch = 19)
-points(height ~ weight, pch = 19, data = df[df$sex == "Female", ], col = "green")
-points(height ~ weight, pch = 19, data = df[df$sex == "Male", ], col = "blue")
-lines(height ~ weight, data = newdata[newdata$sex == "Female", ], col = "green")
-lines(height ~ weight, data = newdata[newdata$sex == "Male", ], col = "blue")
-legend(par("usr")[1] * 1.1, par("usr")[4] * 0.9,
-       legend = c("Female", "Male"),
-       pch = c(19, 19),
-       col = c("green", "blue"))
+plot(height ~ weight, data = df, 
+    pch = 19)
+points(height ~ weight, 
+    pch = 19, 
+    data = df[df$sex == "Female", ], 
+    col = "green")
+points(height ~ weight, 
+    pch = 19, 
+    data = df[df$sex == "Male", ], 
+    col = "blue")
+lines(height ~ weight, 
+    data = newdata[
+        newdata$sex == "Female", ], 
+    col = "green")
+lines(height ~ weight, 
+    data = newdata[
+        newdata$sex == "Male", ], 
+    col = "blue")
+legend(par("usr")[1] * 1.1, 
+    par("usr")[4] * 0.9,
+    legend = c("Female", "Male"),
+    pch = c(19, 19),
+    col = c("green", "blue"))
 ``
 
 ####
@@ -915,19 +1007,25 @@ legend(par("usr")[1] * 1.1, par("usr")[4] * 0.9,
 ``{r, fig.height=6, fig.width=6}
 ## create dataset to predict to
 newdata <- expand.grid(
-    weight = seq(min(df$weight), max(df$weight), length.out = 50),
+    weight = seq(min(df$weight), 
+        max(df$weight), length.out = 50),
     sex = c("Female", "Male"))
 
 ## generate predictions
-newdata <- mutate(newdata, height = predict(fit, newdata))
+newdata <- mutate(newdata, 
+    height = predict(fit, newdata))
 
 ## plot fitted lines against the data
-ggplot(mapping = aes(x = weight, y = height, colour = sex)) +
+ggplot(mapping = 
+        aes(x = weight, y = height, 
+            colour = sex)) +
     geom_point(data = df) +
     geom_line(data = newdata)
 ``
 
 ```
+
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
 
 ```{task}
 Add 97% confidence intervals to the fitted lines plots above.
@@ -938,28 +1036,44 @@ Add 97% confidence intervals to the fitted lines plots above.
 ``{r, fig.height=6, fig.width=6, out.width = "60%"}
 ## create dataset to predict to
 newdata <- expand.grid(
-    weight = seq(min(df$weight), max(df$weight), length.out = 50),
-    sex = c("Female", "Male"))
+  weight = seq(min(df$weight), 
+    max(df$weight), length.out = 50),
+  sex = c("Female", "Male"))
 
 ## generate predictions
-newdata <- cbind(newdata, predict(fit, newdata, interval = "confidence", level = 0.97))
+newdata <- cbind(newdata, 
+  predict(fit, newdata, level = 0.97,
+    interval = "confidence"))
 newdata$height <- newdata$fit
 newdata$fit <- NULL
 
 ## plot fitted lines against the data
 plot(height ~ weight, data = df, pch = 19)
-points(height ~ weight, pch = 19, data = df[df$sex == "Female", ], col = "green")
-points(height ~ weight, pch = 19, data = df[df$sex == "Male", ], col = "blue")
-lines(height ~ weight, data = newdata[newdata$sex == "Female", ], col = "green")
-lines(height ~ weight, data = newdata[newdata$sex == "Male", ], col = "blue")
-lines(lwr ~ weight, data = newdata[newdata$sex == "Female", ], col = "green", lty = 2)
-lines(lwr ~ weight, data = newdata[newdata$sex == "Male", ], col = "blue", lty = 2)
-lines(upr ~ weight, data = newdata[newdata$sex == "Female", ], col = "green", lty = 2)
-lines(upr ~ weight, data = newdata[newdata$sex == "Male", ], col = "blue", lty = 2)
-legend(par("usr")[1] * 1.1, par("usr")[4] * 0.9,
-       legend = c("Female", "Male"),
-       pch = c(19, 19),
-       col = c("green", "blue"))
+points(height ~ weight, 
+  pch = 19, col = "green",
+  data = df[df$sex == "Female", ])
+points(height ~ weight, 
+  pch = 19, col = "blue",
+  data = df[df$sex == "Male", ])
+lines(height ~ weight, col = "green",
+  data = newdata[newdata$sex == "Female", ])
+lines(height ~ weight, col = "blue", 
+  data = newdata[newdata$sex == "Male", ])
+lines(lwr ~ weight, 
+  data = newdata[newdata$sex == "Female", ], 
+  col = "green", lty = 2)
+lines(lwr ~ weight, 
+  data = newdata[newdata$sex == "Male", ], 
+  col = "blue", lty = 2)
+lines(upr ~ weight, 
+  data = newdata[newdata$sex == "Female", ], 
+  col = "green", lty = 2)
+lines(upr ~ weight, 
+  data = newdata[newdata$sex == "Male", ], 
+  col = "blue", lty = 2)
+legend(par("usr")[1]*1.1, par("usr")[4]*0.9, 
+  pch = c(19, 19), col = c("green", "blue"),
+  legend = c("Female", "Male"))
 ``
 
 ####
@@ -967,18 +1081,26 @@ legend(par("usr")[1] * 1.1, par("usr")[4] * 0.9,
 ``{r, fig.height=6, fig.width=6}
 ## create dataset to predict to
 newdata <- expand.grid(
-    weight = seq(min(df$weight), max(df$weight), length.out = 50),
+    weight = seq(min(df$weight), 
+        max(df$weight), length.out = 50),
     sex = c("Female", "Male"))
 
 ## generate predictions
-newdata <- cbind(newdata, predict(fit, newdata, interval = "confidence", level = 0.97)) %>%
+newdata <- cbind(newdata, 
+    predict(fit, newdata, 
+        interval = "confidence", 
+        level = 0.97)) %>%
     rename(height = fit)
 
 ## plot fitted lines against the data
 ggplot(mapping = aes(x = weight)) +
-    geom_point(aes(y = height, colour = sex), data = df) +
-    geom_line(aes(y = height, colour = sex), data = newdata) +
-    geom_ribbon(aes(ymin = lwr, ymax = upr, fill = sex), data = newdata, alpha = 0.5)
+    geom_point(aes(y = height, colour = sex), 
+        data = df) +
+    geom_line(aes(y = height, colour = sex), 
+        data = newdata) +
+    geom_ribbon(aes(ymin = lwr, ymax = upr, 
+        fill = sex), data = newdata, 
+        alpha = 0.5)
 ``
 
 ```
@@ -1037,235 +1159,164 @@ We will use the fruitfly dataset ([Partridge and Farquhar (1981)](https://www.na
 1. Fit a linear model with lifespan as response variable and thorax length and type of companion as explanatory variables
 2. Display a summary of the fit, together with the 97% confidence intervals for the estimated parameters
 3. Why do we get two parameters for type of companion and what do they mean in practice?
+
+```
+
+```{solution}
+
+``{r}
+fit <- lm(longevity ~ type + thorax, ff)
+summary(fit)
+confint(fit, level=0.97)
+``
+
+**The type of companion parameters**
+
+In our toy example we introduced one dummy variable because the variable `sex`
+only had two factors (male or female). Type of companion has
+three factors (inseminated, virgin and control), we therefore need **two** dummy
+variables as follows:
+    
+$$
+S_{1i} = \left\{\begin{array}{ll}
+        1 & \mbox{if $i$ is inseminated},\\
+        0 & \mbox{otherwise}
+        \end{array}
+        \right.
+$$
+
+$$
+S_{2i} = \left\{\begin{array}{ll}
+        1 & \mbox{if $i$ is virgin},\\
+        0 & \mbox{otherwise}
+        \end{array}
+        \right.
+$$
+         
+Here, control is the **baseline**/**reference level** for type of companion.
+        
+        The mean regression line is:
+
+$$
+y_i = \beta_0 + \beta_1 S_{1i} + \beta_2 S_{2i} + \beta_3 x_i
+$$
+    
+Or in English:
+
+$$
+\begin{aligned}
+\mathrm{longevity}_i & = \beta_0 + \beta_1\mathrm{inseminated}_i + \beta_2\mathrm{virgin}_i + \beta_3\mathrm{thorax}_i
+\end{aligned}
+$$
+    
+Where `inseminated` is a dummy variable that takes the value of 1 (inseminated) or 0 (otherwise) and `virgin` is another dummy variable that takes the value of 1 (virgin) 
+or 0 (otherwise). For `control` both dummy variables are zero.
+
+The mean regression lines for the three cases is as follows:
+
+* **Control** (`inseminated=0` and `virgin=0`)
+
+$$
+\begin{aligned}
+    \mathrm{longevity}_i & = \beta_0 + (\beta_1 \times 0) + (\beta_2 \times 0) + \beta_3\mathrm{thorax}_i\\
+        \mathrm{longevity}_i & = \beta_0 + \beta_3\mathrm{thorax}_i
+\end{aligned}
+$$
+
+* **Inseminated** (`inseminated=1` and `virgin=0`)
+
+$$
+\begin{aligned}
+    \mathrm{longevity}_i & = \beta_0 + (\beta_1 \times 1) + (\beta_2 \times 0) + \beta_3\mathrm{thorax}_i\\
+        \mathrm{longevity}_i & = (\beta_0 + \beta_1) + \beta_3\mathrm{thorax}_i
+\end{aligned}
+$$
+    
+* **Virgin** (`inseminated=0` and `virgin=1`)
+
+$$
+\begin{aligned}
+    \mathrm{longevity}_i & = \beta_0 + (\beta_1 \times 0) + (\beta_2 \times 1) + \beta_3\mathrm{thorax}_i\\
+        \mathrm{longevity}_i & = (\beta_0 + \beta_2) + \beta_3\mathrm{thorax}_i
+\end{aligned}
+$$
+
+The **intercept** for these three regression lines is therefore:
+
+* **Control**: $\beta_0$ = `intercept`=`r format(coef(fit)[1], digits=3)` days
+* **Inseminated**: $\beta_0 + \beta_1$ = `intercept` + `typeInesminated` = `r format(coef(fit)[1], digits=3)` + `r format(coef(fit)[2], digits=3)` = `r format(coef(fit)[1]+coef(fit)[2], digits=3)` days
+* **Virgin**: $\beta_0 + \beta_2$ = `intercept` + `typeVirgin` = `r format(coef(fit)[1], digits=3)` + `r format(coef(fit)[3], digits=3)` = `r format(coef(fit)[1]+coef(fit)[3], digits=3)` days
+    
+The intercepts *per se* are not a useful measure as they represent the expected longevity of
+a fruitfly which has a thorax length of zero, which is clearly absurd. What is important is the *difference*
+between these intercepts as it represents a vertical shift in the regression line for the three conditions (see plot).
+
+`typeInseminated` = `r format(coef(fit)[2], digits=3)` days is the expected increase in longevity for inseminated with respect to
+control for *any* thorax length. Similarly, `typeVirgin` = `r format(coef(fit)[3], digits=3)` days, is the expected increase in 
+longevity for virgin with respect to control. We can also compute the expected increase in longevity for virgin with respect to inseminated which is `typeVirgin` - `typeInseminated` = `r format(coef(fit)[3], digits=3)` + `r format(coef(fit)[2], digits=3)` = `r format(coef(fit)[3]-coef(fit)[2], digits=3)` days.
+
+```
+
+```{task}
+
 4. Plot the mean regression line for each type of companion together with the observed data.
-5. Show the diagnostic plots for the model, what can you say about the model fit?
-6. Compare the total variation explained by this model with the one that only used `thorax` as a covariate. What can you say about the importance of the type of companion?
 
 ```
 
 ```{solution, multCode = T}
 
-``{r, fig.height=6, fig.width=6, out.width = "60%"}
-fit <- lm(longevity ~ type + thorax, ff)
-summary(fit)
-confint(fit, level=0.97)
+``{r}
 newdata <- expand.grid(
-    thorax = seq(min(ff$thorax), max(ff$thorax), length.out = 50),
+    thorax = seq(min(ff$thorax), 
+        max(ff$thorax), length.out = 50),
     type = levels(ff$type)
 )
-newdata <- cbind(newdata, longevity = predict(fit, newdata))
-plot(longevity ~ thorax, data = ff, pch = 19, col = as.numeric(ff$type))
+newdata <- cbind(newdata, 
+    longevity = predict(fit, newdata))
+plot(longevity ~ thorax, data = ff, 
+     pch = 19, col = as.numeric(ff$type))
 for(i in 1:3){
-    lines(longevity ~ thorax, data = newdata[newdata$type == levels(ff$type)[i], ], col = i)
+    lines(longevity ~ thorax, 
+        data = newdata[newdata$type == 
+            levels(ff$type)[i], ], 
+        col = i)
 }
-par(mfrow=c(2, 2))
-plot(fit, pch=19, col='darkgrey')
-par(mfrow=c(1, 1))
 ``
-
-**The type of companion parameters**
-
-In our toy example we introduced one dummy variable because the variable `sex`
-only had two factors (male or female). Type of companion has
-three factors (inseminated, virgin and control), we therefore need **two** dummy
-variables as follows:
-    
-$$
-S_{1i} = \left\{\begin{array}{ll}
-        1 & \mbox{if $i$ is inseminated},\\
-        0 & \mbox{otherwise}
-        \end{array}
-        \right.
-$$
-
-$$
-S_{2i} = \left\{\begin{array}{ll}
-        1 & \mbox{if $i$ is virgin},\\
-        0 & \mbox{otherwise}
-        \end{array}
-        \right.
-$$
-         
-Here, control is the **baseline**/**reference level** for type of companion
-
-The mean regression line is:
-
-$$
-y_i = \beta_0 + \beta_1 S_{1i} + \beta_2 S_{2i} + \beta_3 x_i
-$$
-    
-Or in English:
-
-$$
-\begin{aligned}
-\mathrm{longevity}_i & = \beta_0 + \beta_1\mathrm{inseminated}_i + \beta_2\mathrm{virgin}_i + \beta_3\mathrm{thorax}_i
-\end{aligned}
-$$
-    
-Where `inseminated` is a dummy variable that takes the value of 1 (inseminated) or 0 (otherwise) and `virgin` is another dummy variable that takes the value of 1 (virgin) 
-or 0 (otherwise). For `control` both dummy variables are zero.
-
-The mean regression lines for the three cases is as follows:
-
-* **Control** (`inseminated=0` and `virgin=0`)
-
-$$
-\begin{aligned}
-    \mathrm{longevity}_i & = \beta_0 + (\beta_1 \times 0) + (\beta_2 \times 0) + \beta_3\mathrm{thorax}_i\\
-        \mathrm{longevity}_i & = \beta_0 + \beta_3\mathrm{thorax}_i
-\end{aligned}
-$$
-
-* **Inseminated** (`inseminated=1` and `virgin=0`)
-
-$$
-\begin{aligned}
-    \mathrm{longevity}_i & = \beta_0 + (\beta_1 \times 1) + (\beta_2 \times 0) + \beta_3\mathrm{thorax}_i\\
-        \mathrm{longevity}_i & = (\beta_0 + \beta_1) + \beta_3\mathrm{thorax}_i
-\end{aligned}
-$$
-    
-* **Virgin** (`inseminated=0` and `virgin=1`)
-
-$$
-\begin{aligned}
-    \mathrm{longevity}_i & = \beta_0 + (\beta_1 \times 0) + (\beta_2 \times 1) + \beta_3\mathrm{thorax}_i\\
-        \mathrm{longevity}_i & = (\beta_0 + \beta_2) + \beta_3\mathrm{thorax}_i
-\end{aligned}
-$$
-
-The **intercept** for these three regression lines is therefore:
-
-* **Control**: $\beta_0$ = `intercept`=`r format(coef(fit)[1], digits=3)` days
-* **Inseminated**: $\beta_0 + \beta_1$ = `intercept` + `typeInesminated` = `r format(coef(fit)[1], digits=3)` + `r format(coef(fit)[2], digits=3)` = `r format(coef(fit)[1]+coef(fit)[2], digits=3)` days
-* **Virgin**: $\beta_0 + \beta_2$ = `intercept` + `typeVirgin` = `r format(coef(fit)[1], digits=3)` + `r format(coef(fit)[3], digits=3)` = `r format(coef(fit)[1]+coef(fit)[3], digits=3)` days
-    
-The intercepts *per se* are not a useful measure as they represent the expected longevity of
-a fruitfly which has a thorax length of zero, which is clearly absurd. What is important is the *difference*
-between these intercepts as it represents a vertical shift in the regression line for the three conditions (see plot).
-
-`typeInseminated` = `r format(coef(fit)[2], digits=3)` days is the expected increase in longevity for inseminated with respect to
-control for *any* thorax length. Similarly, `typeVirgin` = `r format(coef(fit)[3], digits=3)` days, is the expected increase in 
-longevity for virgin with respect to control. We can also compute the expected increase in longevity for virgin with respect to inseminated which is `typeVirgin` - `typeInseminated` = `r format(coef(fit)[3], digits=3)` + `r format(coef(fit)[2], digits=3)` = `r format(coef(fit)[3]-coef(fit)[2], digits=3)` days
-
-**Model fit**
-    
-All of the diagnostic plots look sensible, suggesting that our model assumptions
-are satisfied.
-
-**Explained variation**
-
-The $R^2$ statistic (also known as the **coefficient of determination**) is the proportion
-of the total variation that is explained by the regression. Which in this case 
-is `r format(summary(fit)$adj.r.squared*100, digits=3)`%. This is considerably higher 
-than the 40% achieved with just `thorax`, suggesting that type of companion is indeed
-an important covariate and thus should be included in the model.
 
 ####
 
-``{r, fig.height=6, fig.width=6}
-fit <- lm(longevity ~ type + thorax, ff)
-summary(fit)
-confint(fit, level=0.97)
+``{r}
 newdata <- expand.grid(
-    thorax = seq(min(ff$thorax), max(ff$thorax), length.out = 50),
+    thorax = seq(min(ff$thorax), 
+        max(ff$thorax), length.out = 50),
     type = levels(ff$type)
 )
-newdata <- cbind(newdata, longevity = predict(fit, newdata))
-ggplot(mapping = aes(x = thorax, y = longevity, colour = type)) +
+newdata <- cbind(newdata, 
+    longevity = predict(fit, newdata))
+ggplot(mapping = aes(x = thorax, y
+        = longevity, colour = type)) +
     geom_point(data = ff) +
     geom_line(data = newdata)
+``
+
+```
+
+```{task}
+
+5. Show the diagnostic plots for the model, what can you say about the model fit?
+6. Compare the total variation explained by this model with the one that only used `thorax` as a covariate. What can you say about the importance of the type of companion?
+    
+```
+
+```{solution}
+
+**Model fit**
+
+``{r}
 par(mfrow=c(2, 2))
 plot(fit, pch=19, col='darkgrey')
 par(mfrow=c(1, 1))
 ``
-
-**The type of companion parameters**
-
-In our toy example we introduced one dummy variable because the variable `sex`
-only had two factors (male or female). Type of companion has
-three factors (inseminated, virgin and control), we therefore need **two** dummy
-variables as follows:
-    
-$$
-S_{1i} = \left\{\begin{array}{ll}
-        1 & \mbox{if $i$ is inseminated},\\
-        0 & \mbox{otherwise}
-        \end{array}
-        \right.
-$$
-
-$$
-S_{2i} = \left\{\begin{array}{ll}
-        1 & \mbox{if $i$ is virgin},\\
-        0 & \mbox{otherwise}
-        \end{array}
-        \right.
-$$
-         
-Here, control is the **baseline**/**reference level** for type of companion
-
-The mean regression line is:
-
-$$
-y_i = \beta_0 + \beta_1 S_{1i} + \beta_2 S_{2i} + \beta_3 x_i
-$$
-    
-Or in English:
-
-$$
-\begin{aligned}
-\mathrm{longevity}_i & = \beta_0 + \beta_1\mathrm{inseminated}_i + \beta_2\mathrm{virgin}_i + \beta_3\mathrm{thorax}_i
-\end{aligned}
-$$
-    
-Where `inseminated` is a dummy variable that takes the value of 1 (inseminated) or 0 (otherwise) and `virgin` is another dummy variable that takes the value of 1 (virgin) 
-or 0 (otherwise). For `control` both dummy variables are zero.
-
-The mean regression lines for the three cases is as follows:
-
-* **Control** (`inseminated=0` and `virgin=0`)
-
-$$
-\begin{aligned}
-    \mathrm{longevity}_i & = \beta_0 + (\beta_1 \times 0) + (\beta_2 \times 0) + \beta_3\mathrm{thorax}_i\\
-        \mathrm{longevity}_i & = \beta_0 + \beta_3\mathrm{thorax}_i
-\end{aligned}
-$$
-
-* **Inseminated** (`inseminated=1` and `virgin=0`)
-
-$$
-\begin{aligned}
-    \mathrm{longevity}_i & = \beta_0 + (\beta_1 \times 1) + (\beta_2 \times 0) + \beta_3\mathrm{thorax}_i\\
-        \mathrm{longevity}_i & = (\beta_0 + \beta_1) + \beta_3\mathrm{thorax}_i
-\end{aligned}
-$$
-    
-* **Virgin** (`inseminated=0` and `virgin=1`)
-
-$$
-\begin{aligned}
-    \mathrm{longevity}_i & = \beta_0 + (\beta_1 \times 0) + (\beta_2 \times 1) + \beta_3\mathrm{thorax}_i\\
-        \mathrm{longevity}_i & = (\beta_0 + \beta_2) + \beta_3\mathrm{thorax}_i
-\end{aligned}
-$$
-
-The **intercept** for these three regression lines is therefore:
-
-* **Control**: $\beta_0$ = `intercept`=`r format(coef(fit)[1], digits=3)` days
-* **Inseminated**: $\beta_0 + \beta_1$ = `intercept` + `typeInesminated` = `r format(coef(fit)[1], digits=3)` + `r format(coef(fit)[2], digits=3)` = `r format(coef(fit)[1]+coef(fit)[2], digits=3)` days
-* **Virgin**: $\beta_0 + \beta_2$ = `intercept` + `typeVirgin` = `r format(coef(fit)[1], digits=3)` + `r format(coef(fit)[3], digits=3)` = `r format(coef(fit)[1]+coef(fit)[3], digits=3)` days
-    
-The intercepts *per se* are not a useful measure as they represent the expected longevity of
-a fruitfly which has a thorax length of zero, which is clearly absurd. What is important is the *difference*
-between these intercepts as it represents a vertical shift in the regression line for the three conditions (see plot).
-
-`typeInseminated` = `r format(coef(fit)[2], digits=3)` days is the expected increase in longevity for inseminated with respect to
-control for *any* thorax length. Similarly, `typeVirgin` = `r format(coef(fit)[3], digits=3)` days, is the expected increase in 
-longevity for virgin with respect to control. We can also compute the expected increase in longevity for virgin with respect to inseminated which is `typeVirgin` - `typeInseminated` = `r format(coef(fit)[3], digits=3)` + `r format(coef(fit)[2], digits=3)` = `r format(coef(fit)[3]-coef(fit)[2], digits=3)` days
-
-**Model fit**
     
 All of the diagnostic plots look sensible, suggesting that our model assumptions
 are satisfied.
