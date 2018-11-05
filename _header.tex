@@ -1,3 +1,6 @@
+% set page size
+\geometry{margin=0.5in}
+
 % latex macro to create task boxes
 \usepackage{tcolorbox}
 \tcbuselibrary{breakable}
@@ -12,6 +15,12 @@
 \newcommand{\eblockT}{\end{tcolorbox}}
 \newcommand{\bblockS}[1]{\begin{tcolorbox}[title = Solution #1, colframe=taskCol1, breakable, parbox = false]}
 \newcommand{\eblockS}{\end{tcolorbox}}
+
+%add tabbed solutions environment
+\newcommand{\bmp}{\begin{minipage}[c]{0.5\textwidth}}
+\newcommand{\emp}{\end{minipage}}
+\newcommand{\bblockST}[1]{\begin{tcolorbox}[title = #1, colframe=taskCol1, breakable, parbox = false]}
+\newcommand{\eblockST}{\end{tcolorbox}}
 
 %set solution button link
 \usepackage{tikz}
