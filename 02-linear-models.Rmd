@@ -418,6 +418,8 @@ predict(fit, newdata, interval = "confidence", level = 0.97)
 
 If the model fits well, then we would expect $100(1 - \alpha)$% of the individual measurements to lie within the **prediction** interval, where $\alpha$ is the significance level (so $\alpha = 0.05$ corresponds to a 95% confidence interval).
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
 The `predict()` function can be used as a very general way to produce plots of the fitted values over the observed data. For example, let's consider that we wish to add our fitted regression line to our observed data plot.
 
 ```{r}
@@ -462,12 +464,15 @@ newdata$longevity <- newdata$fit
 newdata$fit <- NULL
 ```
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
 ```{multCode}
 
 ``{r}
 ## plot fitted line against the raw data
 plot(longevity ~ thorax, data = ff, pch = 19, col='darkgrey',
-     main = "Fitted regression line with 97% confidence interval")
+     main = "Fitted regression line
+     with 97% confidence interval")
 lines(longevity ~ thorax, data = newdata)
 lines(lwr ~ thorax, data = newdata, lty = 2)
 lines(upr ~ thorax, data = newdata, lty = 2)
@@ -743,6 +748,8 @@ ggplot(df) +
 
 ```
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
 Data looks similar as before, albeit with a larger variation. We can fit a model as we have done
 before and assess the relationship between `height` and `weight`.
 
@@ -848,8 +855,6 @@ $$
     \mathrm{height}_i & = \beta_0 + \beta_2\mathrm{weight}_i
 \end{aligned}
 $$
-
-`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
 
 * **Male** (`sex=1`)
 
@@ -1020,6 +1025,8 @@ summary(fit)
 
 As expected this change simply changes the sign of the $\beta_1$ parameter, because the dummy
 variable now takes the value of 0 for male and 1 for female (i.e we switched things around).
+
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
 
 ## Practical 3
 
