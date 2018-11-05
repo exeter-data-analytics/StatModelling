@@ -1,7 +1,7 @@
 # Introduction
 
 ```{r, echo=FALSE}
-IMG <- "_img" # image path
+IMG <- "_img" ## image path
 ```
 
 ## Motivation

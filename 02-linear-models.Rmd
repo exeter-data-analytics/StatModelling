@@ -84,9 +84,9 @@ R will do it for us. Let's generate some fake data just to get things started.
 
 ```{r, fig.height=6, fig.width=6, out.width = "60%"}
 set.seed(1453)
-N <- 100 # no. of observations
-weight <- runif(n=N, min=60, max=100) # hypothetical weights in kg
-height <- 2.2*weight + rnorm(n=N, mean=0, sd=10) # hypothetical heights in cm
+N <- 100 ## no. of observations
+weight <- runif(n=N, min=60, max=100) ## hypothetical weights in kg
+height <- 2.2*weight + rnorm(n=N, mean=0, sd=10) ## hypothetical heights in cm
 plot(weight, height, pch=19, xlab='Weight (kg)', ylab='Height (cm)', col='grey')
 ```
 
@@ -103,14 +103,14 @@ Let's call the R function, plot the model fit and print the output.
 
 
 ```{r, fig.height=6, fig.width=6, out.width = "60%"}
-# Linear model fit
+## Linear model fit
 fit <- lm(height ~ weight)
 
-# Plot model fit
+## Plot model fit
 plot(weight, height, pch=19, xlab='Weight (kg)', ylab='Height (cm)', col='grey')
 lines(weight, predict(fit), col='black', lwd=3)
 
-# Print result
+## Print result
 print(fit)
 ```
 
@@ -134,11 +134,11 @@ the height increases by `r format(coef(fit)[2], digits=4)` cm.
 The `lm()` function also accepts **data frames** as input arguments.
 
 ```{r}
-# Create data frame
+## Create data frame
 df <- data.frame(height=height, weight=weight)
 head(df)
 
-# Fit linear model
+## Fit linear model
 fit <- lm(height ~ weight, data=df)
 ```
 
@@ -179,7 +179,7 @@ That's a lot of information, let's unpick it line by line:
     be trusted. We can also show the confidence intervals for the model parameters to highlight their uncertainty using the `confint()` function:
     
     ```{r}
-    confint(fit, level=0.97) # pick the 97% confidence intervals
+    confint(fit, level=0.97) ## pick the 97% confidence intervals
     ```
     
     + **`t value`** and **`Pr(>|t|)`**
@@ -190,7 +190,7 @@ That's a lot of information, let's unpick it line by line:
 
     The square root of residual sum of squares/degress of freedom
     ```{r}
-    # Residual standard error
+    ## Residual standard error
     sqrt(sum(residuals(fit)^2) / fit$df.residual) 
     ```
 
@@ -566,14 +566,14 @@ Let us make up some data again and plot it.
  
 ```{r, fig.height=6, fig.width=6, out.width = "60%"}
 set.seed(451)
-N <- 100 # no. of observations
-weight <- runif(n=N, min=60, max=100) # hypothetical weights in kg
-heightParents <- runif(n=N, min=130, max=210) # hypothetical mean heights of parents in cm
-height <- 0.1*weight + 1.05*heightParents + rnorm(n=N, mean=0, sd=10) # hypothetical heights in cm
-df <- data.frame(weight=weight, heightParents=heightParents, height=height) # store as df
+N <- 100 ## no. of observations
+weight <- runif(n=N, min=60, max=100) ## hypothetical weights in kg
+heightParents <- runif(n=N, min=130, max=210) ## hypothetical mean heights of parents in cm
+height <- 0.1*weight + 1.05*heightParents + rnorm(n=N, mean=0, sd=10) ## hypothetical heights in cm
+df <- data.frame(weight=weight, heightParents=heightParents, height=height) ## store as df
 
-# Plot
-library(scatterplot3d) # library needed for 3D plotting
+## Plot
+library(scatterplot3d) ## library needed for 3D plotting
 scatterplot3d(weight, heightParents, height, pch=19, xlab='Weight (kg)', 
               ylab='Height of Parents (cm)', zlab='Height (cm)', color='grey')
 ```
@@ -718,23 +718,23 @@ to our `height` vs `weight` toy example and consider
 
 ```{r, fig.height=6, fig.width=6, out.width = "60%"}
 set.seed(101)
-N <- 50 # no. of observations
-weightMale <- runif(n=N, min=60, max=100) # hypothetical weights in kg
-weightFemale <- runif(n=N, min=60, max=100) # hypothetical weights in kg
-heightMale <- 2.2*weightMale + rnorm(n=N, mean=0, sd=10) + 40  # hypothetical heights in cm
-heightFemale <- 2.2*weightFemale + rnorm(n=N, mean=0, sd=10) + 2 # hypothetical heights in cm
+N <- 50 ## no. of observations
+weightMale <- runif(n=N, min=60, max=100) ## hypothetical weights in kg
+weightFemale <- runif(n=N, min=60, max=100) ## hypothetical weights in kg
+heightMale <- 2.2*weightMale + rnorm(n=N, mean=0, sd=10) + 40  ## hypothetical heights in cm
+heightFemale <- 2.2*weightFemale + rnorm(n=N, mean=0, sd=10) + 2 ## hypothetical heights in cm
 height <- c(heightMale, heightFemale)
 weight <- c(weightMale, weightFemale)
 sex <- c(rep('Male', N), rep('Female', N))
 
-# Store in data frame
+## Store in data frame
 df <- data.frame(weight=weight, sex=sex, height=height)
 ```
 
 ```{multCode}
 
 ``{r, fig.height=6, fig.width=6}
-# Plot
+## Plot
 plot(height ~ weight, data=df, pch=19, xlab='Weight (kg)', ylab='Height (cm)', col='grey')
 ``
 
@@ -754,7 +754,7 @@ Data looks similar as before, albeit with a larger variation. We can fit a model
 before and assess the relationship between `height` and `weight`.
 
 ```{r, fig.height=6, fig.width=6, out.width = "60%"}
-# Linear model fit
+## Linear model fit
 fit <- lm(height ~ weight, data=df)
 ```
 
@@ -873,10 +873,10 @@ lines, where the **intercept** is:
 Whilst the **gradient** is $\beta_2$ in both cases.
 
 ```{r, fig.height=6, fig.width=6, out.width = "60%"}
-# Linear model fit
+## Linear model fit
 fit <- lm(height ~ sex + weight, data=df)
 
-# Print result
+## Print result
 summary(fit)
 ```
 
@@ -1016,10 +1016,10 @@ df$sex <- factor(df$sex, levels = c('Male', 'Female'))
 ```
 
 ```{r, fig.height=6, fig.width=6, out.width = "60%"}
-# Linear model fit
+## Linear model fit
 fit <- lm(height ~ sex + weight, data=df)
 
-# Print result
+## Print result
 summary(fit)
 ```
 
