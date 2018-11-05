@@ -2,7 +2,7 @@
 library(knitr)
 
 ## set knitr options
-opts_chunk$set(cache = FALSE, tidy.opts = list(width.cutoff = 55), tidy = F, fig.align = "center")
+opts_chunk$set(cache = TRUE, tidy.opts = list(width.cutoff = 55), tidy = F, fig.align = "center", dupCode = F)
 
 ## variables to help save latex answers for appendix
 taskCtr <- 0
@@ -28,15 +28,40 @@ knit_engines$set(task = function(options) {
 
 ## custom engine for solutions
 knit_engines$set(solution = function(options) {
-    out <- gsub("``", "```", options$code)
-    out <- knit_child(text = out)
-    if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
-        out <- paste0("<button id=\"displayText", options$label, "\" onclick=\"javascript:toggle('", options$label, "');\">Show Solution</button>\n\n<div id=\"toggleText", options$label, "\" style=\"display: none\"><div class=\"panel panel-default\"><div class=\"panel-heading panel-heading1\"> Solution </div><div class=\"panel-body\">", out, "</div></div></div>\n")
+    if(!options$dupCode) {
+        out <- gsub("``", "```", options$code)
+        out <- knit_child(text = out)
+        if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
+            out <- paste0("<button id=\"displayText", options$label, "\" onclick=\"javascript:toggle('", options$label, "');\">Show Solution</button>\n\n<div id=\"toggleText", options$label, "\" style=\"display: none\"><div class=\"panel panel-default\"><div class=\"panel-heading panel-heading1\"> Solution </div><div class=\"panel-body\">", out, "</div></div></div>\n")
+        } else {
+            solLabels[[taskCtr]][2] <- out
+            assign("solLabels", solLabels, pos = 1)
+            out <- paste0("\\hyperlink{sol", taskCtr, "}{\\buttonS{Show Solution on P\\colpageref{tsk", taskCtr, "}}}")
+        }
+        return(out)
     } else {
-        solLabels[[taskCtr]][2] <- out
-        assign("solLabels", solLabels, pos = 1)
-        out <- paste0("\\hyperlink{sol", taskCtr, "}{\\buttonS{Show Solution on P\\colpageref{tsk", taskCtr, "}}}")
+        ## split code
+        code <- grep("####", options$code)
+        if(length(code) != 1){
+            stop(paste("Can't split chunk", options$label, "into two equal parts"))
+        }
+        code <- list(options$code[1:(code - 1)], options$code[(code + 1):length(options$code)])
+        out <- lapply(code, function(x){
+            gsub("``", "```", x)
+        })
+        out <- lapply(out, function(x) {
+            knit_child(text = x)
+        })
+        if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
+            out <- paste0("<div class=\"tab\"><button class=\"tablinks active\" onclick=\"javascript:openCode(event, 'baseR", options$label, "');\">Base R</button><button class=\"tablinks\" onclick=\"javascript:openCode(event, 'tidyverse", options$label, "');\"><tt>tidyverse</tt></button></div><div id=\"baseR", options$label, "\" class=\"tabcontent\">", out[[1]], "</div><div id=\"tidyverse", options$label, "\" class=\"tabcontent\">", out[[2]], "</div><script> javascript:hide('tidyverse", options$label, "') </script>")
+            out <- paste0("<button id=\"displayText", options$label, "\" onclick=\"javascript:toggle('", options$label, "');\">Show Solution</button>\n\n<div id=\"toggleText", options$label, "\" style=\"display: none\"><div class=\"panel panel-default\"><div class=\"panel-heading panel-heading1\"> Solution </div><div class=\"panel-body\">", out, "</div></div></div>\n")
+            return(out)
+        } else {
+            solLabels[[taskCtr]][2] <- out
+            assign("solLabels", solLabels, pos = 1)
+            out <- paste0("\\hyperlink{sol", taskCtr, "}{\\buttonS{Show Solution on P\\colpageref{tsk", taskCtr, "}}}")
+        }
+        return(out)
     }
-    out
 })
 ```

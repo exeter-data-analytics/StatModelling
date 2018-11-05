@@ -343,24 +343,39 @@ the inseminated and virgin female cases are the treatment cases.
 
 ```
 
-```{solution}
+```{solution, dupCode = T, cache = F}
 
 ``{r, fig.height=6, fig.width=6}
 plot(longevity ~ thorax, data = ff, pch=19, col='darkgrey')
 ``
 
-The plot suggests that a linear relationship might exist between the two variables. So we can proceed by fitting a linear model in R.
+####
 
 ``{r, fig.height=6, fig.width=6}
-fit <- lm(longevity ~ thorax, ff)
-summary(fit)
-confint(fit, level=0.97)
-par(mfrow=c(2, 2))
-plot(fit, pch=19, col='darkgrey')
-par(mfrow=c(1, 1))
+ggplot(ff) +
+    geom_point(aes(x = thorax, y = longevity))
 ``
 
 ```
+
+<!-- ```{solution} -->
+
+<!-- ``{r, fig.height=6, fig.width=6} -->
+<!-- plot(longevity ~ thorax, data = ff, pch=19, col='darkgrey') -->
+<!-- `` -->
+
+<!-- The plot suggests that a linear relationship might exist between the two variables. So we can proceed by fitting a linear model in R. -->
+
+<!-- ``{r, fig.height=6, fig.width=6} -->
+<!-- fit <- lm(longevity ~ thorax, ff) -->
+<!-- summary(fit) -->
+<!-- confint(fit, level=0.97) -->
+<!-- par(mfrow=c(2, 2)) -->
+<!-- plot(fit, pch=19, col='darkgrey') -->
+<!-- par(mfrow=c(1, 1)) -->
+<!-- `` -->
+
+<!-- ``` -->
 
 ## Prediction {#sec:prediction}
 
