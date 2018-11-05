@@ -89,6 +89,7 @@ weight <- runif(n=N, min=60, max=100) # hypothetical weights in kg
 height <- 2.2*weight + rnorm(n=N, mean=0, sd=10) # hypothetical heights in cm
 plot(weight, height, pch=19, xlab='Weight (kg)', ylab='Height (cm)', col='grey')
 ```
+
 To fit a linear model we use the [`lm()`](https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/lm) function 
 (**always** read the documentation of a function before using it!). 
 This function requires a **formula** object which has the form of
@@ -313,6 +314,8 @@ were treated identically in number of anaesthetisations (using $\mathrm{CO}_2$) 
 Download the data file from [here](https://exeter-data-analytics.github.io/StatModelling/_data/fruitfly.rds) and save it
 to your working directory.
 
+Since we are working with `data.frame()` objects, where appropriate, we have provided examples using both base R or `tidyverse` (for those of you who attended the [Advanced Visualisation and Data Wrangling](https://exeter-data-analytics.github.io/AdVis/) workshop).
+
 ```{r, eval=FALSE}
 ff <- readRDS("fruitfly.rds")
 ```
@@ -414,6 +417,7 @@ The `predict()` function can be used as a very general way to produce plots of t
 ```{r}
 plot(longevity ~ thorax, data = ff, pch = 19, col='darkgrey')
 ```
+
 There are various ways to add the correct regression line to this plot, but we will show you a general way that can be used for lots of different types of models. Firstly, we generate a range of $x$-coordinates that we wish to predict to e.g.
 
 ```{r}
@@ -450,13 +454,29 @@ newdata <- data.frame(
 newdata <- cbind(newdata, predict(fit, newdata, interval = "confidence", level = 0.97))
 newdata$longevity <- newdata$fit
 newdata$fit <- NULL
+```
 
+```{dupCode}
+
+``{r}
 ## plot fitted line against the raw data
 plot(longevity ~ thorax, data = ff, pch = 19, col='darkgrey',
      main = "Fitted regression line with 97% confidence interval")
 lines(longevity ~ thorax, data = newdata)
 lines(lwr ~ thorax, data = newdata, lty = 2)
 lines(upr ~ thorax, data = newdata, lty = 2)
+``
+
+####
+
+``{r}
+## plot fitted line against the raw data
+ggplot(mapping = aes(x = thorax, y = longevity)) +
+    geom_point(data = ff) +
+    geom_line(data = newdata) +
+    geom_ribbon(aes(ymin = lwr, ymax = upr), data = newdata, alpha = 0.5)
+``
+
 ```
 
 ```{task}
