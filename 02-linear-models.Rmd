@@ -341,7 +341,7 @@ the inseminated and virgin female cases are the treatment cases.
 Produce a scatterplot of `longevity` against `thorax`. What does the relationship look like?
 ```
 
-```{solution, dupCode = T, cache = F}
+```{solution, multCode = T, cache = F}
 
 ``{r, fig.height=6, fig.width=6}
 plot(longevity ~ thorax, data = ff, pch=19, col='darkgrey')
@@ -456,7 +456,7 @@ newdata$longevity <- newdata$fit
 newdata$fit <- NULL
 ```
 
-```{dupCode}
+```{multCode}
 
 ``{r}
 ## plot fitted line against the raw data
@@ -483,7 +483,7 @@ ggplot(mapping = aes(x = thorax, y = longevity)) +
 Produce the same plot but with a 97% **prediction** interval
 ```
 
-```{solution, dupCode = T}
+```{solution, multCode = T}
 
 ``{r}
 ## create new data frame to predict to
@@ -716,7 +716,7 @@ sex <- c(rep('Male', N), rep('Female', N))
 df <- data.frame(weight=weight, sex=sex, height=height)
 ```
 
-```{dupCode}
+```{multCode}
 
 ``{r, fig.height=6, fig.width=6}
 # Plot
@@ -741,7 +741,7 @@ before and assess the relationship between `height` and `weight`.
 fit <- lm(height ~ weight, data=df)
 ```
 
-```{dupCode}
+```{multCode}
 
 ``{r, fig.height=6, fig.width=6}
 ## predictions
@@ -776,7 +776,7 @@ summary(fit)
 
 If we colour the data by sex it becomes obvious that this extra variation is due to sex.
 
-```{dupCode}
+```{multCode}
 
 ``{r, fig.height=6, fig.width=6}
 plot(height ~ weight, data = df, pch = 19)
@@ -870,7 +870,7 @@ men on average will be `sexMale`=`r format(coef(fit)[1], digits=3)` cm taller th
 
 To plot the fitted lines, we can use a similar trick using `predict()` as [before](#sec:prediction). This time we need to produce predictions using all relevant combinations of explanatory variables: `weight` and `sex` in this case. A useful function to do this is `expand.grid()`:
 
-```{dupCode}
+```{multCode}
 
 ``{r, fig.height=6, fig.width=6}
 ## create dataset to predict to
@@ -916,7 +916,7 @@ ggplot(mapping = aes(x = weight, y = height, colour = sex)) +
 Add 97% confidence intervals to the fitted lines plots above.
 ```
 
-```{solution, dupCode = T}
+```{solution, multCode = T}
 
 ``{r, fig.height=6, fig.width=6}
 ## create dataset to predict to
@@ -1024,7 +1024,7 @@ We will use the fruitfly dataset ([Partridge and Farquhar (1981)](https://www.na
 
 ```
 
-```{solution, dupCode = T}
+```{solution, multCode = T}
 
 ``{r, fig.height=6, fig.width=6}
 fit <- lm(longevity ~ type + thorax, ff)
