@@ -806,10 +806,10 @@ points(height ~ weight, pch = 19, data = df[df$sex == "Female", ], col = "green"
 points(height ~ weight, pch = 19, data = df[df$sex == "Male", ], col = "blue")
 lines(height ~ weight, data = newdata[newdata$sex == "Female", ], col = "green")
 lines(height ~ weight, data = newdata[newdata$sex == "Male", ], col = "blue")
-lines(height ~ lwr, data = newdata[newdata$sex == "Female", ], col = "green", lty = 2)
-lines(height ~ lwr, data = newdata[newdata$sex == "Male", ], col = "blue", lty = 2)
-lines(height ~ upr, data = newdata[newdata$sex == "Female", ], col = "green", lty = 2)
-lines(height ~ upr, data = newdata[newdata$sex == "Male", ], col = "blue", lty = 2)
+lines(lwr ~ weight, data = newdata[newdata$sex == "Female", ], col = "green", lty = 2)
+lines(lwr ~ weight, data = newdata[newdata$sex == "Male", ], col = "blue", lty = 2)
+lines(upr ~ weight, data = newdata[newdata$sex == "Female", ], col = "green", lty = 2)
+lines(upr ~ weight, data = newdata[newdata$sex == "Male", ], col = "blue", lty = 2)
 legend(par("usr")[1] * 1.1, par("usr")[4] * 0.9,
        legend = c("Female", "Male"),
        pch = c(19, 19),
