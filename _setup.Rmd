@@ -2,7 +2,7 @@
 library(knitr)
 
 ## set knitr options
-opts_chunk$set(cache = FALSE, tidy.opts = list(width.cutoff = 55), tidy = F, fig.align = "center", dupCode = F)
+opts_chunk$set(cache = FALSE, tidy.opts = list(width.cutoff = 55), tidy = F, fig.align = "center", multCode = F)
 
 ## variables to help save latex answers for appendix
 taskCtr <- 0
@@ -28,7 +28,7 @@ knit_engines$set(task = function(options) {
 
 ## custom engine for solutions
 knit_engines$set(solution = function(options) {
-    if(!options$dupCode) {
+    if(!options$multCode) {
         out <- gsub("``", "```", options$code)
         out <- knit_child(text = out)
         if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
@@ -76,7 +76,7 @@ knit_engines$set(solution = function(options) {
 })
 
 ## custom engine for tabbed box
-knit_engines$set(dupCode = function(options) {
+knit_engines$set(multCode = function(options) {
     ## split code
     code <- grep("####", options$code)
     if(length(code) != 1){
