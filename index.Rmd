@@ -25,7 +25,7 @@ description: "Statistical modelling in R"
 ```{r, child = "_setup.Rmd", include = F, purl = F, cache = F}
 ```
 
-An introductory workshop on the field of statistical modelling in R. The focus will be on how to fit
+An introductory workshop to the field of statistical modelling in R. The focus will be on how to fit
 statistical models in R, rather than on the rigorous underlying mathematics. The target audience
 is anyone who wants to learn how to fit linear models in R. The progression will be
 linear models, generalised linear models and linear mixed effects models.

@@ -14,8 +14,8 @@ knitr::include_graphics(file.path(IMG, "01-data.png"))
 ```
 
 How do we make sense of all of these numbers and text? Visualising the data can 
-give us a lot of insight into the underlying structure of the data (covered in a previous workshop).
-The next step is to further *summarise* the data by means of a model. 
+give us important insights into the underlying structure of the data (covered in a previous workshop).
+The next step is to develop a **model** that captures the salient features/structure of the data.
 
 ## What is a model?
 
@@ -23,10 +23,7 @@ The next step is to further *summarise* the data by means of a model.
 
 Some people go even further:
 
-> "Raw data, no matter how extensive, are useless without a model."---[Nate Silver](https://www.newyorker.com/books/page-turner/what-nate-silver-gets-wrong"):
-
-Much like the abstract of a scientific paper encapsulates the main message of the paper,
-a model captures the **salient** features/structure of the data. 
+> Raw data, no matter how extensive, are useless without a model - [**Nate Silver**](https://www.newyorker.com/books/page-turner/what-nate-silver-gets-wrong")
 
 Models are built for various reasons:
 
@@ -71,7 +68,7 @@ version of the real-world with many (many) caveats!!
 
 > A **statistical model** is a mathematical model that makes a set of statistical assumptions in the form of probability distributions (i.e we assume that some variables follow a pre-defined probability distribution).
 
-In this workshop we will solely focus on **linear** models. In their simplest form these models can be used to fit "straight lines" (or hyperplanes) through data points. However, this modelling framework is much more general, and can model relationships between continuous and categorical variables, and can also be used to fit curved relationships. So it provides a much richer class of models than it first appears (though we will only focus on simple cases in this workshop.)
+In this workshop we will solely focus on **linear** models. In their simplest form these models can be used to fit "straight lines" (or hyperplanes; "straight lines" in higher dimensions) through data points. However, this modelling framework is much more general, and can model relationships between continuous and categorical variables, and can also be used to fit curved relationships. So it provides a much richer class of models than it first appears (though we will only focus on simple cases in this workshop.)
 
 ## Illustrative example
 
@@ -101,17 +98,17 @@ abline(lm(y~x), col='black', lwd=3)
 **Congratulations!** Unknowingly, you were fitting a statistical model to your measured data! 
 Your best fit in that case was equivalent to performing **ordinary least-squares**
 which minimises the distance between the model (straight line) and your data points.
-But more on that later.
 
 The fitted linear model is of the form $y = mx + c$. Where $m$ is the gradient and 
-$c$ is the intercept. At school you were inferring the parameters $m$ and $c$ by hand. In this workshop you will learn how to do this in R. 
+$c$ is the intercept ($x$ is the dependent variable and $y$ the response variable i.e your measured data). 
+At school you were inferring the parameters $m$ and $c$ by hand. In this workshop you will learn how to do it in R. 
 
 ```{r, echo=FALSE, fig.height=6, fig.width=6, out.width = "60%"}
 plot(x, y, pch=19, xlab='Hours spent watching Game of Thrones (GoT) at the weekend',
      ylab='Minutes spent on monday talking about GoT at work', col='grey')
 abline(lm(y~x), col='black', lwd=3)
 arrows(0.1, 0.5, 0.1, coef(fit)[1], angle=20, lwd=3, col='red', code=3, length=0.15)
-text(0.4, coef(fit)[1]/2, 'c', col='red', font=2, cex=1.2)
+text(1.5, coef(fit)[1]/2, 'c = intercept', col='red', font=2, cex=1.2)
 segments(7.5, predict(fit, data.frame(x=7.5)), 7.5, predict(fit, data.frame(x=7.5))-6, col='red', lwd=3)
 segments(7.5, predict(fit, data.frame(x=7.5))-6, -7.5 + coef(fit)[2]*(6), 
          predict(fit, data.frame(x=7.5))-6, col='red', lwd=3)

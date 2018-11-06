@@ -39,6 +39,7 @@ plot(x, y, pch=19, xlab='Hours spent watching Game of Thrones (GoT) at the weeke
 abline(lm(y~x), col='black', lwd=3)
 arrows(0.1, 0.5, 0.1, coef(fit)[1], angle=20, lwd=3, col='red', code=3, length=0.15)
 text(0.4, coef(fit)[1]/2, expression(beta[0]), col='red', font=2, cex=1.2)
+text(1.6, coef(fit)[1]/2, ' = intercept', col='red', cex=1.2)
 segments(7.5, predict(fit, data.frame(x=7.5)), 7.5, predict(fit, data.frame(x=7.5))-6, col='red', lwd=3)
 segments(7.5, predict(fit, data.frame(x=7.5))-6, -7.5 + coef(fit)[2]*(6), 
          predict(fit, data.frame(x=7.5))-6, col='red', lwd=3)
@@ -59,11 +60,14 @@ $$
 $i$ is an index that goes from 1 to $n$ (the total number of observations). The equation is the same as before ($y = \beta_0 + \beta_1x$),
 but now we have added an error term $\epsilon$. This term is needed because the straight line cannot go through *all* the data points
 (unless you have a very questionable dataset)!
-It represents the discrepancy between the model (the fitted straight line) and the observed data (grey points). $\epsilon$ is also
+It represents the discrepancy between the model (the fitted straight line) and the observed data (grey points). 
+
+$\epsilon$ is also
 known as the **noise** term. The reason is that in general our response variable has some uncertainty 
 associated with it (e.g counting the number of birds in an area, quantifying gene expression using microarrays or RNA-seq, etc.). 
 The statistical assumption in linear modelling is that these errors are normally distributed with mean
-zero and some standard deviation $\sigma^2$. This means that the **response** variable is also assumed to be normally distributed.
+zero and some standard deviation $\sigma$ (mathematically this is written as $\epsilon_i \sim \mathcal{N}(0, \sigma^2)$). 
+This means that the **response** variable is also assumed to be normally distributed.
 For the maths aficionados amongst you:
 
 $$
@@ -75,7 +79,7 @@ The workflow in linear regression is as follows:
 
 1. Infer the model's parameters $\beta_0$ and $\beta_1$.
 2. Check the model fit.
-3. Interpret the practical significance of the estimated parameters.
+3. Interpret the **practical** significance of the estimated parameters.
 
 ## Doing it in R
 
@@ -118,16 +122,17 @@ This outputs two numbers, the `(Intercept)=` `r format(coef(fit)[1], digits=4)` 
 These are the $\beta_0$ and $\beta_1$ parameters. 
 
 The $\beta_0$ parameter (intercept) is not
-very useful in this case, it basically tells us what's the expected height of someone that weighs 0kg (`r format(coef(fit)[1], digits=4)`cm here).
+very useful in this case, it basically tells us what's the expected height of someone that weighs 0 kg (`r format(coef(fit)[1], digits=4)` cm here).
 This is of course nonsense, but I'm highlighting it as a reminder that the assumptions that underlie these models can only be tested within the range of the observed data. 
 
-> **Aside**: using the model to predict outside of the range of the observed data is called **extrapolating**. Oftentimes, statistical models are developed *in order* to be used to extrapolate (e.g. climate modelling). This is however, dangerous. This is because we can only assess the assumptions of the model over the range of the observed data. When extrapolating we have to assume that these relationships hold beyond the range of the data, which may or may not be reasonable (hence why weather forecast over short-time periods are OK, but climate forecasts are much more uncertain). Hence we should always view the model as an approximation of the data generating process. In this particualr case, the interpretation of the parameters is not sensible where $x = 0$, but makes sense in the range that we are interested in exploring. If the case where $x = 0$ is important, then we would have to change the model to ensure that the predictions made sense at those values of $x$.
+> **Aside**: using the model to predict outside of the range of the observed data is called **extrapolating**. Oftentimes, statistical models are developed *in order* to be used to extrapolate (e.g. climate modelling). This is however, dangerous, as we can only assess the assumptions of the model over the range of the observed data. When extrapolating we have to assume that these relationships hold beyond the range of the data, which may or may not be reasonable (hence why weather forecast over short-time periods are OK, but climate forecasts are much more uncertain). Hence, we should always view the model as an approximation of the data generating process. In this particualr case, the interpretation of the parameters is not sensible when $x = 0$ (weight = 0 kg), but makes sense in the range that we are interested in exploring. If the case where $x = 0$ is important, then we would have to change the model to ensure that the predictions made sense at those values of $x$.
 
 The $\beta_1$ parameter (gradient) tells us about the 
 relationship between the outcome and explanatory variable. In this case, for every 1 kg increase in weight on *average* 
 the height increases by `r format(coef(fit)[2], digits=4)` cm.
 
-> **Warning**: the notation used by R can come across as confusing. Although the returned value is labelled as `weight`, in fact it corresponds to the $\beta_1$ parameter that relates to the strength of linear relationship between `weight` and `height`.
+> **Warning**: the notation used by R can come across as confusing. Although the returned value is labelled as `weight`, in fact it corresponds to the $\beta_1$ parameter that relates to the strength of linear relationship between `weight` and `height` (i.e it is a
+gradient).
 
 ### Using data frames
 
@@ -212,7 +217,7 @@ That's a lot of information, let's unpick it line by line:
     \text{F-statistic} = \frac{\text{Regression (explained) variation}}{\text{Residual (unexplained) variation}}
     $$
     
-    The F-statistic can be used to assess whether the amount of variation explained by the regression is *statistically significantly* different compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data). Large values of the F-statistic correspond to cases where the model fit is better for the more complex model compared to the null model. This test can be used to generate a p-value to assess whether the model fit is statistically significantly better given a pre-defined level of significance.
+    The F-statistic can be used to assess whether the amount of variation explained by the regression ($M_1$) is *statistically significantly* different compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data). Large values of the F-statistic correspond to cases where the model fit is better for the more complex model compared to the null model. This test can be used to generate a p-value to assess whether the model fit is statistically significantly better given a pre-defined level of significance.
     
     $$
     \begin{aligned}
@@ -231,7 +236,7 @@ number of different models to the same data by placing different assumptions/con
 In order to make **robust** inference, we must **check** the model fit
 
 Model checking boils down to confirming whether or not the assumptions that we have placed on the model
-are reasonable or not. Our main assumption is that the residuals are normally distributed centred
+are reasonable. Our main assumption is that the residuals are normally distributed centred
 around zero. Let's plot this:
 
 ```{r}
@@ -302,7 +307,7 @@ Points should follow the dashed line.
 We will use the fruitfly dataset ([Partridge and Farquhar (1981)](https://www.nature.com/articles/294580a0)) 
 introduced in the "Advanced Visualisation and Data Wrangling in R",
 which is summarised again here (do not worry about the details of the study for now, this
-is only included for the sake of completness):
+is only included for the sake of completeness):
 
 A cost of increased reproduction in terms of reduced longevity has been shown for female fruitflies, 
 but not for males. We have data from an experiment that used a factorial design to assess whether 
@@ -411,12 +416,12 @@ predict(fit, newdata, interval = "confidence", level = 0.97)
 
 > **Note**: If you predict *without* an `interval` argument, the `predict()` function returns a `vector`, otherwise it returns a `matrix`.
 
-**Aside**: there are two types of interval that you might want to produce: **confidence** or **prediction** intervals.
+**Aside**: there are two types of intervals that you might want to produce: **confidence** or **prediction** intervals.
 
 * **Confidence** intervals: these correspond to the uncertainty surrounding our estimate of an **average** individual (i.e. it represents the uncertainty in the **mean**: $y = \beta_0 + \beta_1 x$
 * **Prediction** intervals: these correspond to the uncertainty surrounding an **individual** observation: $y_i = \beta_0 + \beta_1 x_i + \epsilon_i$.
 
-If the model fits well, then we would expect $100(1 - \alpha)$% of the individual measurements to lie within the **prediction** interval, where $\alpha$ is the significance level (so $\alpha = 0.05$ corresponds to a 95% confidence interval).
+If the model fits well, then we would expect $100(1 - \alpha)$% of the individual measurements to lie within the **prediction** interval, where $\alpha$ is the significance level (so $\alpha = 0.03$ corresponds to a 97% confidence interval).
 
 `r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
 
@@ -430,16 +435,14 @@ There are various ways to add the correct regression line to this plot, but we w
 
 ```{r}
 ## create new data frame to predict to
-newdata <- data.frame(
-    thorax = seq(min(ff$thorax), max(ff$thorax), length.out = 50)
-)
+newdata <- data.frame(thorax=seq(min(ff$thorax), max(ff$thorax), length.out=50))
 ```
 
 We then have to use the model to predict the mean `longevity` at each of these `thorax` values:
 
 ```{r}
 ## predict longevity form the model
-newdata <- cbind(newdata, longevity = predict(fit, newdata))
+newdata <- cbind(newdata, longevity=predict(fit, newdata))
 ```
 
 Just as an illustration we will overlay these predictions onto the original scatterplot as points:
@@ -454,12 +457,10 @@ So we have used the `predict()` function to produce predicted coordinates that w
 
 ```{r}
 ## create new data frame to predict to
-newdata <- data.frame(
-    thorax = seq(min(ff$thorax), max(ff$thorax), length.out = 50)
-)
+newdata <- data.frame(thorax=seq(min(ff$thorax), max(ff$thorax), length.out=50))
 
 ## produce predictions and intervals
-newdata <- cbind(newdata, predict(fit, newdata, interval = "confidence", level = 0.97))
+newdata <- cbind(newdata, predict(fit, newdata, interval="confidence", level=0.97))
 newdata$longevity <- newdata$fit
 newdata$fit <- NULL
 ```
@@ -475,10 +476,8 @@ plot(longevity ~ thorax, data = ff,
      main = "Fitted regression line
      with 97% confidence interval")
 lines(longevity ~ thorax, data = newdata)
-lines(lwr ~ thorax, 
-      data = newdata, lty = 2)
-lines(upr ~ thorax, 
-      data = newdata, lty = 2)
+lines(lwr ~ thorax, data = newdata, lty = 2)
+lines(upr ~ thorax, data = newdata, lty = 2)
 ``
 
 ####
@@ -609,9 +608,12 @@ scatterplot3d(weight, heightParents, height, pch=19, xlab='Weight (kg)',
 ```
 
 Note how by adding another explanatory variable we are *spreading* the observations across an additional dimension.
-That is, we went from a 2D plot to a 3D plot (if we add a third explanatory variable we would need a 4D plot). 
+That is, we go from a 2D plot to a 3D plot (if we add a third explanatory variable we would need a 4D plot). 
 It is important to keep this in mind; the more explanatory variables
-we add the more we spread our data thinly across multiple dimensions.
+we add the more we spread our data thinly across multiple dimensions. In practice, this means that our
+observations will be sparsely scattered across a high dimensional space, making it hard to
+fit a robust linear model. In the limit, when we have more explanatory variables than observations, we would not be able
+to fit a linear model at all (unless we employ a different statistical framework and impose further assumptions/constraints).
 
 The objective of linear modelling is still the same, finding the "best" straight line, or in this case a **hyperplane** 
 (a line in higher dimensions). You can think of a **hyperplane** as a (rigid) sheet of paper, where the objective
@@ -644,7 +646,7 @@ summary(fit)
 Same as before, the `(Intercept)=` `r format(coef(fit)[1], digits=4)` cm, `weight=` `r format(coef(fit)[2], digits=4)` cm/kg and `heightParents=` `r format(coef(fit)[3], digits=4)` cm/cm
 are the $\beta_0$, $\beta_1$ and $\beta_2$ parameters. 
 
-* The $\beta_0$ parameter (intercept) is the expected height of someone that weighs 0kg *and* whose parents have a mean height of 0 cm. Again, this parameter is not useful in this case.
+* The $\beta_0$ parameter (intercept) is the expected height of someone that weighs 0 kg *and* whose parents have a mean height of 0 cm. Again, this parameter is not useful in this case.
 * The $\beta_1$ parameter tells us about the 
 relationship between `height` and `weight`. For every 1 kg increase in weight on *average* 
 the height increases by `r format(coef(fit)[2], digits=4)` cm.
@@ -676,7 +678,9 @@ $$
 Where $i$ is an index that goes from 1 to $n$ (the total number of observations) and
 $p$ is the total number of explanatory variables. Hopefully it is now clearer why statisticians
 use Greek letters $\beta_0, \ldots, \beta_p$, else the equation would be too
-long to write in English (i.e outcome = intercept + ((gradient outcome vs explanatory variable 1) x (explanatory variable 1)) + ((gradient outcome vs explanatory variable 2) x (explanatory variable 2)) + ...)
+long to write in English
+
+outcome = intercept + ((gradient outcome vs explanatory variable 1) x (explanatory variable 1)) + ((gradient outcome vs explanatory variable 2) x (explanatory variable 2)) + ...)
 
 ## Practical 2
 
