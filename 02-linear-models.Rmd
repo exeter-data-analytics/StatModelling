@@ -212,7 +212,7 @@ That's a lot of information, let's unpick it line by line:
     \text{F-statistic} = \frac{\text{Regression (explained) variation}}{\text{Residual (unexplained) variation}}
     $$
     
-    The F-statistic can be used to assess whether the amount of variation explained by the regression is *statistically significantly* different compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data). Large values of the F-statistic correspond to cases where the model fit is better for the more complex model compared to the null model. This test can be used to generate a p-value to assess whether the model fit is staitically significantly better given a pre-defined level of significance.
+    The F-statistic can be used to assess whether the amount of variation explained by the regression is *statistically significantly* different compared to the **null** model ($M_0$ - in this case the **null** model is the same as just taking the mean of the data). Large values of the F-statistic correspond to cases where the model fit is better for the more complex model compared to the null model. This test can be used to generate a p-value to assess whether the model fit is statistically significantly better given a pre-defined level of significance.
     
     $$
     \begin{aligned}
@@ -257,8 +257,7 @@ par(mfrow=c(1, 1))
 plot(fit, pch=19, col='darkgrey', which=1)
 ```
 
-Here we are checking that the variance is constant along the fitted line, 
-and that there are no systematic patterns in the residuals.
+Here we are checking that the variance is constant along the fitted line^[non-constant variance is known as **heteroscedacity**], and that there are no systematic patterns in the residuals.
 
 A couple of example where this assumption is violated.
 
@@ -543,9 +542,8 @@ newdata <- data.frame(
 newdata <- cbind(newdata, 
     predict(fit, newdata, 
         interval = "prediction", 
-        level = 0.97))
-newdata$longevity <- newdata$fit
-newdata$fit <- NULL
+        level = 0.97)) %>%
+    rename(longevity = fit)
 
 ## plot fitted line against the raw data
 ggplot(mapping = 
@@ -734,7 +732,7 @@ are satisfied.
 
 The $R^2$ statistic (also known as the **coefficient of determination**) is the proportion
 of the total variation that is explained by the regression. Which in this case 
-is `r format(summary(fit)$adj.r.squared*100, digits=3)`%. This is essentially
+is `r format(summary(fit)$r.squared*100, digits=3)`%. This is essentially
 the same as the previous model which only contained `thorax`, suggesting that `sleep` is not an important predictor of `longevity`.
 
 ```
@@ -957,7 +955,7 @@ summary(fit)
 The `sexMale` coefficient is $\beta_1$ in the equations above and it represents 
 the *difference* in intercept between males and females (remember that the gradient
 is the same for both sexes). Thus for the *same* weight, 
-men on average will be `sexMale`=`r format(coef(fit)[1], digits=3)` cm taller than females.
+men on average will be `sexMale`=`r format(coef(fit)[2], digits=3)` cm taller than females.
 
 To plot the fitted lines, we can use a similar trick using `predict()` as [before](#sec:prediction). This time we need to produce predictions using all relevant combinations of explanatory variables: `weight` and `sex` in this case. A useful function to do this is `expand.grid()`:
 
@@ -1325,7 +1323,7 @@ are satisfied.
 
 The $R^2$ statistic (also known as the **coefficient of determination**) is the proportion
 of the total variation that is explained by the regression. Which in this case 
-is `r format(summary(fit)$adj.r.squared*100, digits=3)`%. This is considerably higher 
+is `r format(summary(fit)$r.squared*100, digits=3)`%. This is considerably higher 
 than the 40% achieved with just `thorax`, suggesting that type of companion is indeed
 an important covariate and thus should be included in the model.
 
