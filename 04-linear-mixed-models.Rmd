@@ -1,7 +1,495 @@
-# Linear mixed effect models
+# Mixed effects models
 
-```{r, echo=FALSE}
-IMG <- "_img" # image path
+## Introduction
+
+This practical will focus on how to analyse data when the experimental design (or the surveyed explanatory variables) obliges us to study non-independent experimental units. You will find yourself distinguishing between random effects and fixed effects. You will find yourself partitioning the residual deviance. You will find yourself frustrated at the lack of consensus regarding how to simplify fixed factors in mixed models. It takes a long time to understand how to deal with blocks (and other random effects): don't expect understanding to come overnight, and do rely on books and websites to help you. But be warned, at this level of statistical prowess, much of the literature is written in Greek symbols and matrix algebra.
+
+***Health Warning: some of these mixed-effects modelling packages are quickly evolving, and future updates might play some havoc with the coding, and outputs from, the scripts written here. You will need to keep your eye on the forums in the future if this happens. As always, let me or your demonstrators know if you encounter difficulties.***
+
+## Randomised Complete Block Design
+
+> Often you will find it impossible to allocate treatments to experimental units at random because they are structured in time or in space. This means that units are not independent of each other, hence their residuals will not be independent, and we have violated an important assumption of generalised linear modeling (and, indeed, of analysis of variance). However the recognition of natural structuring in our population of experimental units can be **VERY** useful. If the experimental design can be stratified so that all units that share a common 'trait' (e.g. share a corner of a field, or share a single incubator) can represent one or more full replicate of the proposed experiment, then we should use this natural structuring to absorb some of our enemy: noise (also called residual deviance).
+
+An extreme case of using error-absorbers is the Randomised Complete Block Experimental Design. So-called because it includes blocks, each block contains a single replicate of the experiment, and experimental units **WITHIN** blocks are allocated to treatment combinations **AT RANDOM**. The concept is best explained using an example.
+
+A microbiologist wishes to know which of four growth media is best for rearing large populations of anthrax, quickly. However, this poorly funded scientist does not own a large enough incubator in which to grow lots of replicate populations. Instead he requests space in five different incubators owned by other, better-funded researchers. Each incubator just has space for four bottles of medium. Our scientist allocates each growth medium to one bottle per incubator **AT RANDOM**, inoculates with anthrax then monitors population growth rate.
+
+The data is available in 'baccabinets.csv'. Read and attach this dataset, and familiarize yourself with its structure. 
+
+```{r, echo = -1, eval = -2}
+bac <- read.csv("_data/baccabinets.csv", header = T)
+bac <- read.csv("baccabinets.csv", header = T)
 ```
 
-## Under construction
+Convert `cabinet` and `media` to factors in preparation for analysis.
+
+```{r bacc1}
+bac$cabinet <- as.factor(bac$cabinet)
+bac$media <- as.factor(bac$media)
+```
+
+Let's do the analysis **WRONGLY** to begin with:
+
+```{r bacwrong}
+bac.lm <- lm(growth ~ media, data = bac)
+anova(bac.lm)
+```
+
+> **QUESTION**: why is this wrong?
+
+Let's try with an interaction effect:
+
+```{r baccint}
+bac.lm <- lm(growth ~ media * cabinet, data = bac)
+summary(bac.lm)
+```
+
+We are faced with all these `NA`s because the model is **SATURATED** for degrees-of-freedom: there is no replication so we cannot calculate the residual deviance/variance. 
+
+> **TASK**: now try to model-simplify. Why doesn't this work?
+
+Now, three ways to do the analysis correctly. 
+
+1. Using `aov` (i.e. the traditional approach using analysis of variance).
+
+    ```{r aov}
+    bac.aov <- aov(growth ~ media + Error(cabinet), data = bac)
+    summary(bac.aov)
+    ```
+
+2. Manually drop the `cabinet:media` interaction from the saturated model and test the statistical significance of `media`. (Note that this will not work for more complicated split plot experimental designs---see below.)
+
+    ```{r baccnoint}
+    bac.lm <- lm(growth ~ cabinet + media, data = bac)
+    anova(bac.lm)
+    ```
+
+3. A very useful and simple introduction to mixed effects models. Firstly, install if necessary (using `install.packages()`; uncomment the code below if required) and load the `lme4` package [@lme4]:
+
+    ```{r lme40, include = F}
+    library(lme4)
+    ```
+    
+    ```{r lme4, eval = F}
+    ## install.packages("lme4")
+    library(lme4)
+    ```
+    
+    > **Fixed and random effects**: `Cabinet` is a **random** effect---we don't care about the identity of each cabinet, each cabinet is sampled from a population of possible cabinets, we just want to predict and absorb the variance in bacterial growth rate explained by cabinet. `Media` is a **fixed** effect---we chose the media to be tested, each media has a specific identity, we want to estimate the differences in bacterial growth between different media. See lecture notes to clarify this choice between random and fixed effects.
+    
+    Now on with the analysis:
+    
+    ```{r bac.lmer}
+    bac.lmer <- lmer(growth ~ media + (1 | cabinet), data = bac)
+    summary(bac.lmer)
+    ```
+    
+    > **Syntax for `lmer`**: The `lmer` command has two important sections. First is the 'fixed effects' part of the model (in this case, `growth ~ media`), which is identical to the model you would enter into `glm` if there were no problems of non-independence of data. The second part is where you enter the 'random effects' part of the model, where you tell R how the data is nested and where the non-independence lies. There is a whole world of possibilities here, from spatially autocorrelated variance/covariance matrices to independently varying random slopes and intercepts. We keep it simple in this course. For this example, we assume no interaction between media and cabinet, hence we just want to predict and absorb the additive variance due to different cabinets. Hence our random effect term is `(1 | cabinet)`. This means: 'the intercept of our linear model will vary according to cabinet'.
+
+    Now, I'm going to break with tradition. I can use `anova(model)` to provide F-tests associated with the fixed effects of the model. I am **ONLY** doing this to show that the F-test here is the same as the F-test from `aov` and from `glm`. For the remainder of this practical, we will change how we assess statistical significance in mixed effects models. The reason is that F-tests are pretty useful when you have a **balanced** experimental design, i.e. when all treatment and block combinations are equally replicated. When sample sizes vary, or when explanatory variables are correlated with each other, the F-test is invalid.
+    
+    > **NOTE:** for various reasons the authors of `lme4` do not provide p-values as standard from a call to `anova()`. In this case, we can use a slightly different function from the `car` package [@car] called `Anova()`. (Notice the all important capital `A`!) Again, you might have to install this package. Another option is to re-fit using the `lme` function and then use `anova()`.
+    
+    ```{r bac.lmer1}
+    ## install.packages("car")
+    library(car)
+    Anova(bac.lmer, test = "F")
+    ```
+    
+    > Interpreting `lmer` output. Note two weaknesses of the outputs from `aov` and `lm` approaches to this analysis: `aov` was unable to give you estimates of the coefficients for each media; `lm` gave too much information---in this case we don't care what the coefficients are for each cabinet. `lmer` gives you ideal information on coefficients and much more. In particular, the 'intercept' of the `lmer` model is the mean growth rate in `media1` for an **AVERAGE** cabinet. `lmer` output also gives you information criteria about the model, tells you the standard deviation of the random effects, correlations between levels of fixed effects, and so on. Finally, the `Anova` output from `lmer` gave us exactly the F-value that we gained from the `aov` and `lm` approaches. This is because our design is completely balanced (each treatment replicated once in each block). Later we will discover analyses in which F-values will differ: `aov` analyses will be approximations in unbalanced designs.
+
+## Non-independent data: pseudoreplication, nested variance and derived variable analysis
+
+A motivating example: the value of endosymbionts to aphids.
+
+Recently [Dave](http://biosciences.exeter.ac.uk/staff/index.php?web_id=david_hodgson) reviewed a paper submitted to Biology Letters, in which the fitness of 8 aphid clones was measured. Fitness was measured using 100 aphids per clone. Four of the clones harboured a single species of endosymbiont (bacteria that inhabit aphid cells and help them to synthesise essential amino acids), while four clones harboured multiple endosymbiont species. The hypothesis was that harbouring multiple species of endosymbiont is 'good' for fitness. The statistical analysis considered the fitness of each aphid as its response variable, and tested the influence of 'endosymbiont diversity' (one vs. many species) as a categorical explanatory variable. Importantly, the analysis correctly recognized that 100 aphids came from each clone, and therefore 'absorbed' the effect of aphid clone as a random effect in a mixed-effects model. However, the fundamental test of `fitness ~ endosymbiont.diversity` used **ALL THE DATA** and had 797 residual degrees of freedom (800 minus 2 (estimation of the two treatment means) minus 1 (estimation of the among-clone variance)). This is wrong. It's wrong because the diversity of endosymbionts is a feature of the aphid **CLONE**, not of the individual aphid. All the aphids within each clone shared lots of features alongside endosymbiont diversity. Absorbing the variation among clones is a good idea, but the analysis remains fundamentally **PSEUDOREPLICATED**. The only valid analysis to test this hypothesis is to calculate mean fitness per clone, and compare the means of the four clones with a single endosymbiont to the means of the four clones with more than one endosymbiont. The use of mixed models is not a panacea for poor experimental design.
+
+Another way to think about this is to ask at what level of the experimental design is the explanatory variable manipulated? Here, endosymbiont diversity happens at the level of the **CLONE**. So, the test of the impact of endosymbiont diversity must be performed at the level of the **CLONE**. If the experimenter had manipulated endosymbiont diversity within each individual aphid, then the analysis could use all the aphids as experimental units, absorb the 'extra' similarities among clonemates by including `clone` as a random effect, and correctly use the test that they used. But they didn't do that so their paper got rejected. 
+
+### Working with data
+
+We take an example from Sokal & Rohlf (1981). The experiment involved a simple one-way anova with 3 treatments given to 6 rats. The analysis was complicated by the fact that three preparations were taken from the liver of each rat, and two readings of glycogen content were taken from each preparation. This generated 6 pseudoreplicates per rat to give a total of 36 readings in all. Clearly, it would be a mistake to analyse these data as if they were a straightforward one-way anova, because that would give us 33 degrees of freedom for error. In fact, since there are only two rats in each treatment, we have only one degree of freedom per treatment, giving a total of 3 d.f. for error. 
+ 
+The variance is likely to be different at each level of this nested analysis because: 
+ 
+1. the readings differ because of variation in the glycogen detection method within each liver sample (measurement error) ,
+2. the pieces of liver may differ because of heterogeneity in the distribution of glycogen within the liver of a single rat ,
+3. the rats will differ from one another in their glycogen levels because of sex, age, size, genotype, etc.,
+4. rats allocated different experimental treatments may differ as a result of the fixed effects of treatment. 
+
+If all we want to test is whether the experimental treatments have affected the glycogen levels, then we are not interested in liver bits within rat's livers, or in preparations within liver bits. We could combine all the pseudoreplicates together, and analyse the 6 averages. This would have the virtue of showing what a tiny experiment this really was (we do this later; see below). But to analyse the full data set:
+ 
+
+The new concept here is that we include an `Error` term in the model formula to show: 
+
+1. How many error terms are required (answer: as many as there are plot sizes).
+2. What is the hierarchy of plot sizes (biggest on the left, smallest on the right).
+3. After the tilde `~` in the model formula we have `Treatment` as the only fixed effect.
+4. The `Error` term follows a plus sign `+` and is enclosed in round brackets.
+5. The plots, ranked by their relative sizes are separated by slash operators as follows:
+
+```{r, echo = -1, eval = -2}
+rats <- read.csv("_data/rats.csv", header = T)
+rats <- read.csv("rats.csv", header = T)
+head(rats)
+rats$Treatment <- factor(rats$Treatment) 
+rats$Rat <- factor(rats$Rat) 
+rats$Liver <- factor(rats$Liver)
+rats.aov <- aov(Glycogen ~ Treatment + Error(Treatment/Rat/Liver), data = rats) 
+summary(rats.aov)
+```
+
+There are several important things to see in this `aov` table: 
+
+1. First, you use the mean square from the spatial scale immediately below when assessing statistical significance. (You do not use the 'overall' error mean square, 21.17, as we have done up to now). So the F ratio for treatment is 778.8/265.9 = 2.9 on 2 and 3 d.f. which is way short of statistical significance (the critical value is 9.55).
+2. Second, a different recipe is used in nested designs to compute the residual degrees of freedom. `Treatment` and `Total` degrees of freedom are the same as usual but the others are different.
+3. There are 6 rats in total but there are not 5 d.f. of freedom for rats: there are two rats per treatment, so there is 1 d.f. for rats within each treatment. There are 3 treatments so there are 3 x 1 = 3 d.f. for rats within treatments. An alternative interpretation is that we have 6 rats, but have estimated 3 means (one per treatment) so we have 6 - 3 = 3 d.f.
+4. There are 18 liver bits in total but there are not 17 d.f. for liver bits: there are 3 bits in each liver, so there are 2 d.f. for liver bits within each liver. Since there are 6 livers in total (one for each rat) there are 6 x 2 = 12 d.f. for liver bits within rats. An alternative interpretation is that we have 18 measurements but we have estimated 6 means, so we have 18 - 6 = 12 d.f.
+5. There are 36 preparations but there are not 35 d.f. for preparations; there are 2 preparations per liver bit, so there is 1 d.f. for preparation within each liver bit. There are 18 liver bits in all (3 from each of 6 rats) and so there are 1 x 18 = 18 d.f. for preparations within liver bits. Alternatively, we have measured 36 preparations but we have estimated 18 means, one for each liver bit, so we have 36 - 18 = 18 d.f.
+6. Using the 3 different error variances to carry out the appropriate F tests we learn that there are no statistically significant differences between treatments but there are statistically significant differences between rats, and between parts of the liver within rats (i.e. small scale spatial heterogeneity in the distribution of glycogen within livers):
+
+The F test for the effect of treatment is $F_{2, 3} = 778.8/265.9 = 2.9$ (n.s.s.); for differences between rats within treatments it is $F_{3, 12} =  265.9/49.5 = 5.4$ (p < 0.05); and for liver bits within rats we have $F_{12, 18} = 49.5/21.2 = 2.2$ (p = 0.05). 
+
+> **ASIDE**: to obtain the p-values from these distributions we can use the `pf(q, df1, df2)` function, which returns the cumulative distribution function for a quantile `q` (i.e. the probability that the variable $X$ takes values less than $q$: $P(X < q)$). Remember, a p-value is the probability that our test statistic takes a value *at least as or more extreme* than the observed value, therefore we are looking for $P(X > q)$, which can be obtained using the `lower.tail = F` argument e.g. `pf(49.5 / 21.17, 12, 18, lower.tail = F)` = `r round(pf(49.5 / 21.17, 12, 18, lower.tail = F), 2)` and so on.
+
+> In general, we use the slash operator in model formulas where the variables are random effects (i.e. where the factor levels are uninformative), and the asterisk operator in model formulas where the variables are fixed effects (i.e. the factor levels are informative). Knowing that a rat is number 2 tells us nothing about that rat. Knowing a rat is male tells us a lot about that rat. In error formulas we always use the slash operator (never the asterisk operator) to indicate the order of ‘plot-sizes’: the largest plots are on the left of the list and the smallest on the right (see below).
+
+### The Wrong Analysis 
+
+Here is what not to do (try it anyway)!
+
+```{r wrong} 
+rats.aov <- aov(Glycogen ~ Treatment * Rat * Liver, data = rats)
+```
+
+The model has been specified as if it were a full factorial with no nesting and no pseudoreplication. Note that the structure of the data allows this mistake to be made. It is a very common problem with data frames that include pseudoreplication. A summary of the model fit looks like this:
+
+```{r sumrats}
+summary(rats.aov)
+```
+
+This says that there was a highly statistically significant difference between the treatment means, at least some of the rats were statistically significantly different from one another, and there was a statistically significant interaction effect between treatments and rats. This is wrong! The analysis is flawed because it is based on the assumption that there is only one error variance and that its value is 21.2. This value is actually the measurement error; that is to say the variation between one reading and another from the same piece of liver. For testing whether the treatment has had any effect, it is the rats that are the replicates, and there were only 6 of them in the whole experiment. 
+ 
+### Derived variables avoid pseudoreplication 
+
+The idea is to get rid of the pseudoreplication by averaging over the liver bits and preparations for each rat. A useful way of averaging, in R, is to use `aggregate`:
+
+```{r agg}
+rats.new <- aggregate(Glycogen ~ Rat + Treatment, data = rats, mean)
+rats.new
+```
+
+Here, `rats.new` is a new dataset (hopefully shorter than its ancestral dataset) but has the same column headings as `rats`. (Hence be careful to specify the **correct** data set using the `data` argument where necessary.)
+
+```{r ratsagg}
+rats.new.lm <- lm(Glycogen ~ Treatment, data = rats.new)
+anova(rats.new.lm)
+```
+
+## Non-independent data: Split-plot analyses
+
+Split-plot experiments are like nested designs in that they involve plots of different sizes and hence have multiple error terms (one error term for each plot size). They are also like nested designs in that they involve pseudoreplication: measurements made on the smaller plots are pseudoreplicates as far as the treatments applied to larger plots are concerned. This is spatial pseudoreplication, and arises because the smaller plots nested within the larger plots are not spatially independent of one another. The only real difference between nested analysis and split plot analysis is that other than blocks, all of the factors in a split-plot experiment are typically fixed effects, whereas in most nested analyses most (or all) of the factors are random effects.  
+ 
+The only things to remember about split plot experiments are that:
+ 
+1. We need to draw up as many anova tables as there are plot sizes, 
+2. the error term in each table is the interaction between blocks and all factors applied at that plot size or larger. This is an extension of the logic for Randomized Complete Block Designs, in which fixed effects are tested against interactions with block.
+ 
+This experiment involves the yield of cereals in a factorial experiment with 3 treatments, each applied to plots of different sizes within 4 blocks. The largest plots (half of each block) were irrigated or not because of the practical difficulties of watering large numbers of small plots. Next, the irrigated plots were split into 3 smaller split-plots and seeds were sown at different densities. Again, because the seeds were machine sown, larger plots were preferred. Finally, each sowing density plot was split into 3 small split-split plots and fertilisers applied by hand (N alone, P alone and N + P together). The data look like:
+
+```{r splityield0, echo = F}
+splityield <- read.csv("_data/splityield.csv", header = T)
+splityield$density <- factor(as.character(splityield$density), levels = c("high", "medium", "low"))
+temp <- tapply(splityield$yield, rev(list(Block = splityield$block, Irrigation = splityield$irrigation, Fertiliser = splityield$fertilizer, density = splityield$density)), function(x) x)
+temp.irr <- temp[, , "irrigated", ]
+temp.cont <- temp[, , "control", ]
+    
+temp.irr <- do.call("rbind", lapply(1:4, function(i, x) x[, , i], x = temp.irr))
+temp.cont <- do.call("rbind", lapply(1:4, function(i, x) x[, , i], x = temp.cont))
+temp <- cbind(temp.cont, temp.irr)
+temp <- cbind(rownames(temp), temp)
+temp <- rbind(colnames(temp), temp)
+colnames(temp) <- c("", "", "Control", "", "", "Irrigated", "")
+rownames(temp) <- c("", "", "Block A", "","", "Block B", "","", "Block C", "","", "Block D", "")
+temp[1, 1] <- "**Density / Fertiliser**"
+library(pander)
+panderOptions("table.split.table", Inf)
+pander(temp, style = "rmarkdown", table.emphasize.rownames = F)
+```
+
+First, we'll do this analysis via traditional split-plot ANOVA using `aov`, then attempt the analysis using `lmer`.
+
+### Analysing split-plot designs using `aov`
+
+```{r splityield, tidy = F, echo = -1, eval = -2}
+splityield <- read.csv("_data/splityield.csv", header = T)
+splityield <- read.csv("splityield.csv", header = T)
+summary(splityield)
+split.aov <- aov(yield ~ irrigation * density * fertilizer + 
+                     Error(block/irrigation/density/fertilizer), data = splityield)
+```
+ 
+The model is long, but not particularly complicated. Note the two parts: the model formula (the factorial design: `irrigation * density * fertilizer`), and the `Error` structure (with plot sizes listed left to right from largest to smallest, separated by slash `/` operators). The main replicates are blocks, and these provide the estimate of the error variance for the largest treatment plots (irrigation). We use asterisks in the model formula because these are fixed effects (i.e. their factor levels are informative). 
+
+```{r sumaov}
+summary(split.aov)
+```
+ 
+This produces a series of ANOVA tables, one for each plot size, starting with the largest plots (block), then looking at irrigation within blocks, then density within irrigation within block, then finally fertilizer within density within irrigation within block. Notice that the error degrees of freedom are correct in each case (e.g. there are only 3 d.f. for error in assessing the irrigation main effect, but it is nevertheless statistically significant; p = 0.025). 
+
+There are two statistically significant interactions. A useful way to understand these is to use the `interaction.plot` function. The variables are listed in a non-obvious order: first the factor to go on the $x$-axis, then the factor to go as different lines on the plot, then the response variable. There are 3 plots to look at so we make a $2 \times 2$ plotting area: 
+ 
+```{r intplot, fig.width = 10, fig.height = 10}
+par(mfrow = c(2, 2))
+interaction.plot(splityield$fertilizer, splityield$density, splityield$yield) 
+interaction.plot(splityield$fertilizer, splityield$irrigation, splityield$yield) 
+interaction.plot(splityield$density, splityield$irrigation, splityield$yield)
+par(mfrow = c(1, 1))
+```
+
+The really pronounced interaction is that between irrigation and density, with a reversal of the high to low density difference on the irrigated and control plots. Interestingly, this is not the most statistically significant interaction. That honour goes to the `fertilizer:irrigation` interaction (top right graph). 
+
+Overall, the 3-way interaction was not statistically significant, nor was the 2-way interaction between density and fertilizer. The 2-way interaction between irrigation and fertilizer, however, was highly statistically significant and, not surprisingly, there was a highly statistically significant main effect of fertilizer. 
+
+### Analyzing split-plot designs using `lmer`
+
+Now, how do we set up a mixed effects model to analyse this data? `block` is the only random effect but our data are nested. Our fixed effects are `irrigation`, `density` and `fertilizer`. Here is the model, including prediction of the variance due to block's random effect on the intercept of the model:
+
+**NOTE**: Ordinarily we would write the nested random effect terms using the syntax:
+
+```{r wrongsynt, error = TRUE, tidy = F}
+split.lmer <- lmer(yield ~ irrigation * density * fertilizer + 
+                       (1 | block/irrigation/density/fertilizer), data = splityield)
+```
+
+However, if you run this, you will notice that the function returns an error. This is because there are no replicates within the final nesting (i.e. the table above on has a single replicate in each cell). To overcome this we need to remove the final nesting. Unfortunately, this leads to a rather more horrible formula. Another way of writing the command above is:
+
+```{r wrongsynt1, eval = F, tidy = F}
+split.lmer <- lmer(yield ~ irrigation * density * fertilizer + (1 | block) + 
+                       ( 1 | block:irrigation) + (1 | block:irrigation:density) + 
+                       ( 1 | block:irrigation:density:fertilizer), data = splityield)
+```
+
+Pretty grim eh? However, in this case we note that the final nested random effect only has one replicate per group, so we simply remove this term. Leaving:
+
+```{r split.lmer, tidy = F}
+split.lmer <- lmer(yield ~ irrigation * density * fertilizer + (1 | block) + 
+                       (1 | block:irrigation) + (1 | block:irrigation:density), 
+                       data = splityield)
+Anova(split.lmer, test = "F")
+```
+
+This is a balanced design (all treatment combinations have the same number of replicates) so I'm safe to ask for an ANOVA table of the full model. But this is the last time I'm going to do it. After this example, I will be testing statistical significance of terms using our old friend, model simplification.
+
+If you really want to know all the coefficients, type `summary(split.lmer)` and suffer the consequences! Note however that the ANOVA table got the F-values absolutely right. Also, a word of caution: `aov` got the same answer as `lmer` here because the experimental design was completely balanced, all treatment combinations appearing once at each level of the split-plot design. If the design was unbalanced, F-values from `aov` and from `lmer` would differ, would only be approximate, and may be tested against the wrong residual degrees of freedom.
+
+## Absorbing the influence of random effects
+
+Eight groups of students walked through Hell's Gate National Park and estimated the distance to groups or individuals of several species of mammalian herbivores. Here we work with data on distances to three key species: Thomson's gazelle, warthog and zebra. We are interested in whether distances to these animals differ among species, whether distances depend on animal group size, and also whether the relationship between distance and group size differs among species. Previously we have worked with data from the first and the last group to walk through Hell's Gate. Here we will work with data from all the groups. The data is in file "HG data all groups three species.csv".
+
+A na&iuml;ve analysis would ignore the identity of the student group, and therefore treat all the distance observations as independent. It would probably fit a `lm` of distance against species, number and the interaction between species and number. My own exploration of the data suggests that raw distances are skewed, and that a log-transformation improves homoscedasticity and normality of residuals. So before analysing we do this transformation.
+
+```{r, echo = -1, eval = -2}
+hg <- read.csv("_data/HG data all groups three species.csv", header = T)
+hg <- read.csv("HG data all groups three species.csv", header = T)
+hg$ldist <- log(hg$Distance)
+hg.lm <- lm(ldist ~ Species * Number, data = hg)
+anova(hg.lm)
+```
+
+This suggests a statistically significant interaction between `Species` and `Number` ($F_{2, 456} = 5.78$, $p = 0.003$).
+
+```{r sumhg}
+summary(hg.lm)
+```
+
+The interaction appears to be driven by a decrease in distance with increasing group size, but only in zebras. We can draw the relevant figure.
+
+Plot the axes and raw data:
+
+```{r plothg}
+plot(Distance ~ Number, data = hg, type = "n")
+points(Distance ~ Number, data = hg, subset = (Species == "thomsons gazelle"), pch = 16, col = "brown")
+points(Distance ~ Number, data = hg, subset = (Species == "warthog"), pch = 16,col = "grey50")
+points(Distance ~ Number, data = hg, subset = (Species == "zebra"), pch = 16, col = "black")
+legend(15, 1000, pch = rep(16, 3), col = c("brown", "grey50", "black"), legend = c("gazelle", "warthog", "zebra"))
+```
+
+Generate 'fake' data in order to plot fitted lines:
+
+```{r pred}
+newdata <- data.frame(Number = rep(seq(min(hg$Number), max(hg$Number), length = 100), 3))
+newdata$Species <- as.factor(rep(levels(hg$Species), each = 100))
+```
+
+Now get the predicted values for the fake data, and back-transform log-distance to real distances, using the `exp` command:
+
+```{r hgpred}
+hg.pred <- exp(predict(hg.lm, newdata))
+```
+
+Now add the fitted lines to the plot:
+
+```{r hglines, echo = 6:8}
+<<plothg>>
+lines(hg.pred ~ newdata$Number, data = hg, subset = (newdata$Species == "thomsons gazelle"), lwd = 2, col = "brown")
+lines(hg.pred ~ newdata$Number, data = hg, subset = (newdata$Species == "warthog"), lwd = 2, col = "grey50")
+lines(hg.pred ~ newdata$Number, data = hg, subset = (newdata$Species == "zebra"), lwd = 2, col = "black")
+```
+
+This na&iuml;ve analysis is fundamentally flawed because the distance estimations are not independent of each other. Several estimates come from each of 8 student groups, and it's easy to imagine (or remember) that observers vary dramatically in the bias of their distance estimates (and indeed in their estimates of group size, possibly even species identity). It's entirely possible that a group of observers who estimate "short" distances also encountered strangely large groups of zebras: such a correlation between `Group.Name` and `Distance` could drive the observed relationship for zebras. 
+
+One solution would be to fit `Group.Name` as a categorical explanatory variable to our model. This approach has two problems. First, it wastes valuable degrees of freedom (8 student groups, therefore 7 d.f. as a main effect and 7 d.f. more for each interaction), giving the residual variance fewer d.f. and therefore weakening the power of our analysis. Second, it could easily result in a complicated minimal adequate model involving something that we don't really care about and which does not appear in our hypothesis: `Group.Name`.
+
+Instead we would like to be able to absorb the variance in distance estimates among student groups. Such a model would estimate the relationship between `Distance`, `Species` and `Number` for an **AVERAGE** group of observers. It could also tell us just how much variance exists among groups of observers.
+
+This is a classic example of a mixed-effects model. We care about the influence of `Species` and `Number` on `Distance`. These are **FIXED EFFECTS**. We know that `Group.Name` will have an influence on `Distance`, but the categories of `Group.Name` are uninformative to the lay reader and cannot be replicated in future field trips. Hence we treat `Group.Name` as a **RANDOM EFFECT**. An ideal mixed-effects model will test the influence of `Species` and `Number` on `Distance`, meanwhile absorbing the influence of `Group.Name`.
+
+```{r hglmer}
+hg.lmer <- lmer(ldist ~ Species * Number + (1 | Group.Name), data = hg)
+summary(hg.lmer)
+```
+
+This summary table is packed with information. First, we can see that the standard deviation in `Distance` among student groups is 0.46, which is almost as big as the residual standard deviation of 0.55. This suggests variation among observers is important and could dramatically change our results. Second, the estimates of slopes and differences between species are going in the 'same direction' as the estimates from the na&iuml;ve `lm` analysis, but seem to be smaller. 
+<!--
+Third, my eyes are always drawn to the t-tests, which cannot be used as tests of significance (especially not in mixed models) but can at least suggest which terms are important. It looks like the significance of the interaction between `Species` and `Number` has been lost, thanks to the absorbtion of variation among observer groups.
+-->
+
+With unbalanced experimental designs like this, the fixed effects part of the model cannot be simplified in the usual way. This is because the removal of a fixed effect will **FUNDAMENTALLY** change the model fit: it's not just a case of dumping the deviance explained by a fixed effect into the residual deviance, because the residual deviance is different for each nested level of the experimental design. Furthermore, if the experiment is unbalanced, we should beware of using F-tests to check the statistical significance of terms. Luckily, R automatically changes the fitting mechanism to use unrestricted maximum likelihood (`ML` instead of `REML`) if you try to do model comparison.
+
+```{r modelcomp}
+hg1.lmer <- update(hg.lmer, ~ . - Species:Number)
+anova(hg.lmer, hg1.lmer)
+```
+
+Note that I didn't ask for `test = "??"`, because there is only one test possible here. It is a likelihood ratio test, which compares the likelihood of one model to the likelihood of another. Likelihood ratio tests in this context have a chi-squared distribution with d.f. equal to the difference in d.f. between the models. Here we have 8 - 6 = 2 d.f. So, here we find no evidence for an interaction between `Species` and `Number` ($X^2_2 = 2.16$, $p = 0.34$).
+
+Since we have an **unbalanced** design here, we can drop each of the main effect terms from the current model and see which has the largest impact on model fit (in this case the model simplification will be different depending on the ***order*** in which variables are added/removed from the model). 
+
+```{r update}
+## set baseline model from previous round 
+## (i.e. hg.lmer is the model with no interaction effect)
+hg.lmer <- hg1.lmer
+
+## now remove number and compare to baseline model
+hg1.lmer <- update(hg.lmer, ~ . - Number)
+anova(hg.lmer, hg1.lmer)
+
+## now remove species and compare to baseline model
+hg2.lmer <- update(hg.lmer, ~ . - Species)
+anova(hg.lmer, hg2.lmer)
+```
+
+Here dropping `Number` has little impact on the model fit, whereas dropping `Species` results in a statistically significantly inferior fit. Hence the next stage is to drop `Number`. Therefore our baseline model now has just the main effect for `Species`. The final stage is to drop `Species` and assess the change in fit relative to our current model.
+
+> **QUESTION**: why do we need to do this last step, since we assessed the impact of removing `Species` before?
+
+```{r update1}
+## set baseline model from previous round 
+## (i.e. hg.lmer is the model with no interaction effect)
+hg.lmer <- hg1.lmer
+
+## now remove number and compare to baseline model
+hg1.lmer <- update(hg.lmer, ~ . - Species)
+anova(hg.lmer, hg1.lmer)
+```
+
+This suggests there is a clear effect of `Species` identity on `log(Distance)` ($X^2_2 = 54.0$, $p < 0.001$).
+
+Now we'd like to see our model summary (notice that R has automatically kept the REML fit; it only converted the model objects to use ML during the model comparison exercise):
+
+```{r summam}
+summary(hg.lmer)
+```
+
+This final summary tells us that the standard deviation among observer groups is almost as big as the residual standard deviation in distances. It tells us that both warthogs and zebra are closer to the observer than Thomson's gazelles, which are approximately $e^{5.44} = 230$ metres away on average. The number of animals in a group has negligible influence on distance given the uncertainties in the data.
+
+We're now left with a MAM that has a single categorical variable. We could provide a boxplot of the raw data to describe it, but in this instance it would be misleading because it would not differentiate between observer-level noise and residual noise. In this instance we will produce confidence intervals for the mean distance from the road for each species and plot them.
+
+> **NOTE:** the `estimable` function in the `gmodels` package [@gmodels] that we used before does not work (yet) with `lmer` models. There are two options here:  
+>  
+> 1. Fit the model three times, changing the baseline species each time and using the `confint` function to extract the confidence intervals (converting to the correct scale at the end).
+
+```{r confint, results = "hold"}
+hg.cis <- matrix(NA, 3, 3)
+rownames(hg.cis) <- levels(hg$Species)
+colnames(hg.cis) <- c("mean", "lci", "uci")
+hg.cis[1, ] <- c(coef(summary(hg.lmer))[ , "Estimate"][1], confint(hg.lmer, quiet = T)[3, ])
+hg$Species <- relevel(hg$Species, ref = "warthog")
+hg.lmer <- update(hg.lmer, data = hg)
+hg.cis[2, ] <- c(coef(summary(hg.lmer))[ , "Estimate"][1], confint(hg.lmer, quiet = T)[3, ])
+hg$Species <- relevel(hg$Species, ref = "zebra")
+hg.lmer <- update(hg.lmer, data = hg)
+hg.cis[3, ] <- c(coef(summary(hg.lmer))[ , "Estimate"][1], confint(hg.lmer, quiet = T)[3, ])
+hg.cis <- exp(hg.cis)
+hg.cis
+```
+    
+> 2. Refit the model using the `lme` function in the `nlme` package [@nlme], and the use `estimable` to extract the comparisons of interest. (I'll leave this as an exercise for you if you are really interested. Note that the model syntax for `lme` is slightly different to `lmer`, and the CIs you will get might be slightly different, due to the different methods of generating them between the packages. You might have noticed that things get much trickier when fitting mixed effects models than fitting fixed effects models, and there are often multiple (and subtly different) ways to calculate quantities of interest.)
+
+To plot the CIs, can proceed as follows:
+
+1. Calculate limits for the $y$-axis based on the range of the CIs to be plotted.
+2. Calculate manual limits for the $x$-axis to enable the species names to render correctly.
+3. Produce a scatterplot of points defined on the ranges set above, but remove the $x$-axis (using the `xaxt = "n"` argument). This latter step is so that we can add the species labels manually in the next step.
+4. Add a new $x$-axis and set appropriate labels for the points.
+5. Add confidence intervals using the `arrows` function. I'll let you check the help file for `arrows` to figure out the arguments and what they are doing. Notice that I have used a `for` loop to allow me to plot the three CIs in one line of code. We haven't talked about R's programming features in this course so far, so don't worry about this too much here, except to notice that all the function does is to run the `arrows` command 3 times, substituting `i` each time for the numbers 1, 2 or 3 respectively. You could do this explicitly in three lines of code if you prefer.
+
+```{r plotcis, fig.cap = "**Figure xx**: Mean distance (with 95% confidence intervals) to three species of mammal in Hell's Gate National Park. Means represent distances as estimated by an average group of observers."}
+ylims <- c(0, max(hg.cis))
+xlims <- c(0.5, 3.5)
+plot(1:3, hg.cis[, 1], xlab = "Species", ylab = "Distance from road (m)", xaxt = "n", pch = 16, ylim = ylims, xlim = xlims)
+axis(1, 1:3, rownames(hg.cis))
+for(i in 1:3) arrows(i, hg.cis[i, 2], i, hg.cis[i, 3], code = 3, angle = 90, length = 0.1)
+```
+
+## Model checking with mixed models 
+
+We need to be just as conscious of testing the assumptions of mixed effects models as we are with any other. The assumptions are:
+
+1. Within-group errors are independent and normally distributed with mean zero and variance $\sigma^2$.
+2. Within-group errors are independent of the random effects.
+3. Random effects are normally distributed with mean zero.
+4. Random effects have a covariance matrix $\Psi$ that does not depend on the group... this is rather advanced.
+5. Random effects are independent for different groups, except as specified by nesting... I'm not really sure what this means.
+
+Several model check plots would help us to confirm/deny these assumptions, but note that qq-plots may not be relevant because of the model structure. Two commonly-used plots are:
+
+1. A simple plot of residuals against fitted values, irrespective of random effects (note we have to do this "by hand" here):
+
+```{r plotlmer}
+plot(resid(hg.lmer) ~ fitted(hg.lmer))
+```
+
+It can often be useful to check the distribution of residuals in each of the groups (e.g. blocks) to check assumptions 1 and 2. We can do this by plotting the residuals against the fitted values, separately for each level of the random effect, using the precious `coplot` function:
+
+```{r coplot, fig.height = 10}
+coplot(resid(hg.lmer) ~ fitted(hg.lmer) | hg$Group.Name)
+```
+
+You'll notice that each sub-figure of this plot, which refers to an individual group of observers, doesn't contain much data. Therefore it's hard to judge whether the spread of residuals around fitted values is the same for each observer group. But, with better-replicated experiments (i.e. with many more animals seen per observer group) we could check that the residuals are homoscedastic both **WITHIN** and **AMONG** observers. (Note that the order of the coplots relating to the groups denoted in the top plot is left-to-right, bottom-to-top: so 'bilbo's badgers' are bottom-left, 'Mega-my-fauna' are bottom-middle and so on...)
+
+## Why aren't GLMs much good at non-independent data?
+
+This is a short section, but very important. When you perform ANOVA or General Linear Modelling (i.e. with normal error structure), you use F-tests which are based on 'model' and 'residual' mean-squares or deviances (remember an F-statistic is the ratio of two variances). When data are non-independent, this is really useful because you can choose which part of the experimental design structure from which to select your residual deviance.
+
+When you perform Generalised Linear Modelling with non-normal error structures, you use chi-square tests. These are based only on 'model' deviance and do not take into account residual deviance. Hence a model of non-independent data cannot provide correct chi-square tests because they ignore the nesting in the experimental design.
+
+> **Moral**: It's far better to use Generalised Linear Mixed Modelling in these cases. 
+
+## Generalised Linear Mixed Modelling (GLMM)
+
+Obviously given your expertise with non-normal data and error structures, by now (if you're still reading) you'll be craving a mixed-effects modelling technique that copes with Poisson, binomial, quasi etc. errors: `glmer` gives it a good try.
+
+As an example, suppose our hypotheses change. Now we believe that the group sizes vary among species and with distance from the road. Using `Number` as a response variable is unlikely to have normal residuals (I'm confident). If this was a GLM, we would use `family = poisson` because it is a count. Miraculously, that's all we have to do in `glmer` as well.
+
+```{r glmer}
+hometime <- glmer(Number ~ Species * ldist + (1 | Group.Name), data = hg, family = poisson, control = glmerControl(optimizer = "bobyqa"))
+summary(hometime)
+```
+
+> **NOTE**: The `control = glmerControl(optimizer = "bobyqa"))` argument changes the numerical optimisation routine that `glmer` uses to fit the model. There are often multiple different numeric algorithms that can be used to try to fit the models. If you try to fit the model without this term, you will notice that R returns a **convergence error**. I have no idea how this optimiser works, however, I found this solution (from [Ben Bolker](http://ms.mcmaster.ca/~bolker/), one of the authors of `lme4`) on stackoverflow, at [http://stackoverflow.com/questions/21344555/convergence-error-for-development-version-of-lme4](http://stackoverflow.com/questions/21344555/convergence-error-for-development-version-of-lme4). This is likely to become the default optimiser in future versions of `lme4`, so this step may not be required for this problem in the future, but it's a good example of finding solutions to problems by appealing to the forums!
+
+Simplification to find the Minimal Adequate model is... a challenge for you to complete!
+
+Congratulations.
