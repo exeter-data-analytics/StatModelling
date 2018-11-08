@@ -1,0 +1,64 @@
+\mode<presentation>
+{
+  \usetheme[block=fill]{metropolis}
+}
+% reset some of the options in metropolis
+% to suit style of slides
+\setlength{\unitlength}{\textwidth}
+\setlength{\parskip}{\baselineskip}
+\linespread{1}
+\setbeamersize{text margin left=2ex,text margin right=2ex}
+\usepackage[sfdefault,light]{FiraSans}
+\usepackage{FiraMono}
+
+\setbeamercolor{normal text}{%
+  bg=white,%
+  fg=black%
+}
+\setbeamercolor{frametitle}{%
+  bg=normal text.bg,%
+  fg=normal text.fg%
+}
+
+\setbeamercolor{block title example}{bg=alerted text.fg!50,fg=black}
+\setbeamercolor{block body example}{bg=alerted text.fg!15}
+\setbeamercolor{item}{fg=black}
+
+\setbeamerfont{frametitle}{size=\Large, series=\mdseries}
+
+%amend frametitle to have dividing line
+\addtobeamertemplate{frametitle}{}{
+  \nointerlineskip
+  \textcolor{alerted text.fg}{\rule{\textwidth}{1pt}}
+  \vspace{0.25\baselineskip}
+}
+
+% set hyperlinks up correctly
+\hypersetup{colorlinks,linkcolor=blue,urlcolor=blue}
+
+\usepackage{graphicx,amsmath,amssymb,dsfont}
+\usepackage{venndiagram, varwidth, cancel}
+\usepackage[export]{adjustbox}
+
+%removes "figure" prefix from captions
+\usepackage{caption}
+\captionsetup[figure]{labelformat=empty}
+
+% amend spacing in r markdown template
+\AtBeginPart{}
+\AtBeginSection{}
+\AtBeginSubsection{}
+\AtBeginSubsubsection{}
+\setlength{\emergencystretch}{0em}
+\setlength{\parskip}{\baselineskip}
+
+% set new commands for columns
+\newcommand{\bcols}{\begin{columns}}
+\newcommand{\ecols}{\end{columns}}
+\newcommand{\bcol}[1]{\begin{column}{#1\textwidth}}
+\newcommand{\bcolt}[1]{\begin{column}[t]{#1\textwidth}}
+\newcommand{\ecol}{\end{column}}
+\newcommand{\gap}[1][1]{\vspace{#1\baselineskip}}
+\newcommand{\gaps}[1][1]{\\\vspace{#1\baselineskip}}
+\newcommand{\bc}{\begin{center}}
+\newcommand{\ec}{\end{center}}

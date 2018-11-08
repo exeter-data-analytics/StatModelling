@@ -1,0 +1,562 @@
+---
+title: "Repeated Measures and Mixed Models in R Workshop"
+author: "T. J. McKinley ([t.mckinley@exeter.ac.uk](mailto:t.mckinley@exeter.ac.uk))"
+fontsize: 12pt
+output: 
+    beamer_presentation:
+        latex_engine: xelatex
+header-includes:
+    - \input{header.tex}
+---
+
+```{r, include = F}
+library(knitr)
+knitr::opts_chunk$set(cache = F, echo = T, fig.align = "center", fig.width = 5, fig.height = 5, resize.width = "0.9\\textwidth", resize.height = "0.9\\textwidth")
+def.chunk.hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) {
+  x <- def.chunk.hook(x, options)
+  ifelse(options$size != "normalsize", paste0("\\", options$size,"\n\n", x, "\n\n \\normalsize"), x)
+})
+```
+
+## Recap: (General) Linear Models
+
+```{r setup, echo = F}
+## read in arguments from command line
+args <- commandArgs(trailingOnly = T)
+
+## set colour for plots in R
+highcol <- ifelse(length(args) == 0, "#91CDF2", "#4873A5")
+lowcol <- "#F4ABAB"
+contcol <- "red"
+
+## load libraries
+library(pander)
+library(RColorBrewer)
+library(knitr)
+
+set.seed(10)
+
+## set colours for plots
+cols <- c("#F4ABAB", "#91CDF2", "#5AA566", "#A57C42")
+```
+
+Assumptions: 
+
+1. A linear model is relevant.
+2. Variances are equal across all fitted values. 
+3. Errors are normally distributed.
+4. Samples collected at random.
+5. Errors are **independent**.
+
+Can use F-tests.
+
+## Assumptions
+
+**Previously**: used model checks and biological rationale to test linearity, normality and homoscedasticity of **residuals**.
+
+What about **independence of residuals**?
+
+Depends on **experimental design**.
+
+## Recap: linear model
+
+$$
+    Y_i = \beta_0 + \beta_1 X_i + \epsilon_i
+$$
+
+where $\epsilon_i \sim N\left(0, \sigma^2\right)$ and $\sigma^2$ is **variance**.
+
+In words:
+
+\bc
+
+response ~ intercept + slope $\times$ explanatory + noise
+
+\ec
+
+## Independence of errors
+
+Tests of statistical significance require that each experimental unit has the same $\epsilon$, unaffected by and uncorrelated with other residuals (samples are *independent and identically distributed* - i.i.d.).
+
+\bcols
+\bcol{0.48}
+
+But this is often untrue.
+
+**Example**: drunken behaviour on campus
+
+\ecol
+\bcol{0.48}
+
+\includegraphics[width=0.5\textwidth]{images/withnail.png}
+
+\ecol
+\ecols
+
+## Nested Errors: Example
+
+\bcols
+\bcol{0.48}
+
+Dave got arrested for being disorderly.
+
+He failed a breathaliser test.
+
+To avoid the fine, he claimed he had used breath freshener.
+
+To prove his innocence he conducted an experiment.
+
+\ecol
+\bcol{0.48}
+
+<!-- \includegraphics[width = 0.5\textwidth]{images/vyvyan.gif} -->
+VYVYAN
+
+\ecol
+\ecols
+
+## Blood Samples
+
+\includegraphics[width = 0.5\textwidth]{images/drunkdesign.png}
+
+## Results
+
+```{r drunkres, echo = F, fig.width = 8}
+drunk <- read.csv("./data/blood_alcohol.csv", header = T)
+stripchart(alcohol ~ sample * student, data = drunk, subset = (freshener == "no"), vertical = T, 
+           pch = 16, method = "jitter", jitter = 0.2,
+           ylab = "Alcohol content", xlab = "", xaxt = "n", col = cols[1], ylim = range(drunk$alcohol), xlim = c(0, 24))
+stripchart(alcohol ~ sample * student, data = drunk, subset = (freshener == "yes"), vertical = T, 
+           pch = 16, method = "jitter", jitter = 0.2, add = T, col = cols[2])
+axis(1, at = 1:24, labels = rep(1:4, times = 6))
+for(i in 1:length(levels(drunk$student))) abline(v = (i - 1) * 4 + 0.5, lty = 2)
+for(i in 1:length(levels(drunk$student))) mtext(levels(drunk$student)[i], 1, line = 2.5, at = (i - 1) * 4 + 2.5)
+legend(1, 0.12, col = cols[1:2], pch = rep(16, 2), legend = paste("Freshener:", levels(drunk$freshener)), bg = "white")
+```
+
+## Analysis of Variance
+
+```{r drunk, echo = -1}
+drunk <- read.csv("./data/blood_alcohol.csv", header = T)
+drunk.lm <- lm(alcohol ~ freshener, data = drunk)
+anova(drunk.lm)
+```
+
+## What's wrong?
+
+* Multiple samples per student.
+* Multiple estimates per sample.
+* **Clue**: residual df (`r anova(drunk.lm)$Df[2]`) is much bigger than the number of ***experimental units*** (students: `r length(levels(drunk$student))` here).
+* Samples within students are **PSEUDOREPLICATES**.
+* Residuals are **not independent**.
+
+## Correct (traditional) Analyses
+
+1. **Derived variable analysis**: 
+    * Cope with **pseudoreplication** by **averaging** them out.
+    * Gives one average per student.
+    * Analyse this smaller dataset.
+    * **Note**: loses information on **within-student variation**. Could be important if complicated nested experimental design.
+
+## Derived variables in R
+
+```{r derived}
+alc <- aggregate(alcohol ~ student + freshener, data = drunk, mean)
+alc
+alc.lm <- lm(alcohol ~ freshener, data = alc)
+anova(alc.lm)
+```
+
+## Correct (traditional) analyses
+
+2. **Nested analysis**:
+    * Uses all data.
+    * **Partitions** the residual deviance.
+    * Only works with `aov` command in R (which also allows **blocking** and **split-plot** experimental designs).
+
+## Nested designs in R
+
+`Error` section tells R how residuals should be structured:  
+i.e. multiple samples **within** students.
+
+Here only **freshener** effect is of interest.
+
+```{r drunkaov}
+drunk.aov <- aov(alcohol ~ freshener 
+                    + Error(student/sample), data = drunk)
+summary(drunk.aov)
+```
+
+## Aside: did Dave drink alcohol?
+
+Suggests negligible difference between blood alcohol content between treatments, given the other uncertainties in the system.
+
+However, does not answer the specific question:
+
+> What is the probability of testing positive given that you've used breath freshener relative to drinking alcohol?
+
+Beware of **proxy** measurements.
+
+## Blocked experimental design
+
+Recognise natural structuring among experimental units.
+
+Source of error (e.g. top/bottom of field, make of car, student identity).
+
+**Absorb** this error by replicating experiment within blocks.
+
+**Partition** the residual deviance.
+
+## Blocked experiment: bacterial growth
+
+Bacteria grown in four different media (fixed **TREATMENT** has ***four*** levels).
+
+Only have small growth cabinets:
+
+* Room for four growth jars per cabinet.
+* Use five cabinets (**BLOCK**).
+* One **REPLICATE** of **experiment** per cabinet.
+
+Measure ***bacterial growth rate***.
+
+## Blocked experiment: bacterial growth
+
+\includegraphics[width = 0.5\textwidth]{images/blockdesign.png}
+
+## Why use blocks?
+
+Here **TREATMENT** is of interest, but multiple treatments within each block.
+
+We know growth rates will differ between cabinets.
+
+Assume that **relative** growth rates will be similar between treatments in each cabinet.
+
+Use **cabinet** as a **block** to **absorb** experimental noise.
+
+## Analyse it badly
+
+Ignore non-independent residuals (i.e. ignore cabinet effects)
+
+```{r bac, echo = -c(1:3)}
+bac <- read.csv("./data/baccabinets.csv", header = T)
+bac$media <- factor(bac$media)
+bac$cabinet <- factor(bac$cabinet)
+bac.lm <- lm(growth ~ media, data = bac)
+anova(bac.lm)
+```
+
+## Analyse it badly
+
+Pretend cabinet is a **fixed effect**.
+
+Test **full** model (cabinet, media and interaction):
+
+```{r bacfull}
+bac.lm <- lm(growth ~ cabinet * media, data = bac)
+anova(bac.lm)
+```
+
+Model summary is a bunch of `NA`s and simplification doesn't work. Why?
+
+## Analyse it properly
+
+Full model is **saturated** (no residual df).
+
+Assume **no interaction** between `cabinet` and `media`.
+
+Test effect of `media` against deviance explained by `cabinet:media`.
+
+In general, test **main** effect against its **interaction with block**.
+
+## Analyse it properly
+
+Using `aov`:
+
+```{r bacaov}
+bac.aov <- aov(growth ~ media + Error(cabinet/media), data = bac)
+summary(bac.aov)
+```
+
+## Think about your hypothesis
+
+Tight link between hypothesis, experimental design and analysis.
+
+\bcols
+\bcol{0.48}
+
+Hypothesis defines the experimental unit:
+
+* e.g. "Fire regulates savannah grass diversity"
+
+\ecol
+\bcol{0.48}
+
+\includegraphics[width = 0.5\textwidth]{images/savannahfire.png}
+
+\ecol
+\ecols
+
+Response is **grass diversity**, and treatment is **burned** vs. **unburned**.
+
+Experimental unit is **plot**.
+
+## Think about your hypothesis
+
+What needs to be replicated?
+
+* Burning treatment.
+
+If only one burn, then there is no replication.
+
+Multiple measures of each burned/unburned plot is **pseudoreplication**.
+
+Good to improve estimate of mean, but still need replication.
+
+Statistical tests must occur at the level of the **experimental unit**.
+
+## Getting more complicated
+
+**Split-plot** experimental design:
+
+* The basis of many agricultural studies.
+* Many treatments, spatial non-independence.
+
+**Nested analyses**:
+
+* Study of **variance** at nested scales.
+* Common in population genetics.
+
+**Longitudinal studies:**
+
+* Multiple observations of experimental units
+
+Make sure you know what the experimental unit is.
+
+Need to distinguish **FIXED** and **RANDOM** effects.
+
+## Fixed effects
+
+Treatments are **FIXED** by the experimenter, guided by **HYPOTHESES**.
+
+Test of whether treatment levels **DIFFER** or whether there is a **TREND**.
+
+We **CARE** about the **IDENTITY** of each level of a fixed effect
+^[traditional view, but in some cases we can use REs [differently](http://www.stat.columbia.edu/~gelman/research/published/multiple2f.pdf)].
+
+Given a new experimental unit, we could predict its response$^{\ast}$.
+
+## Random effects
+
+Are sampled from a **POPULATION** of possible levels.
+
+We don't **CARE** about the **IDENTITY** of each level of a random effect
+^[traditional view, but in some cases we can use REs [differently](http://www.stat.columbia.edu/~gelman/research/published/multiple2f.pdf)].
+
+Wouldn't help us predict new values of response variable$^\ast$.
+
+Instead we **PREDICT** how much variance is absorbed by random effects.
+
+Observations influenced by random effects are **NOT INDEPENDENT**.
+
+## Mixed models
+
+Contain mixture of **fixed** and **random effects** among explanatory variables.
+
+Random effects can have many 'levels'.
+
+Split-plot analyses waste valuable degrees of freedom on levels of random effects.
+
+We need a modelling technique that estimates fixed effects and just absorbs random effects without wasting df.
+
+## A mixed-effects model
+
+Response variable $Y$.
+
+Regression parameters for **fixed** explanatory variables: $\beta_p$
+
+Noise absorbed by **random variable(s)**: $\gamma \sim N\left(0, \sigma^2_{\gamma}\right)$
+
+Residual noise: $\epsilon \sim N\left(0, \sigma^2\right)$
+
+$$
+    Y_i = \beta_0 + \beta_1 X_i + \gamma_i + \epsilon_i
+$$
+
+Here $\sigma^2_{\gamma}$ is the **variance** attributed to the random effect, and $\sigma^2$ is the **residual** variance.
+
+This particular model known as a **random intercepts** model.
+
+## What does it do?
+
+\bcols
+\bcol{0.48}
+
+**Fixed intercepts**
+
+\ecol
+\bcol{0.48}
+
+**Random intercepts**
+
+\ecol
+\ecols
+
+\includegraphics[width = 0.5\textwidth]{images/compint.png}
+
+## Distance to Kenyan herbivores
+
+\bcols
+\bcol{0.48}
+
+`Distance ~ Species`
+
+Big survey (lots of data) but data is clustered among several observer groups.
+
+Non-independent data.
+
+`Group.Name` a **random effect**.
+ 
+\ecol
+\bcol{0.48}
+
+\includegraphics[width = 0.5\textwidth]{images/kenya.png}
+
+\ecol
+\ecols
+
+## Fixed and random effects in Hell's Gate
+
+**Hypothesis**: Distance from road depends on species.
+
+**Caution**: this could be mediated by group size.
+
+Data not independent because contributed by 8 observer groups.
+
+Observer group does not feature in the hypotheses, they...
+
+* are sampled from a wider population of MSc students...
+* would not help us predict distances for a new set of observer groups...
+* would waste 7df in a traditional analysis...
+* hence makes an 'ideal' random effect.
+
+## Data structure
+
+```{r hg, echo = F}
+hg <- read.csv("./data/HG threespecies.csv", header = T)
+hg <- hg[sample(1:nrow(hg), nrow(hg), T), ]
+print(hg[1:10, ], row.names = F)
+```
+
+**Note**: each observer group contributes data.
+
+Could we make a **derived variable** per observer group?
+
+* What is 'average species'? 
+* What would happen to the precious variation in group size?
+
+## Fitting a mixed effects model
+
+Load `lme4` package:
+
+```{r hg1, results = "hide", warning = F, message = F}
+library(lme4)
+hg.lmer <- lmer(log(Distance) ~ Species + (1 | Group.Name), data = hg)
+```
+
+Here the term `(1 | Group)` defines the **random intercept**.
+
+## Output
+
+```{r hg2}
+summary(hg.lmer)
+```
+
+## Confidence intervals
+
+Notice that `lme4` does not produce p-values for the coefficients by default.
+
+We can obtain CIs in the usual way (or by using bootstrapping):
+
+```{r conf}
+confint(hg.lmer)
+```
+
+## Restricted Maximum Likelihood (REML)
+
+Models fitted using **REML**.
+
+Only possible thanks to powerful computers (fits models iteratively).
+
+Separates the influences of random and fixed effects, meanwhile retaining the nested structure of the dataset.
+
+Caveats: 
+
+1. Need good understanding of data structure. 
+2. Need to be careful during model simplification. 
+
+## Simplifying REML model
+
+Be very careful! Standard partitioning of deviance no longer applies.
+
+Use `update` but with `method = "ML"` 
+
+This converts to **unrestricted maximum likelihood** (so it's a **biased** approximation, but usually a good one).
+
+**Note**: current version of `lme4` does this conversion automatically.
+
+## Example
+
+Na\"{i}ve GLM suggests `Log(Distance)` determined by interaction between `Species` and `Number`:
+
+```{r hgglm}
+hg.lm <- lm(log(Distance) ~ Species * Number, data = hg)
+anova(hg.lm)
+```
+
+## Random intercepts model
+
+```{r hgglmer}
+hg.lmer <- lmer(log(Distance) ~ Species * Number + (1 | Group.Name), data = hg)
+hg1.lmer <- update(hg.lmer, ~ . - Species:Number)
+anova(hg.lmer, hg1.lmer)
+```
+
+Notice default test here is **chi-squared**. You are conducting **likelihood ratio tests**.
+
+## Non-normal response
+
+But my data isn't normal...
+
+Package `lme4` also includes command `glmer`:
+* which allows use of `family = ""`
+
+So can try non-normal error structures...
+
+...leading to GLMM (***Generalised Linear Mixed Models***).
+
+## Fitting GLMMs
+
+```{r glmer}
+hg.glmer <- glmer(Number ~ Species * log(Distance) 
+                + (1 | Group.Name), data = hg, family = poisson, 
+                    control = glmerControl(optimizer = "bobyqa"))
+hg1.glmer <- update(hg.glmer, ~ . - Species:log(Distance))
+anova(hg.glmer, hg1.glmer)
+```
+
+Optimiser chosen to solve a convergence issue with the default choice: solution found from [Ben Bolker at stackoverflow](http://stackoverflow.com/questions/21344555/convergence-error-for-development-version-of-lme4)
+
+## GLMMs
+
+Can use `lme4` for:
+
+* Gaussian, Poisson, binomial, binary, gamma error structures,
+* and for crossed and nested random effects structures,
+* model checks remain important...
+
+Congratulations, you have become **Generalised Linear Mixed Modellers**.
+
+## The dangers of too much R coding
+
+\includegraphics[width = 0.5\textwidth]{images/blobfish.png}
