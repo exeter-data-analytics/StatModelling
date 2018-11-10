@@ -1,0 +1,344 @@
+%=============================================================================%
+% Author: 	John Joseph Valletta
+% Date: 	07/11/2018
+% Title: 	Fews slides for linear modelling workshop
+%=============================================================================%
+
+%=============================================================================%
+% Preamble
+%=============================================================================%
+% Libraries
+\documentclass[pdf]{beamer}
+\usepackage[export]{adjustbox}
+\usepackage{framed}
+\usepackage{color}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{deepblue}{rgb}{0,0,0.5}
+\definecolor{deepred}{rgb}{0.6,0,0}
+\definecolor{deepgreen}{rgb}{0,0.5,0}
+\definecolor{lightgray}{rgb}{0.92,0.92,0.92}
+\usepackage{listings} % to insert code
+\usepackage{textpos} % textblock
+\usepackage{verbatim}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=black} 
+
+% Listing set up
+\lstdefinestyle{R}{
+language=R,                     % the language of the code
+basicstyle=\scriptsize\ttfamily,% the size of the fonts that are used for the code
+numbers=left,                   % where to put the line-numbers
+numberstyle=\tiny\color{gray},  % the style that is used for the line-numbers
+stepnumber=1,                   % the step between two line-numbers. If it's 1, each line
+                          		% will be numbered
+numbersep=5pt,                  % how far the line-numbers are from the code
+backgroundcolor=\color{lightgray},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+frame=lines,%single,                   % adds a frame around the code
+rulecolor=\color{black},        % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. commens (green here))
+tabsize=2,                      % sets default tabsize to 2 spaces
+captionpos=b,                   % sets the caption-position to bottom
+breaklines=true,                % sets automatic line breaking
+breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+title=\lstname,                 % show the filename of files included with \lstinputlisting;
+                          		% also try caption instead of title
+keywordstyle=\color{blue},      % keyword style
+commentstyle=\color{dkgreen},   % comment style
+stringstyle=\color{mauve},      % string literal style
+escapeinside={\%*}{*)},         % if you want to add a comment within your code
+morekeywords={}            		% if you want to add more keywords to the set
+}
+
+% Presentation configuration
+\mode<presentation>{\usetheme{Madrid}}
+\definecolor{tealblue}{rgb}{0, 0.5, 0.5}
+\usecolortheme[named=tealblue]{structure}
+\useinnertheme{circles} % circles, rectanges, rounded, inmargin
+\usefonttheme[onlymath]{serif} % makes math fonts like the usual LaTeX ones
+\setbeamercovered{transparent=4} % transparent
+\setbeamertemplate{caption}{\raggedright\insertcaption\par} % Remove the word "Figure" from caption %\setbeamertemplate{caption}[default]
+\setbeamertemplate{navigation symbols}{} % don't put navigation tools at the bottom (alternatively \beamertemplatenavigationsymbolsempty)
+\graphicspath{ {./img/} }
+
+% Titlepage
+\title[Linear models in R]{Linear models in R}
+%\subtitle{Built-in data types}
+\author{John Joseph Valletta}
+\date[November 2018]{November 2018}
+\institute[]{University of Exeter, Penryn Campus, UK}
+\titlegraphic{
+\hfill
+\includegraphics[width=\textwidth, keepaspectratio]{logo.jpg}}
+
+%=============================================================================%
+%=============================================================================%
+% Start of Document
+%=============================================================================%
+%=============================================================================%
+\begin{document}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}
+\titlepage
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{What is a model and why do we need one?}
+
+\visible<1->{
+\begin{block}{}
+A \textbf{model} is a human construct/abstraction that tries to approximate the \textbf{data generating process} in some useful manner
+\end{block}}
+
+\vfill
+
+\visible<2->{
+\begin{block}{Models are built for}
+	\begin{itemize}
+		\item<3-> enhancing our understanding of a complex phenomenon
+		\item<4-> executing \href{https://www.youtube.com/watch?v=owI7DOeO_yg}{``what if"} scenarios
+		\item<5-> predicting/forecasting an outcome
+		\item<6-> controlling a system
+	\end{itemize}
+\end{block}}
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{Illustrative example}
+
+\begin{figure}
+\includegraphics<1>[width=.65\textwidth]{example1.pdf}
+\includegraphics<2>[width=.65\textwidth]{example2.pdf}
+\includegraphics<3>[width=.65\textwidth]{example3.pdf}
+\includegraphics<4>[width=.65\textwidth]{example4.pdf}
+\end{figure}
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{Formal definition}
+
+$$
+\begin{aligned}
+y_i & = \beta_0 + \beta_1x_i + \epsilon_i \\
+\epsilon_i & \sim \mathcal{N}(0, \sigma^2)
+\end{aligned}
+$$
+
+\vfill
+
+\visible<2->{
+\begin{block}{Observed data}
+\begin{itemize}
+    \item $y$ {\scriptsize (outcome/response)}: minutes spent talking about GoT
+    \item $x$ {\scriptsize(explanatory)}: hours spent watching Game of Thrones (GoT)
+\end{itemize}
+\end{block}}
+
+\vfill
+
+\visible<3->{
+\begin{block}{Parameters to infer}
+\begin{itemize}
+    \item $\beta_0$: intercept
+    \item $\beta_1$: gradient wrt minutes talking about GoT
+\end{itemize}
+\end{block}}
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}[fragile]
+\frametitle{Linear models in R}
+
+\begin{itemize}\addtolength{\itemsep}{0.5\baselineskip}
+    \item Use the \texttt{lm()} function
+    \item Requires a \textbf{formula} object\\ \texttt{outcome $\sim$ explanatory variable}
+\end{itemize}
+
+\vfill
+
+\begin{lstlisting}[style=R]
+# talk: minutes spent talking about GoT (outcome/response variable)
+# watch: hours spent watching GoT (explanatory variable) 
+
+fit <- lm(talk ~ watch)
+
+# If data is in a data frame called "df"
+fit <- lm(talk ~ watch, df) 
+\end{lstlisting}
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}[fragile]
+\frametitle{Summary of fitted model}
+
+\begin{lstlisting}[style=R]
+summary(fit)
+\end{lstlisting}
+
+\scriptsize
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = height ~ weight, data = df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -31.089  -6.926  -0.689   6.057  24.967 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  2.35229    7.11668   0.331    0.742    
+## weight       2.17446    0.08782  24.762   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 10.31 on 98 degrees of freedom
+## Multiple R-squared:  0.8622, Adjusted R-squared:  0.8608 
+## F-statistic: 613.1 on 1 and 98 DF,  p-value: < 2.2e-16
+\end{verbatim}
+\normalsize
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}[fragile]
+\frametitle{Model checking}
+
+In order to make \textbf{robust} inference, we must check the model fit
+
+\vspace{0.5cm}
+
+\begin{lstlisting}[style=R]
+plot(fit)
+\end{lstlisting}
+
+\vspace{-0.5cm}
+
+\begin{figure}
+\includegraphics<1>[width=.5\textwidth]{check.pdf}
+\end{figure}
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{Confidence vs prediction intervals}
+
+\begin{figure}
+\includegraphics<1>[width=.6\textwidth, height=0.6\textwidth]{confInt.pdf}
+\includegraphics<2>[width=.6\textwidth, height=0.6\textwidth]{predInt.pdf}
+\end{figure}
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{Multiple linear regression}
+
+$$
+\begin{aligned}
+y_i & = \beta_0 + \beta_1x_{1i} + \ldots + \beta_px_{pi} + \epsilon_i \\
+\epsilon_i & \sim \mathcal{N}(0, \sigma^2)
+\end{aligned}
+$$
+
+\begin{figure}
+\includegraphics<1>[width=.5\textwidth]{multiple1.pdf}
+\includegraphics<2>[width=.5\textwidth]{multiple2.pdf}
+\end{figure}
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{Categorical variables}
+
+\begin{figure}
+\includegraphics<2->[width=.6\textwidth]{categorical.pdf}
+\end{figure}
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{Categorical variables}
+
+We need \textbf{dummy} variables
+
+$$
+S_i = \left\{\begin{array}{ll}
+        1 & \mbox{if $i$ is male},\\
+        0 & \mbox{otherwise}
+        \end{array}
+        \right.
+$$
+
+Here, female is known as the \textbf{baseline/reference level}
+
+The regression is:
+
+$$
+y_i = \beta_0 + \beta_1 S_i + \beta_2 x_i + \epsilon_i
+$$
+
+Or in English:
+
+$$
+\begin{aligned}
+\mathrm{height}_i & = \beta_0 + \beta_1\mathrm{sex}_i + \beta_2\mathrm{weight}_i + \epsilon_i \\
+\end{aligned}
+$$
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{Categorical variables}
+
+The mean regression lines for male and female are:
+
+\begin{itemize}\addtolength{\itemsep}{2\baselineskip}
+
+\item Female (\texttt{sex=0})
+
+$$
+\begin{aligned}
+    \mathrm{height}_i & = \beta_0 + (\beta_1 \times 0) + \beta_2\mathrm{weight}_i\\
+    \mathrm{height}_i & = \beta_0 + \beta_2\mathrm{weight}_i
+\end{aligned}
+$$
+
+\item Male (\texttt{sex=1})
+
+$$
+\begin{aligned}
+    \mathrm{height}_i & = \beta_0 + (\beta_1 \times 1) + \beta_2\mathrm{weight}_i\\
+    \mathrm{height}_i & = (\beta_0 + \beta_1) + \beta_2\mathrm{weight}_i
+\end{aligned}
+$$
+
+\end{itemize}
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+% End of Document
+%=============================================================================%
+%=============================================================================%
+\end{document}
