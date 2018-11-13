@@ -48,6 +48,7 @@ I highly recommend the following books:
 
 * [Statistics: An Introduction using R](https://www.wiley.com/en-gb/Statistics%3A+An+Introduction+using+R-p-9780470022986)
 * [Linear models with R](https://www.crcpress.com/Linear-Models-with-R/Faraway/p/book/9781439887332)
+* [Data Analysis Using Regression and Multilevel/Hierarchical Models](http://www.stat.columbia.edu/~gelman/arm/)
 * [An Introduction to Statistical Learning](http://www-bcf.usc.edu/~gareth/ISL/)
 
 ## Acknowledgements {-}
