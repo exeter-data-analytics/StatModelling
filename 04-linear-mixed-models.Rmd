@@ -125,3 +125,84 @@ Recently [Dave](http://biosciences.exeter.ac.uk/staff/index.php?web_id=david_hod
 However, the fundamental test of `fitness ~ endosymbiont.diversity` used **ALL THE DATA** and had 797 residual degrees of freedom (800 minus 2 (estimation of the two treatment means) minus 1 (estimation of the among-clone variance)). This is wrong. It's wrong because the diversity of endosymbionts is a feature of the aphid **CLONE**, not of the individual aphid. All the aphids within each clone shared lots of features alongside endosymbiont diversity. Absorbing the variation among clones is a good idea, but the analysis remains fundamentally **PSEUDOREPLICATED**. The only valid analysis to test this hypothesis is to calculate mean fitness per clone, and compare the means of the four clones with a single endosymbiont to the means of the four clones with more than one endosymbiont. The use of mixed models is not a panacea for poor experimental design.
 
 Another way to think about this is to ask at what level of the experimental design is the explanatory variable manipulated? Here, endosymbiont diversity happens at the level of the **CLONE**. So, the test of the impact of endosymbiont diversity must be performed at the level of the **CLONE**. If the experimenter had manipulated endosymbiont diversity within each individual aphid, then the analysis could use all the aphids as experimental units, absorb the 'extra' similarities among clonemates by including `clone` as a random effect, and correctly use the test that they used. But they didn't do that so their paper got rejected. 
+
+### Working with data
+
+We take an example from Sokal & Rohlf (1981). The experiment involved a simple one-way anova with 3 treatments given to 6 rats. The analysis was complicated by the fact that three preparations were taken from the liver of each rat, and two readings of glycogen content were taken from each preparation. This generated 6 pseudoreplicates per rat to give a total of 36 readings in all. Clearly, it would be a mistake to analyse these data as if they were a straightforward one-way anova, because that would give us 33 degrees of freedom for error. In fact, since there are only two rats in each treatment, we have only one degree of freedom per treatment, giving a total of 3 d.f. for error. 
+ 
+The variance is likely to be different at each level of this nested analysis because: 
+ 
+1. the readings differ because of variation in the glycogen detection method within each liver sample (measurement error),
+2. the pieces of liver may differ because of heterogeneity in the distribution of glycogen within the liver of a single rat,
+3. the rats will differ from one another in their glycogen levels because of sex, age, size, genotype, etc.,
+4. rats allocated different experimental treatments may differ as a result of the fixed effects of treatment. 
+
+If all we want to test is whether the experimental treatments have affected the glycogen levels, then we are not interested in liver bits within rat's livers, or in preparations within liver bits. We could combine all the pseudoreplicates together, and analyse the 6 averages. This would have the virtue of showing what a tiny experiment this really was (we do this later; see below). But to analyse the full data set:
+ 
+The new concept here is that we include an `Error` term in the model formula to show: 
+
+1. How many error terms are required (answer: as many as there are plot sizes).
+2. What is the hierarchy of plot sizes (biggest on the left, smallest on the right).
+3. After the tilde `~` in the model formula we have `Treatment` as the only fixed effect.
+4. The `Error` term follows a plus sign `+` and is enclosed in round brackets.
+5. The plots, ranked by their relative sizes are separated by slash operators as follows:
+
+```{r, echo = F}
+rats <- readRDS("_data/rats.rds")
+```
+
+```{r, eval = F}
+rats <- readRDS("rats.rds")
+```
+
+```{r}
+rats_aov <- aov(Glycogen ~ Treatment + Error(Treatment/Rat/Liver), data = rats) 
+summary(rats_aov)
+```
+
+There are several important things to see in this `aov` table: 
+
+1. First, you use the mean square from the spatial scale immediately below when assessing statistical significance. (You do not use the 'overall' error mean square, 21.17, as we have done up to now). So the F ratio for treatment is 778.8/265.9 = 2.9 on 2 and 3 d.f. which is way short of statistical significance (the critical value is 9.55).
+2. Second, a different recipe is used in nested designs to compute the residual degrees of freedom. `Treatment` and `Total` degrees of freedom are the same as usual but the others are different.
+3. There are 6 rats in total but there are not 5 d.f. of freedom for rats: there are two rats per treatment, so there is 1 d.f. for rats within each treatment. There are 3 treatments so there are 3 x 1 = 3 d.f. for rats within treatments. An alternative interpretation is that we have 6 rats, but have estimated 3 means (one per treatment) so we have 6 - 3 = 3 d.f.
+4. There are 18 liver bits in total but there are not 17 d.f. for liver bits: there are 3 bits in each liver, so there are 2 d.f. for liver bits within each liver. Since there are 6 livers in total (one for each rat) there are 6 x 2 = 12 d.f. for liver bits within rats. An alternative interpretation is that we have 18 measurements but we have estimated 6 means, so we have 18 - 6 = 12 d.f.
+5. There are 36 preparations but there are not 35 d.f. for preparations; there are 2 preparations per liver bit, so there is 1 d.f. for preparation within each liver bit. There are 18 liver bits in all (3 from each of 6 rats) and so there are 1 x 18 = 18 d.f. for preparations within liver bits. Alternatively, we have measured 36 preparations but we have estimated 18 means, one for each liver bit, so we have 36 - 18 = 18 d.f.
+6. Using the 3 different error variances to carry out the appropriate F tests we learn that there are no statistically significant differences between treatments but there are statistically significant differences between rats, and between parts of the liver within rats (i.e. small scale spatial heterogeneity in the distribution of glycogen within livers):
+
+The F test for the effect of treatment is $F_{2, 3} = 778.8/265.9 = 2.9$ (n.s.s.); for differences between rats within treatments it is $F_{3, 12} =  265.9/49.5 = 5.4$ (p < 0.05); and for liver bits within rats we have $F_{12, 18} = 49.5/21.2 = 2.2$ (p = 0.05). 
+
+> **ASIDE**: to obtain the p-values from these distributions we can use the `pf(q, df1, df2)` function, which returns the cumulative distribution function for a quantile `q` (i.e. the probability that the variable $X$ takes values less than $q$: $P(X < q)$). Remember, a p-value is the probability that our test statistic takes a value *at least as or more extreme* than the observed value, therefore we are looking for $P(X > q)$, which can be obtained using the `lower.tail = F` argument e.g. `pf(49.5 / 21.17, 12, 18, lower.tail = F)` = `r round(pf(49.5 / 21.17, 12, 18, lower.tail = F), 2)` and so on.
+
+> In general, we use the slash operator in model formulas where the variables are random effects (i.e. where the factor levels are uninformative), and the asterisk operator in model formulas where the variables are fixed effects (i.e. the factor levels are informative). Knowing that a rat is number 2 tells us nothing about that rat. Knowing a rat is male tells us a lot about that rat. In error formulas we always use the slash operator (never the asterisk operator) to indicate the order of ‘plot-sizes’: the largest plots are on the left of the list and the smallest on the right (see below).
+
+### The Wrong Analysis 
+
+Here is what not to do (try it anyway)!
+
+```{r wrong} 
+rats_aov <- aov(Glycogen ~ Treatment * Rat * Liver, data = rats)
+```
+
+The model has been specified as if it were a full factorial with no nesting and no pseudoreplication. Note that the structure of the data allows this mistake to be made. It is a very common problem with data frames that include pseudoreplication. A summary of the model fit looks like this:
+
+```{r sumrats}
+summary(rats_aov)
+```
+
+This says that there was a highly statistically significant difference between the treatment means, at least some of the rats were statistically significantly different from one another, and there was a statistically significant interaction effect between treatments and rats. This is wrong! The analysis is flawed because it is based on the assumption that there is only one error variance and that its value is 21.2. This value is actually the measurement error; that is to say the variation between one reading and another from the same piece of liver. For testing whether the treatment has had any effect, it is the rats that are the replicates, and there were only 6 of them in the whole experiment. 
+ 
+### Derived variables avoid pseudoreplication 
+
+The idea is to get rid of the pseudoreplication by averaging over the liver bits and preparations for each rat. A useful way of averaging, in R, is to use `aggregate`:
+
+```{r agg}
+rats_new <- aggregate(Glycogen ~ Rat + Treatment, data = rats, mean)
+rats_new
+```
+
+Here, `rats_new` is a new dataset (hopefully shorter than its ancestral dataset) but has the same column headings as `rats`. (Hence be careful to specify the **correct** data set using the `data` argument where necessary.)
+
+```{r ratsagg}
+rats_new.lm <- lm(Glycogen ~ Treatment, data = rats_new)
+anova(rats_new.lm)
+```
