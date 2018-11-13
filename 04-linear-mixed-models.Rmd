@@ -1,5 +1,9 @@
 # Mixed effects models
 
+## DATA
+
+DATA!!!!
+
 ## Introduction
 
 This practical will focus on how to analyse data when the experimental design (or the surveyed explanatory variables) obliges us to study non-independent experimental units. You will find yourself distinguishing between random effects and fixed effects. You will find yourself partitioning the residual deviance. You will find yourself frustrated at the lack of consensus regarding how to simplify fixed factors in mixed models. It takes a long time to understand how to deal with blocks (and other random effects): don't expect understanding to come overnight, and do rely on books and websites to help you. But be warned, at this level of statistical prowess, much of the literature is written in Greek symbols and matrix algebra.
@@ -14,25 +18,27 @@ An extreme case of using error-absorbers is the Randomised Complete Block Experi
 
 A microbiologist wishes to know which of four growth media is best for rearing large populations of anthrax, quickly. However, this poorly funded scientist does not own a large enough incubator in which to grow lots of replicate populations. Instead he requests space in five different incubators owned by other, better-funded researchers. Each incubator just has space for four bottles of medium. Our scientist allocates each growth medium to one bottle per incubator **AT RANDOM**, inoculates with anthrax then monitors population growth rate.
 
-The data is available in 'baccabinets.csv'. Read and attach this dataset, and familiarize yourself with its structure. 
+A schematic is given in Figure \@ref(fig:bacCabinets).
 
-```{r, echo = -1, eval = -2}
-bac <- read.csv("_data/baccabinets.csv", header = T)
-bac <- read.csv("baccabinets.csv", header = T)
+```{r, bacCabinets, fig.cap = "Schematic for bacterial growth example", echo = F, out.width = "80%", out.height = "80%"}
+include_graphics("_img/bacCabinets.png")
 ```
 
-Convert `cabinet` and `media` to factors in preparation for analysis.
+The data are available in the 'bacCabinets.rds' file. Read in this dataset and familiarise yourself with its structure. 
 
-```{r bacc1}
-bac$cabinet <- as.factor(bac$cabinet)
-bac$media <- as.factor(bac$media)
+```{r, echo = F}
+bac <- readRDS("_data/bacCabinets.rds")
+```
+
+```{r, eval = F}
+bac <- readRDS("bacCabinets.rds")
 ```
 
 Let's do the analysis **WRONGLY** to begin with:
 
 ```{r bacwrong}
-bac.lm <- lm(growth ~ media, data = bac)
-anova(bac.lm)
+bac_lm <- lm(growth ~ media, data = bac)
+anova(bac_lm)
 ```
 
 ```{task, title = "Question"}
@@ -40,5 +46,73 @@ Why is this wrong?
 ```
 
 ```{solution, title = "Answer"}
-Because the analysis does not account for the cabinet effects.
+Because the analysis does not account for the cabinet effects. There are not 20 *independent* measurements here.
 ```
+
+Let's try with an **interaction** effect:
+
+```{r baccint}
+bac_lm <- lm(growth ~ media * cabinet, data = bac)
+summary(bac_lm)
+```
+
+We are faced with all these `NA`s because the model is **SATURATED**: there is no replication so we cannot calculate the residual deviance/variance. 
+
+```{task, title = "Question"}
+Why can't we model simplify here?
+```
+
+```{solution, title = "Answer"}
+Because there are no degrees-of-freedom remaining in the model to calculate the residual sum-of-squares.
+```
+
+Now, three ways to do the analysis correctly:
+
+1. Using `aov` (i.e. the traditional approach using analysis of variance).
+
+    ```{r aov}
+    bac_aov <- aov(growth ~ media + Error(cabinet), data = bac)
+    summary(bac_aov)
+    ```
+
+2. Manually drop the `cabinet:media` interaction from the saturated model and test the statistical significance of `media`. (Note that this will not work for more complicated split plot experimental designs---see below.)
+
+    ```{r baccnoint}
+    bac_lm <- lm(growth ~ cabinet + media, data = bac)
+    anova(bac_lm)
+    ```
+
+3. A very useful and simple introduction to mixed effects models. Firstly, install if necessary (using `install.packages()`; uncomment the code below if required) and load the `lme4` package [@lme4]:
+
+    ```{r lme40, include = F}
+    library(lme4)
+    ```
+    
+    ```{r lme4, eval = F}
+    ## install.packages("lme4")
+    library(lme4)
+    ```
+    
+    > **Fixed and random effects**: `Cabinet` is a **random** effect---we don't care about the identity of each cabinet, each cabinet is sampled from a population of possible cabinets, we just want to predict and absorb the variance in bacterial growth rate explained by cabinet. `Media` is a **fixed** effect---we chose the media to be tested, each media has a specific identity, we want to estimate the differences in bacterial growth between different media. See lecture notes to clarify this choice between random and fixed effects.
+    
+    Now on with the analysis:
+    
+    ```{r bac_lmer}
+    bac_lmer <- lmer(growth ~ media + (1 | cabinet), data = bac)
+    summary(bac_lmer)
+    ```
+    
+    > **Syntax for `lmer`**: The `lmer` command has two important sections. First is the 'fixed effects' part of the model (in this case, `growth ~ media`), which is identical to the model you would enter into `glm` if there were no problems of non-independence of data. The second part is where you enter the 'random effects' part of the model, where you tell R how the data is nested and where the non-independence lies. There is a whole world of possibilities here, from spatially autocorrelated variance/covariance matrices to independently varying random slopes and intercepts. We keep it simple in this course. For this example, we assume no interaction between media and cabinet, hence we just want to predict and absorb the additive variance due to different cabinets. Hence our random effect term is `(1 | cabinet)`. This means: 'the intercept of our linear model will vary according to cabinet'.
+
+    Now, I'm going to break with tradition. I can use `anova(model)` to provide F-tests associated with the fixed effects of the model. I am **ONLY** doing this to show that the F-test here is the same as the F-test from `aov` and from `glm`. For the remainder of this practical, we will change how we assess statistical significance in mixed effects models. The reason is that F-tests are pretty useful when you have a **balanced** experimental design, i.e. when all treatment and block combinations are equally replicated. When sample sizes vary, or when explanatory variables are correlated with each other, the F-test is invalid.
+    
+    > **NOTE:** for various reasons the authors of `lme4` do not provide p-values as standard from a call to `anova()`. In this case, we can use a slightly different function from the `car` package [@car] called `Anova()`. (Notice the all important capital `A`!) Again, you might have to install this package. Another option is to re-fit using the `lme` function and then use `anova()`.
+    
+    ```{r bac_lmer1, warning = F, message = F, results = "hold"}
+    ## install.packages("car")
+    library(car)
+    Anova(bac_lmer, test = "F")
+    ```
+    
+    > Interpreting `lmer` output. Note two weaknesses of the outputs from `aov` and `lm` approaches to this analysis: `aov` was unable to give you estimates of the coefficients for each media; `lm` gave too much information---in this case we don't care what the coefficients are for each cabinet. `lmer` gives you ideal information on coefficients and much more. In particular, the 'intercept' of the `lmer` model is the mean growth rate in `media1` for an **AVERAGE** cabinet. `lmer` output also gives you information criteria about the model, tells you the standard deviation of the random effects, correlations between levels of fixed effects, and so on. Finally, the `Anova` output from `lmer` gave us exactly the F-value that we gained from the `aov` and `lm` approaches. This is because our design is completely balanced (each treatment replicated once in each block). Later we will discover analyses in which F-values will differ: `aov` analyses will be approximations in unbalanced designs.
+
