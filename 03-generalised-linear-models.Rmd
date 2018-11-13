@@ -1,7 +1,678 @@
 # Generalised linear models
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE}
 IMG <- "_img" # image path
+library(tidyverse)
+library(arm) # invlogit
 ```
 
-## Under construction
+## Motivation
+
+In the previous workshop we have seen that linear models are a powerful modelling tool. 
+However, we have to satisfy the following assumptions:
+
+1. A **linear** mean function is relevant.
+2. Variances are equal across all predicted values of the response (**homoscedatic**)
+3. Errors are **normally** distributed. 
+4. Samples collected at **random**.
+5. Errors are **independent**.
+
+If assumptions 1. to 3. are violated we can *transform* our response variable
+to try and fix this (power transforms, Tukey's ladder-of-powers, 
+Box-Cox transformation, Tukey and Mosteller's bulging rule).
+However, in a lot of other cases this is either not possible (e.g binary output) 
+or we want to explicitly model the underlying distribution (e.g count data). 
+Instead, we can use *Generalised* linear models (GLMs) that let us change the *error structure* 
+of our data. By error structure we mean the assumption placed on the *residuals*. In the
+previous simple linear regression case we assumed them to be normal (i.e $\epsilon_i \sim \mathcal{N}(0,\sigma^2)$)
+
+## Generalised linear models (GLMs)
+
+**Generalised Linear Models** (GLMs) have:
+
+1. A linear mean (of your making).
+2. A **link function** (like an 'internal' transformation).
+3. An **error structure**.
+
+### Link functions
+
+A **link** function *links* your ***mean*** function to the scale of the **observed data** e.g.
+
+* **Response** variable $Y$ and explanatory variable(s) $X$.
+* The **regression** parameters are denoted using $\beta_p$ as before.
+* **Linear** function: $\beta_0 + \beta_1 X$.
+* $E(Y) = g^{-1}\left(\beta_0 + \beta_1 X\right)$.
+
+Here $E(Y)$ denotes the **expected value** (i.e. mean of $Y$).
+
+The function $g(\cdot)$ is known as the **link function**, and $g^{-1}(\cdot)$ denotes the **inverse** of $g(\cdot)$.
+
+The simple linear regression model we have used so far is a special cases of a GLM:
+
+```{r eval=F}
+lm(height ~ weight)
+```
+
+is equivalent to
+
+```{r eval = F}
+glm(height ~ weight, family=gaussian(link=identity))
+```
+
+Compared to [`lm()`](https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/lm), the [`glm()`](https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/glm) function takes an additional argument called [`family`](https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/family), which
+specifies the error structure **and** link function.
+
+The default **link function** for the normal (Gaussian) distribution is the **identity**, i.e. for mean $\mu$ we have:  
+
+$$
+\mu = \beta_0 + \beta_1 X
+$$
+
+Defaults are usually good choices (shown in bold below):
+
+| Family | Link |
+|:------:|:----:|
+`gaussian` | **`identity`** |
+`binomial` | **`logit`**, `probit` or `cloglog` |
+`poisson` | **`log`**, `identity` or `sqrt` |
+`Gamma` | **`inverse`**, `identity` or `log` |
+`inverse.gaussian` | **`1/mu^2`** |
+`quasi` | user-defined |
+`quasibinomial`	| **`logit`**
+`quasipoisson` | **`log`**
+
+```{task}
+Using the fruitfly data introduced in [Practical 1](#sec:practical1), fit a linear model with lifespan as response variable and thorax length and type of companion as explanatory variables using 
+both the `lm` and `glm` functions and compare their summaries.
+```
+
+```{solution, multCode=F, cache=F}
+
+``{r, echo=TRUE, eval=FALSE}
+ff <- readRDS("fruitfly.rds")
+``
+
+``{r, echo=FALSE, eval=TRUE}
+ff <- readRDS("_data/fruitfly.rds")
+``
+
+``{r, echo=TRUE, eval=TRUE}
+fit_lm <- lm(longevity ~ type + thorax, ff)
+summary(fit_lm)
+fit_glm <- glm(longevity ~ type + thorax, ff, family=gaussian)
+summary(fit_glm)
+``
+
+The model fits are exactly the same
+
+```
+
+### Workflow
+
+* Exploratory data analysis
+* Choose suitable error term
+* Choose suitable mean function (and link function)
+* Fit model
+    * Residual checks and model fit diagnostics
+    * Revise model (transformations etc.)
+* Model simplification if required
+* Check final model
+
+## Poisson regression (for count data)
+
+Count data are ubiquitous in the life sciences (e.g number of parasites per microliter of blood,
+number of species in a particular area). These type of data are **discrete** and **non-negative**.
+In such cases assuming our response variable to be normally distributed is not typically sensible. 
+The Poisson distribution lets us model count data explicitly.
+
+Recall the simple linear regression case (i.e a GLM with a Gaussian error structure and identity link). For the sake of clarity let's consider a single explanatory variable and omit the index $i$ which runs from 1 to $n$ (the total number of observations/data points):
+
+$$
+\begin{aligned}
+Y & = \beta_0 + \beta_1X + \epsilon \\
+\epsilon & \sim \mathcal{N}(0, \sigma^2)
+\end{aligned}
+$$
+Which can be re-written as:
+
+$$
+\begin{aligned}
+Y & \sim \mathcal{N}(\mu, \sigma^2) \\
+\mu & = \beta_0 + \beta_1X
+\end{aligned}
+$$
+The mean function is **unconstrained**, i.e the value of $\beta_0 + \beta_1X$ can range from $-\infty$ to $+\infty$. If we want to model count data we therefore want to **constraint** this mean to be positive. Mathematically we can do this by taking the **logarithm** of the mean (it is by no coincidence that log transforms are very popular to normalise response variables). We then assume our count data to be Poisson distributed (a discrete, non-negative distribution), to obtain our Poisson regression model (to be consistent with the statistics literature we will rename $\mu$ to $\lambda$):
+
+$$
+\begin{aligned}
+Y & \sim \mathcal{Pois}(\lambda) \\
+\log{\lambda} & = \beta_0 + \beta_1X
+\end{aligned}
+$$
+**Note**: we are still fitting straight lines (hyperplanes in higher dimensions) through our data!
+The only difference is that it is linear for the log transformed observations.
+
+Where's the variance parameter in this case (i.e anagolous to $\sigma^2$)? The **Poisson** distribution has the following characteristics:
+
+* **Discrete** variable, defined on the range $0, 1, \dots, \infty$.
+* A single ***rate*** parameter $\lambda$, where $\lambda > 0$.
+* **Mean** = $\lambda$  
+* **Variance** = $\lambda$
+
+```{r, echo=F}
+#cols <- c("#F4ABAB", "#91CDF2", "#5AA566", "#A57C42")
+cols <- c("#377eb8", "#4daf4a", "#984ea3") # colorbrewer
+par(mfrow = c(3, 1))
+x <- 0:20
+rates <- c(1, 5, 10)
+barplot(dpois(x, rates[1]), col = cols[1], ylab = "Probability", xlab = "X", main = paste0("lambda = ", rates[1]), names.arg = x)
+for(i in 2:length(rates)) barplot(dpois(x, rates[i]), col = cols[i], ylab = "Probability", xlab = "X", main = paste0("lambda = ", rates[i]), names.arg = x)
+par(mfrow = c(1, 1))
+```
+
+So for the Poisson regression case we assume that the mean and variance are the same.
+Hence, as the mean *increases*, the variance *increases* also (**heteroscedascity**).
+This may or may not be a sensible assumption so watch out!^[the negative binomial model 
+and others can cope with cases where this assumption is not satisfied]
+
+Recall the link function and the rules of logarithms (if $\log{\lambda} = k$, then $\lambda = e^k$):
+
+$$
+\begin{aligned}
+\log{\lambda} & = \beta_0 + \beta_1X \\
+\lambda & = e^{\beta_0 + \beta_1X }
+\end{aligned}
+$$
+Thus we are effectively modelling the observed counts using an exponential distribution.
+
+```{r, echo = F, fig.width = 10, fig.height = 5}
+set.seed(10)
+x <- rnorm(100, 0, 1)
+x <- x - min(x)
+lambda <- x
+y <- rpois(100, lambda = exp(lambda))
+y.glm <- glm(y ~ x, family = poisson)
+
+par(mfrow = c(1, 2))
+plot(x, y)
+lines(seq(min(x), max(x), length = 100), exp(coef(y.glm)[1] + coef(y.glm)[2] * seq(min(x), max(x), length = 100)), 
+      col='black', lwd=2)
+plot(fitted(y.glm), y - fitted(y.glm), xlab = "Fitted values", ylab = "Residuals", main = "")
+abline(h = 0, lty = 2)
+par(mfrow = c(1, 1))
+```
+
+## Example: Cuckoos
+
+```{r, echo=FALSE, out.width="75%"}
+knitr::include_graphics(file.path(IMG, "03-cuckoo.png"))
+```
+
+In a study by [Kilner *et al.* (1999)](http://www.nature.com/nature/journal/v397/n6721/abs/397667a0.html), the authors
+studied the begging rate of nestlings in relation to total mass of the brood of **reed warbler chicks** and **cuckoo chicks**.
+The question of interest is:
+
+> How does nestling mass affect begging rates between the different species?
+
+Download the data file from [here](https://exeter-data-analytics.github.io/StatModelling/_data/cuckoo.csv) and save it
+to your working directory.^[this dataset was obtained by digitising the plot that appear in the original paper, hence 
+you will not be able to fully reproduce the results of the original paper, it is only used here for illustrative purposes]
+
+```{r, eval=FALSE}
+cuckoo <- read.csv("cuckoo.csv", header=T)
+```
+
+```{r, echo=FALSE, eval=TRUE}
+cuckoo <- read.csv("_data/cuckoo.csv", header=T)
+```
+
+```{r}
+head(cuckoo)
+```
+
+The data columns are:
+
+* **Mass**: nestling mass of chick in grams
+* **Beg**: begging calls per 6 secs
+* **Species**: Warbler or Cuckoo
+
+```{r, fig.height=6, fig.width=7}
+ggplot(cuckoo, aes(x=Mass, y=Beg, colour=Species)) + geom_point()
+```
+
+There seem to be a relationship between mass and begging calls and it could
+be different between species. It is tempting to fit a linear model to this data. 
+In fact, this is what the authors
+of the original paper did; **reed warbler chicks** (solid circles, dashed fitted line) and 
+**cuckoo chick** (open circles, solid fitted line):
+
+```{r, echo=FALSE, out.width="75%"}
+knitr::include_graphics(file.path(IMG, "03-cuckooanalysis.png"))
+```
+
+This model is inadequate. It is predicting **negative** begging calls *within* the 
+range of the observed data, which clearly does not make any sense.
+
+Let us display the model diagnostics plots for this linear model.
+
+```{r}
+## Fit model
+## We add an interaction term here, we will talk about this later on
+fit <- lm(Beg ~ Mass*Species, data=cuckoo) 
+```
+
+```{r}
+par(mfrow=c(2, 2))
+plot(fit, pch=19, col='darkgrey')
+```
+
+```{r, echo=FALSE, eval=TRUE}
+par(mfrow=c(1, 1))
+```
+
+The residuals plot depicts a "funnelling" effect, highlighting that the model assumptions are violated.
+We should therefore try a different model structure.
+
+The response variable in this case is a classic **count data**: **discrete** and bounded below by zero (i.e we cannot have negative counts). We will therefore try a **Poisson model** using a **log** link function for the mean:
+
+$$
+    \log{\lambda} = \beta_0 + \beta_1 M_i + \beta_2 S_i + \beta_3 M_i S_i
+$$
+
+where $M_i$ is nestling mass and $S_i$ a **dummy** variable (refer to [Categorical explanatory variables](#sec:categorical)):
+
+$$
+S_i = \left\{\begin{array}{ll}
+        1 & \mbox{if $i$ is warbler},\\
+        0 & \mbox{otherwise}.
+        \end{array}
+        \right.
+$$
+
+The term $M_iS_i$ is an **interaction** term. Think of this as an additional explanatory variable in our model.
+Effectively it lets us have **different** slopes for different species (without an interaction term we assume that
+both species have the same slope for the relationship between begging rate and mass, and only the intercept differ).
+
+The mean regression lines for the two species look like this:
+
+* **Cuckoo** ($S_i=0$)
+
+$$
+\begin{aligned}
+    \log{\lambda} & = \beta_0 + \beta_1 M_i + (\beta_2 \times 0)  + (\beta_3 \times M_i \times 0)\\
+    \log{\lambda} & = \beta_0 + \beta_1 M_i
+\end{aligned}
+$$
+    
++ **Intercept** = $\beta_0$
++ **Gradient** = $\beta_1$
+
+* **Warbler** ($S_i=1$)
+
+$$
+\begin{aligned}
+    \log{\lambda} & = \beta_0 + \beta_1 M_i + (\beta_2 \times 1)  + (\beta_3 \times M_i \times 1)\\
+    \log{\lambda} & = \beta_0 + \beta_1 M_i + \beta_2 + \beta_3M_i\\
+    \log{\lambda} & = (\beta_0+\beta_2) + (\beta_1+\beta_3) M_i
+\end{aligned}
+$$
+    
++ **Intercept** = $\beta_0 + \beta_2$
++ **Gradient** = $\beta_1 + \beta_3$
+
+To specify an interaction term in R we use the [`*`](https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/formula) operator.
+
+* Model with **no** interaction term: $\log{\lambda} = \beta_0 + \beta_1 M_i + \beta_2 S_i$
+
+```{r, eval=FALSE}
+glm(Beg ~ Mass + Species, data=cuckoo, family=poisson(link=log))
+```
+
+* Model **with** interaction term: $\log{\lambda} = \beta_0 + \beta_1 M_i + \beta_2 S_i + \beta_3 M_i S_i$
+
+```{r, eval=FALSE}
+glm(Beg ~ Mass*Species, data=cuckoo, family=poisson(link=log))
+```
+
+Fit the model with the interaction term in R:
+
+```{r cuckooslm}
+fit <- glm(Beg ~ Mass*Species, data=cuckoo, family=poisson(link=log))
+summary(fit)
+```
+
+For the sake of clarity here is the mapping of the $\beta_p$ regression coefficients used
+above and those returned by R.
+
+* `(Intercept)` = $\beta_0$ (intercept for the **reference/baseline** species, **cuckoo** in this case)
+* `Mass` = $\beta_1$ (slope for the baseline species)
+* `SpeciesWarbler` = $\beta_2$ (the increase/decrease in intercept relative to the baseline species)
+* `Mass:SpeciesWarbler` = $\beta_3$ (the increase/decrease in slope relative to the baseline species)
+
+Plot the mean regression line for each species:
+
+```{r}
+newdata <- expand.grid(Mass=seq(min(cuckoo$Mass), max(cuckoo$Mass), length.out=200),
+                       Species=levels(cuckoo$Species))
+newdata <- cbind(newdata, Beg=predict(fit, newdata, type='response'))
+
+
+ggplot(mapping=aes(x=Mass, y=Beg, colour=Species)) + geom_point(data=cuckoo) + 
+    geom_line(data=newdata)
+```
+
+We get an exponential curve in the scale of the original data, which is the **same** as a straight
+line in the log-scaled version of the data.
+
+## Practical 5 - Species richness
+
+A long-term agricultural experiment had 90 grassland plots, each 25m x 25m, differing in biomass, soil pH and species richness (the count of species in the whole plot). It is well known that species richness declines with increasing biomass, but the question addressed here is whether the slope of that relationship differs with soil pH (i.e there's an interaction effect). 
+The plots were classified according to a 3-level factor as high, medium or low pH with 30 plots in each level. 
+
+The response variable is the **count** of species (`Species`), so a GLM with Poisson errors is a sensible choice. The continuous explanatory variable is long-term average biomass measured in June (`Biomass`), and the categorical explanatory variable is soil pH (`pH`).
+
+Download the data from [here](https://exeter-data-analytics.github.io/StatModelling/_data/species.csv)
+
+```{r, eval=FALSE}
+df <- read.csv("species.csv", header=T)
+```
+
+```{r, echo=FALSE, eval=TRUE}
+df <- read.csv("_data/species.csv", header=T)
+```
+
+```{r}
+head(df)
+```
+
+```{r}
+ggplot(df, aes(x=Biomass, y=Species, colour=pH)) + geom_point()
+```
+
+```{task}
+1. Fit a simple linear regression model (i.e assuming residuals to be normally distributed) with `Species` 
+as response variable and `Biomass` and `pH` as explanatory variables. 
+Assume a **different** slope for each `pH` level. Display a summary of the fit.
+2. Plot the mean regression lines for all three `pH` levels (low, medium, high)
+3. As `Biomass` tends to increase what is the expected number of species found in the grassland for the different pH levels?
+Is this biologically plausible?
+4. Repeat 1. - 3. this time fitting a **Poisson** regression model.
+
+```
+
+```{solution}
+
+``{r}
+## Simple linear regression model
+
+## Model fit
+fit <- lm(Species ~ Biomass*pH, data=df)
+summary(fit)
+
+## Plot mean regression lines
+newdata <- expand.grid(Biomass=seq(min(df$Biomass), max(df$Biomass), length.out=200),
+                       pH=levels(df$pH))
+newdata <- cbind(newdata, Species=predict(fit, newdata, type='response'))
+
+
+ggplot(mapping=aes(x=Biomass, y=Species, colour=pH)) + geom_point(data=df) + 
+    geom_line(data=newdata)
+``
+
+As `Biomass` increases the expected number of species tends towards a negative number 
+for all three `pH` levels, which is not biologically plausible.
+
+``{r}
+## Poisson regression model
+
+## Model fit
+fit <- glm(Species ~ Biomass*pH, data=df, family=poisson(link=log))
+summary(fit)
+
+## Plot mean regression lines
+newdata <- expand.grid(Biomass=seq(min(df$Biomass), max(df$Biomass), length.out=200),
+                       pH=levels(df$pH))
+newdata <- cbind(newdata, Species=predict(fit, newdata, type='response'))
+
+
+ggplot(mapping=aes(x=Biomass, y=Species, colour=pH)) + geom_point(data=df) + 
+    geom_line(data=newdata)
+``
+
+As `Biomass` increases the expected number of species tends towards zero 
+for all three `pH` levels, which is what we would expect.
+
+```
+
+
+## Logistic regression (for binary data)
+
+So far we have only considered continuous and discrete data as response variables. What if our response is a
+categorical variable (e.g passing or failing an exam, voting yes or no in a referendum, whether an egg has 
+successfully fledged or been predated)? 
+
+We can model the **probability** $p$ of being in a particular class as a function of other
+explanatory variables.
+Here we will focus on variables with two levels (e.g dead/alive).
+^[the multinomial logistic regression model generalises logistic regression to multiclass problems].
+These type of **binary** data are assumed to follow a **Bernoulli** distribution which has the following characteristics:
+
+$$
+Y \sim \mathcal{Bern}(p)
+$$
+
+* **Binary** variable, taking the values 0 or 1 (yes/no, pass/fail).
+* A **probability** parameter $p$, where $0 < p < 1$.
+* **Mean** = $p$  
+* **Variance** = $p(1 - p)$
+
+```{r bernplot, echo=F, fig.width=9, fig.height=3}
+par(mfrow = c(1, 3))
+x <- 0:1
+p <- c(0.1, 0.5, 0.8)
+barplot(dbinom(x, size = 1, prob = p[1]), col = cols[1], ylab = "Probability", xlab = "X", main = paste0("p = ", p[1]), ylim = c(0, 1), names.arg = x)
+for(i in 2:length(p)) barplot(dbinom(x, size = 1, prob = p[i]), col = cols[i], ylab = "Probability", xlab = "X", main = paste0("p = ", p[i]), ylim = c(0, 1), names.arg = x)
+par(mfrow = c(1, 1))
+```
+
+Let us now place the Gaussian (simple linear regression), Poisson and logistic models next to each other:
+
+
+$$
+\begin{aligned}
+Y & \sim \mathcal{N}(\mu, \sigma^2) &&& Y  \sim \mathcal{Pois}(\lambda) &&& Y  \sim \mathcal{Bern}(p)\\
+\mu & = \beta_0 + \beta_1X &&& \log{\lambda} = \beta_0 + \beta_1X &&& ?? = \beta_0 + \beta_1X
+\end{aligned}
+$$
+
+Now we need to fill in the `??` with the appropriate term. Similar to the Poisson regression case, 
+we cannot simply model the probabiliy as $p = \beta_0 + \beta_1X$, because $p$ **cannot** be negative.
+$\log{p} = \beta_0 + \beta_1X$ won't work either, because $p$ cannot be greater than 1. Instead we 
+model the **log odds** $\log\left(\frac{p}{1 - p}\right)$ as a linear function. So our logistic regression model looks
+like this:
+
+$$
+\begin{aligned}
+Y  & \sim \mathcal{Bern}(p)\\
+\log\left(\frac{p}{1 - p}\right) &  = \beta_0 + \beta_1 X
+\end{aligned}
+$$
+
+Again, note that we are still "only" fitting straight lines through our data, but this time in the log odds space.
+As a shorthand notation we write $\log\left(\frac{p}{1 - p}\right) = \text{logit}(p) = \beta_0 + \beta_1 X$.
+
+```{r, echo=F, fig.width=5, fig.height = 5}
+x <- seq(-10, 10, length = 100)
+plot(x, x, lwd=2, col='black', xlab="X", ylab="logit(p)", type = "l")
+```
+
+We can also re-arrange the above equation so that we get an expression for $p$
+
+$$
+p = \frac{e^{\beta_0 + \beta_1 X}}{1 + e^{\beta_0 + \beta_1 X}}
+$$
+
+```{r, echo=F, fig.width=5, fig.height=5}
+plot(x, exp(x) / (1 + exp(x)), lwd = 2, col = 'black', xlab = "X", ylab = "p", type = "l")
+```
+
+Note how $p$ can only vary between 0 and 1. 
+
+To implement the logistic regression model in R, we choose `family=binomial(link=logit)` (the Bernoulli distribution
+is a special case of the Binomial distribution when the number of trials is 1).
+
+```{r, eval=F}
+glm(response ~ explanatory, family=binomial(link=logit))
+```
+
+## Example: 1992 US election survey
+
+<img width="40%" src="_img/04-BillClinton.png"/>
+<img width="46%" src="_img/04-GeorgeBushSr.png"/>
+
+Voters were asked if they preferred George Bush (Republican) or Bill Clinton (Democrat) (voters who
+preferred other candidates were excluded). The respondent's income was characterised on a 5-point scale
+(1 - poor to 5 - rich). The question of interest in this case is:
+
+> Do voters with higher incomes prefer conservative candidates?
+
+Download the data file from [here](https://exeter-data-analytics.github.io/StatModelling/_data/US1992.csv) and save it
+to your working directory.
+
+```{r, eval=FALSE}
+USA <- read.csv("US1992.csv", header=T)
+```
+
+```{r, echo=FALSE, eval=TRUE}
+USA <- read.csv("_data/US1992.csv", header=T)
+```
+
+```{r}
+head(USA)
+```
+
+The data columns are:
+
+* **Vote**: Whether voter preferred Bill Clinton (Democrat) or George Bush (Republican)
+* **Income**: 1 - poor to 5 - rich (based on quantiles of earnings in the US)
+
+```{r, fig.height=6, fig.width=7}
+ggplot(USA, aes(x=Income)) + geom_bar(aes(fill=Vote))
+```
+
+It does look like people with low income are more likely to prefer Bill Clinton over George Bush.
+Let us fit a logistic regression model to dig deeper into this. Note that by default R will use
+the order of the levels to define which one is class "0" (fail) and which one is class "1" (success).
+
+```{r}
+levels(USA$Vote) # class 0, class 1
+```
+So in this case $p$ will represent the probability of preferring George Bush. The probability of preferring
+Bill Clinton is simply $1-p$ because we are only considering two options.
+
+```{r}
+fit <- glm(Vote ~ Income, data=USA, family=binomial(link=logit))
+summary(fit)
+```
+
+Recall that we are fitting the model:
+
+$$
+\begin{aligned}
+Y  & \sim \mathcal{Bern}(p)\\
+\log\left(\frac{p}{1 - p}\right) &  = \beta_0 + \beta_1 X
+\end{aligned}
+$$
+
+* `(Intercept)` = $\beta_0$ = `r format(coef(fit)[1], digits=3)` 
+* `Income` = $\beta_1$ = `r format(coef(fit)[2], digits=3)` 
+
+It is common to interpret variables according to some **central tendency** e.g at
+the central income category (i.e X=3):
+
+```{r, echo=F}
+nes.glm <- fit
+beta0 <- round(coef(nes.glm)[1], 2)
+beta1 <- round(coef(nes.glm)[2], 2)
+X <- 3
+midinc <- round(invlogit(coef(nes.glm)[1] + coef(nes.glm)[2] * X), 2)
+```
+
+$$
+\begin{aligned}
+P(\mbox{Republican vote at}~X = 3) &= \mbox{logit}^{-1}\left(`r beta0` + `r beta1` \times 3\right)\\
+&= \frac{e^{`r beta0` + `r beta1` \times 3}}{1 + e^{`r beta0` + `r beta1` \times 3}}\\
+&= `r midinc`.
+\end{aligned}
+$$
+We can also check for $X=4$ and $X=5$ (rich)
+
+```{r, echo=F}
+X <- 4
+midinc <- round(invlogit(coef(nes.glm)[1] + coef(nes.glm)[2] * X), 2)
+```
+
+$$
+\begin{aligned}
+P(\mbox{Republican vote at}~X = 4) &= \mbox{logit}^{-1}\left(`r beta0` + `r beta1` \times 4\right)\\
+&= \frac{e^{`r beta0` + `r beta1` \times 4}}{1 + e^{`r beta0` + `r beta1` \times 4}}\\
+&= `r midinc`.
+\end{aligned}
+$$
+```{r, echo=F}
+X <- 5
+midinc <- round(invlogit(coef(nes.glm)[1] + coef(nes.glm)[2] * X), 2)
+```
+
+$$
+\begin{aligned}
+P(\mbox{Republican vote at}~X = 5) &= \mbox{logit}^{-1}\left(`r beta0` + `r beta1` \times 5\right)\\
+&= \frac{e^{`r beta0` + `r beta1` \times 5}}{1 + e^{`r beta0` + `r beta1` \times 5}}\\
+&= `r midinc`.
+\end{aligned}
+$$
+
+So there is a tendency for voters with higher incomes to prefer Republicans over Democrats.
+
+```{r, echo=F}
+inc <- round(invlogit(coef(nes.glm)[1] + coef(nes.glm)[2] * 3) - invlogit(coef(nes.glm)[1] + coef(nes.glm)[2] * 2), 2)
+```
+
+An **increase** of 1 unit on the **income scale** results in a positive difference of `r beta1` on the **logit** scale in support of Bush.
+
+A convenient way to express this on the **probability scale** is to consider what effect a 1 unit change has close to the **central value**, e.g. between $X = 3$ and $X = 2$
+
+$$
+\begin{aligned}
+& \mbox{logit}^{-1}\left(`r beta0` + `r beta1` \times 3\right) \\
+&~~~~~~~~- \mbox{logit}^{-1}\left(`r beta0` + `r beta1` \times 2\right) = `r inc`.
+\end{aligned}
+$$
+
+Hence an increase in income of 1 unit around this central value results in a `r 100 * inc`% increase in the probability of supporting Bush.
+
+### The 'divide-by-four' rule
+
+A useful *rule-of-thumb* can be given by the **'divide-by-four'** rule.
+
+That is, the **maximum difference** in $P(Y = 1)$ (P(Republican vote) in our example) corresponding to a **unit** difference in $X$ is given by $\beta / 4$.
+
+In this example, the **maximum difference** in P(Republican vote) corresponding to a **unit** difference in income is given by $`r beta1` / 4 = `r round(coef(nes.glm)[2] / 4, 3)`$ (or a `r round(100 * coef(nes.glm)[2] / 4, 1)`% change).
+
+## Practical 6 - Lion killings
+
+TBC
+
+## Summary
+
+**GLMs** are powerful and flexible.
+
+They can be used to fit a wide variety of data types.
+
+Model checking becomes trickier.
+
+Extensions include:
+
+* **mixed models**;
+* **survival models**;
+* **generalised additive models** (GAMs).

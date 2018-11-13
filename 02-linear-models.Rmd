@@ -302,7 +302,7 @@ plot(fit, pch=19, col='darkgrey', which=2)
 Here we are checking that the assumption of normally distributed errors is reasonable. 
 Points should follow the dashed line.
 
-## Practical 1
+## Practical 1 {#sec:practical1}
 
 We will use the fruitfly dataset ([Partridge and Farquhar (1981)](https://www.nature.com/articles/294580a0)) 
 introduced in the "Advanced Visualisation and Data Wrangling in R",
@@ -743,7 +743,7 @@ the same as the previous model which only contained `thorax`, suggesting that `s
 
 `r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
 
-## Categorical explanatory variables
+## Categorical explanatory variables {#sec:categorical}
 
 So far we have only considered **continuous** explanatory variables. How
 do we include **categorical** explanatory variables? Let's go back
