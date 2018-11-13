@@ -18,7 +18,7 @@ knit_engines$set(task = function(options) {
     out <- gsub("``", "```", options$code)
     out <- knit_child(text = out)
     ## extract header if provided
-    headerName <- ifelse(length(options$header) > 0, options$header, "Task")
+    headerName <- ifelse(length(options$title) > 0, options$title, "Task")
     ## set up output
     if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
         out <- paste("<div class=\"panel panel-default\"><div class=\"panel-heading\">", headerName, "</div><div class=\"panel-body\">", out, "</div></div>")
@@ -34,7 +34,7 @@ knit_engines$set(solution = function(options) {
         out <- gsub("``", "```", options$code)
         out <- knit_child(text = out)
         ## extract header if provided
-        headerName <- ifelse(length(options$header) > 0, options$header, "Solution")
+        headerName <- ifelse(length(options$title) > 0, options$title, "Solution")
         if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
             out <- paste0("<button id=\"displayText", options$label, "\" onclick=\"javascript:toggle('", options$label, "');\">Show ", headerName, "</button>\n\n<div id=\"toggleText", options$label, "\" style=\"display: none\"><div class=\"panel panel-default\"><div class=\"panel-heading panel-heading1\"> ", headerName, " </div><div class=\"panel-body\">", out, "</div></div></div>\n")
         } else {
@@ -66,7 +66,7 @@ knit_engines$set(solution = function(options) {
             }
         })
         ## extract header if provided
-        headerName <- ifelse(length(options$header) > 0, options$header, "Solution")
+        headerName <- ifelse(length(options$title) > 0, options$title, "Solution")
         # opts_chunk$set(tidy = tempTidy, tidy.opts = tempTidyOpts)
         if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
             out <- paste0("<div class=\"tab\"><button class=\"tablinks", options$label, " active\" onclick=\"javascript:openCode(event, 'baseR", options$label, "', '", options$label, "');\">Base R</button><button class=\"tablinks", options$label, "\" onclick=\"javascript:openCode(event, 'tidyverse", options$label, "', '", options$label, "');\"><tt>tidyverse</tt></button></div><div id=\"baseR", options$label, "\" class=\"tabcontent", options$label, "\">", out[[1]], "</div><div id=\"tidyverse", options$label, "\" class=\"tabcontent", options$label, "\">", out[[2]], "</div><script> javascript:hide('tidyverse", options$label, "') </script>")
