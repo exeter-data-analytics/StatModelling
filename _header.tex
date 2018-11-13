@@ -8,9 +8,9 @@
 \tcbset{colback=white,colframe=taskCol,arc=0mm}
 
 %trick to fool markdown into compiling
-\newcommand{\bblockT}[1]{\begin{tcolorbox}[title = Task #1, parbox = false]}
+\newcommand{\bblockT}[2][Task]{\begin{tcolorbox}[title = #1 #2, parbox = false]}
 \newcommand{\eblockT}{\end{tcolorbox}}
-\newcommand{\bblockS}[1]{\begin{tcolorbox}[title = Solution #1, colframe=taskCol1, breakable, parbox = false]}
+\newcommand{\bblockS}[2][Solution]{\begin{tcolorbox}[title = #1 #2, colframe=taskCol1, breakable, parbox = false]}
 \newcommand{\eblockS}{\end{tcolorbox}}
 
 %add tabbed solutions environment
