@@ -304,8 +304,8 @@ $$
 \end{aligned}
 $$
     
-+ **Intercept** = $\beta_0$
-+ **Gradient** = $\beta_1$
+    + **Intercept** = $\beta_0$
+    + **Gradient** = $\beta_1$
 
 * **Warbler** ($S_i=1$)
 
@@ -317,8 +317,8 @@ $$
 \end{aligned}
 $$
     
-+ **Intercept** = $\beta_0 + \beta_2$
-+ **Gradient** = $\beta_1 + \beta_3$
+    + **Intercept** = $\beta_0 + \beta_2$
+    + **Gradient** = $\beta_1 + \beta_3$
 
 To specify an interaction term in R we use the [`*`](https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/formula) operator.
 
@@ -364,7 +364,7 @@ ggplot(mapping=aes(x=Mass, y=Beg, colour=Species)) + geom_point(data=cuckoo) +
 We get an exponential curve in the scale of the original data, which is the **same** as a straight
 line in the log-scaled version of the data.
 
-## Practical 5 - Species richness
+## Practical 4 - Species richness
 
 A long-term agricultural experiment had 90 grassland plots, each 25m x 25m, differing in biomass, soil pH and species richness (the count of species in the whole plot). It is well known that species richness declines with increasing biomass, but the question addressed here is whether the slope of that relationship differs with soil pH (i.e there's an interaction effect). 
 The plots were classified according to a 3-level factor as high, medium or low pH with 30 plots in each level. 
@@ -659,9 +659,146 @@ That is, the **maximum difference** in $P(Y = 1)$ (P(Republican vote) in our exa
 
 In this example, the **maximum difference** in P(Republican vote) corresponding to a **unit** difference in income is given by $`r beta1` / 4 = `r round(coef(nes.glm)[2] / 4, 3)`$ (or a `r round(100 * coef(nes.glm)[2] / 4, 1)`% change).
 
-## Practical 6 - Lion killings
+## Practical 5 - Wine
 
-TBC
+We have a dataset of chemical analysis of wines grown in the same region in Italy but derived from three different cultivars. 
+The analysis determined the quantities of 13 constituents found in each of two types of wine.
+^[the full dataset contains three types of wine and is available [here](https://archive.ics.uci.edu/ml/datasets/wine)]
+
+Download the data file from [here](https://exeter-data-analytics.github.io/StatModelling/_data/wine.csv) and save it
+to your working directory.
+
+```{r, eval=FALSE}
+wine <- read.csv("wine.csv", header=T)
+```
+
+```{r, echo=FALSE, eval=TRUE}
+wine <- read.csv("_data/wine.csv", header=T)
+```
+
+```{r}
+head(wine)
+```
+
+The data columns are self-explanatory, but for the purpose of this practical we will just focus on `Alcohol` content and `TotalPhenols` (a class of chemical compound). The question of interest is:
+
+> Can we differentiate between the two types of wine using `Alcohol` and `TotalPhenols`?
+
+
+
+```{task}
+
+1. Plot a scatterplot of `Alcohol` vs `TotalPhenols` and colour data points by `WineType`
+
+```
+
+```{solution, multCode = T}
+
+``{r}
+colA <- '#377eb8' # colour for Wine Type A
+colB <- '#4daf4a' # colour for Wine Type B
+plot(Alcohol ~ TotalPhenols, data=wine[wine$WineType %in% 'A', ], 
+     pch=19, col=colA, xlim=c(min(wine$TotalPhenols), max(wine$TotalPhenols)),
+     ylim=c(min(wine$Alcohol), max(wine$Alcohol)))
+points(Alcohol ~ TotalPhenols, data=wine[wine$WineType %in% 'B', ], 
+       pch=19, col=colB)
+legend('topleft', c('A', 'B'), fill=c(colA, colB))
+``
+
+####
+
+``{r}
+ggplot(wine, aes(x=TotalPhenols, y=Alcohol, colour=WineType)) + geom_point()
+``
+
+```
+
+```{task}
+
+2. Fit a logistic regression model with `WineType` as response variable and `Alcohol` and `TotalPhenols` 
+as explanatory variables. Display a summary of the fit.
+
+```
+
+```{solution, multCode = F}
+
+``{r}
+fit <- glm(WineType ~ Alcohol + TotalPhenols, data=wine, family=binomial(link=logit))
+summary(fit)
+``
+
+```
+
+```{task}
+
+3. What is the probability that a wine with alcohol content of 12.5% and total phenols of 2.5 units, is of `WineType` B?
+Hint: Use the `invlogit` function already available in the `arm` package (`install.packages('arm')`)
+
+```
+
+```{solution, multCode = F}
+
+``{r}
+## extract model parameters
+beta0 <- round(coef(fit)[1], 4) # (Intercept)
+beta1 <- round(coef(fit)[2], 4) # Alcohol
+beta2 <- round(coef(fit)[3], 4) # Total Phenols
+
+## compute log odds and then the probability
+logOdds <- beta0 + beta1*12.5 + beta2*2.5
+p <- round(invlogit(logOdds), 2)
+print(paste0('For Alcohol=12.5% and Total Phenols=2.5:   p(WineType=B) = ', p))
+``
+
+```
+
+```{task}
+
+4. Plot the mean regression lines on the **probability scale** for *varying* values of `Alcohol` but fixed values
+of `TotalPhenols` of 1.5, 2.5 and 3.5 (i.e a plot with `Alcohol` on the x-axis and predicted probability of `WineType` B
+on the y-axis for the three cases of `TotalPhenols`).
+
+```
+
+```{solution, multCode = T}
+
+``{r}
+cols <- c("#377eb8", "#4daf4a", "#984ea3") # colours for the three cases
+phenol <- c(1.5, 2.5, 3.5) # phenol levels to plot
+
+## compute mean regression line on the probability scale
+newdata <- expand.grid(Alcohol=seq(min(wine$Alcohol), max(wine$Alcohol), length.out=100), 
+                       TotalPhenols=phenol)
+newdata <- cbind(newdata, p=predict(fit, newdata, type='response'))
+
+## plot mean regression line
+i <- 1
+plot(p ~ Alcohol, data=newdata[newdata$TotalPhenols == phenol[i], ], 
+     col=cols[i], type='l', ylab='p(WineType=B)', lwd=3)
+for (i in 2:3)
+{
+    lines(p ~ Alcohol, data=newdata[newdata$TotalPhenols == phenol[i], ], 
+          col=cols[i], lwd=3)
+}
+legend('topright', c('1.5', '2.5', '3.5'), fill=cols)
+``
+
+####
+
+``{r}
+phenol <- c(1.5, 2.5, 3.5) # phenol levels to plot
+
+## compute mean regression line on the probability scale
+newdata <- expand.grid(Alcohol=seq(min(wine$Alcohol), max(wine$Alcohol), length.out=100), 
+                       TotalPhenols=phenol)
+newdata <- cbind(newdata, p=predict(fit, newdata, type='response'))
+newdata$TotalPhenols <- as.factor(newdata$TotalPhenols)
+
+## plot mean regression line
+ggplot(mapping=aes(x=Alcohol, y=p, colour=TotalPhenols)) + geom_line(data=newdata)
+``
+
+```
 
 ## Summary
 
