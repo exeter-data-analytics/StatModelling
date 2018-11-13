@@ -23,7 +23,7 @@ knit_engines$set(task = function(options) {
     if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
         out <- paste("<div class=\"panel panel-default\"><div class=\"panel-heading\">", headerName, "</div><div class=\"panel-body\">", out, "</div></div>")
     } else {
-        out <- paste0("\\hypertarget{tsk", taskCtr, "}{}\\bblockT{\\phantomsection\\label{sol", taskCtr, "}", taskCtr, "}\n", out, "\n\\eblockT\n")
+        out <- paste0("\\hypertarget{tsk", taskCtr, "}{}\\bblockT[", headerName, "]{\\phantomsection\\label{sol", taskCtr, "}", taskCtr, "}\n", out, "\n\\eblockT\n")
     }
     out
 })
