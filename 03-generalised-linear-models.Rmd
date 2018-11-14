@@ -304,8 +304,7 @@ $$
 \end{aligned}
 $$
     
-    + **Intercept** = $\beta_0$
-    + **Gradient** = $\beta_1$
+* **Intercept** = $\beta_0$, **Gradient** = $\beta_1$
 
 * **Warbler** ($S_i=1$)
 
@@ -317,8 +316,7 @@ $$
 \end{aligned}
 $$
     
-    + **Intercept** = $\beta_0 + \beta_2$
-    + **Gradient** = $\beta_1 + \beta_3$
+* **Intercept** = $\beta_0 + \beta_2$, **Gradient** = $\beta_1 + \beta_3$
 
 To specify an interaction term in R we use the [`*`](https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/formula) operator.
 
@@ -661,7 +659,6 @@ In this example, the **maximum difference** in P(Republican vote) corresponding 
 
 ## Practical 5 - Wine
 
-We have a dataset of chemical analysis of wines grown in the same region in Italy but derived from three different cultivars. 
 The analysis determined the quantities of 13 constituents found in each of two types of wine.
 ^[the full dataset contains three types of wine and is available [here](https://archive.ics.uci.edu/ml/datasets/wine)]
 
