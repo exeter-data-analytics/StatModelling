@@ -304,12 +304,7 @@ $$
 \end{aligned}
 $$
     
-<<<<<<< HEAD
 * **Intercept** = $\beta_0$, **Gradient** = $\beta_1$
-=======
-**Intercept** = $\beta_0$
-**Gradient** = $\beta_1$
->>>>>>> 60b8b14904fab415c9554243e37aa3d2fad6c3e7
 
 * **Warbler** ($S_i=1$)
 
@@ -321,12 +316,7 @@ $$
 \end{aligned}
 $$
     
-<<<<<<< HEAD
 * **Intercept** = $\beta_0 + \beta_2$, **Gradient** = $\beta_1 + \beta_3$
-=======
-**Intercept** = $\beta_0 + \beta_2$
-**Gradient** = $\beta_1 + \beta_3$
->>>>>>> 60b8b14904fab415c9554243e37aa3d2fad6c3e7
 
 To specify an interaction term in R we use the [`*`](https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/formula) operator.
 
@@ -599,7 +589,12 @@ It is common to interpret variables according to some **central tendency** e.g a
 the central income category (i.e X=3):
 
 ```{r, echo=F}
-nes.glm <- fit
+
+
+nes <- USA # to avoid chaning all of TJ's code
+nes$Vote <- ifelse(nes$Vote %in% 'Bill Clinton', 0, 1)
+nes.glm <- glm(Vote ~ Income, data=nes, family=binomial(link=logit))
+
 beta0 <- round(coef(nes.glm)[1], 2)
 beta1 <- round(coef(nes.glm)[2], 2)
 X <- 3
@@ -666,6 +661,92 @@ A useful *rule-of-thumb* can be given by the **'divide-by-four'** rule.
 That is, the **maximum difference** in $P(Y = 1)$ (P(Republican vote) in our example) corresponding to a **unit** difference in $X$ is given by $\beta / 4$.
 
 In this example, the **maximum difference** in P(Republican vote) corresponding to a **unit** difference in income is given by $`r beta1` / 4 = `r round(coef(nes.glm)[2] / 4, 3)`$ (or a `r round(100 * coef(nes.glm)[2] / 4, 1)`% change).
+
+### Odds ratios
+
+```{r, echo=F}
+X <- 3
+midinc <- round(invlogit(coef(nes.glm)[1] + coef(nes.glm)[2] * X), 2)
+```
+
+An common interpretation of logistic regression coefficients is in terms of **odds ratios**.
+
+**Odds**: 
+
+$$
+    \frac{P(\mbox{event happens})}{P(\mbox{event does not happen})}
+$$
+
+**Probability** of a voter in income category 3 voting Republican is
+
+$$
+    \begin{aligned}
+    P(\mbox{Republican vote for}~X = 3) &= p_{X = 3}\\
+    &= \mbox{logit}^{-1}\left(`r beta0` + `r beta1` \times 3\right)\\
+    &= `r midinc`.
+    \end{aligned}
+$$
+  
+**Odds**: $$\frac{p_{X = 3}}{1 - p_{X = 3}}$$
+
+Odds of a voter in income category 3 voting Republican is `r midinc` / `r 1 - midinc` = `r round(midinc / (1 - midinc), 2)`.
+
+**Odds ratio**: 
+
+$$
+    \frac{\mbox{odds in one group}}{\mbox{odds in another group}}
+$$
+
+e.g. odds ratio for voters in income category 3 voting Republican compared to voters in income category 2 is:
+
+$$
+    \frac{\mbox{odds of voting Republican when}~X = 3}{\mbox{odds of voting Republican when}~X = 2} = \frac{\frac{p_{X = 3}}{1 - p_{X = 3}}}{\frac{p_{X = 2}}{1 - p_{X = 2}}}.
+$$
+
+Take **logs**:
+
+$$
+    \begin{aligned}
+    \log\left(\frac{\frac{p_{X = 3}}{1 - p_{X = 3}}}{\frac{p_{X = 2}}{1 - p_{X = 2}}}\right) &= \log\left(\frac{p_{X = 3}}{1 - p_{X = 3}}\right) - \log\left(\frac{p_{X = 2}}{1 - p_{X = 2}}\right)\\
+    &= \beta_0 + \left(\beta_1 \cdot 3\right) - \beta_0 - \left(\beta_1 \cdot 2\right)\\
+    &= \beta_1 (3 - 2)\\
+    &= \beta_1
+    \end{aligned}
+$$
+
+So $\beta_1$ is the **log-odds ratio** for voting Republican per unit increase in income, and $e^{\beta_1}$ is the **odds ratio**. This measure does **not** rely on the **level** of income
+
+In this example the **odds ratio** is $e^{`r beta1`}$ = `r round(exp(beta1), 2)`. 
+
+> Hence the odds of voting Republican increase by a factor of `r round(exp(beta1), 2)` per unit increase in income.
+
+**Odds ratios** are a tricky thing to understand, and many people (including me) find them **unintuitive**.
+
+Are useful in **case-control** studies, where the prevalence of an outcome is unknown.
+
+### Model diagnostics
+
+Once we have fitted a regression model, we can use it to predict the **mean** probability of success for given individual (**fitted values**).
+
+We can then generate **residual plots** as before:
+
+```{r modeldiag, echo = 2, fig.width = 8, fig.height = 4}
+par(mfrow = c(1, 2))
+plot(fit, which = c(1, 5))
+par(mfrow = c(1, 1))
+```
+
+Alternative **residual plots** are possible to generate using the `binnedplot()` function in the `arm` package in R:
+
+```{r modeldiag1, echo=-c(1, 6), fig.width = 8, fig.height = 4}
+par(mfrow = c(1, 2))
+USA$Vote <- ifelse(USA$Vote %in% 'Bill Clinton', 0, 1) # change to 0/1 for plot purposes
+library(arm)
+plot(fit, which = 1)
+binnedplot(predict(fit, type = "response"), 
+           USA$Vote - predict(fit, type = "response"))
+par(mfrow = c(1, 1))
+```
 
 ## Practical 5 - Wine
 
