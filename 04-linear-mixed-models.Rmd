@@ -4,9 +4,18 @@
 
 DATA!!!!
 
+Firstly, install if necessary (using `install.packages()`; uncomment the code below if required) and load the `lme4` package [@lme4]:
+
+```{r, message = F, warning = F}
+## load libraries
+library(tidyverse)
+library(lme4)
+library(car)
+```
+
 ## Introduction
 
-This practical will focus on how to analyse data when the experimental design (or the surveyed explanatory variables) obliges us to study non-independent experimental units. You will find yourself distinguishing between random effects and fixed effects. You will find yourself partitioning the residual deviance. You will find yourself frustrated at the lack of consensus regarding how to simplify fixed factors in mixed models. It takes a long time to understand how to deal with blocks (and other random effects): don't expect understanding to come overnight, and do rely on books and websites to help you. But be warned, at this level of statistical prowess, much of the literature is written in Greek symbols and matrix algebra.
+This practical will focus on how to analyse data when the experimental design (or the surveyed explanatory variables) obliges us to study non-independent experimental units. You will find yourself distinguishing between random effects and fixed effects. You will find yourself frustrated at the lack of consensus regarding how to simplify fixed factors in mixed models. It takes a long time to understand how to deal with blocks (and other random effects): don't expect understanding to come overnight, and do rely on books and websites to help you. But be warned, at this level of statistical prowess, much of the literature is written in Greek symbols and matrix algebra.
 
 ***Health Warning: some of these mixed-effects modelling packages are quickly evolving, and future updates might play some havoc with the coding, and outputs from, the scripts written here. You will need to keep your eye on the forums in the future if this happens. As always, let me or your demonstrators know if you encounter difficulties.***
 
@@ -49,72 +58,62 @@ Why is this wrong?
 Because the analysis does not account for the cabinet effects. There are not 20 *independent* measurements here.
 ```
 
-Let's try with an **interaction** effect:
+Let's refit the model with a `cabinet` effect, and then test for the statistical significance of `media`:
 
-```{r baccint}
+```{r}
+bac_lm <- lm(growth ~ media + cabinet, data = bac)
+anova(bac_lm, update(bac_lm, ~ . - media), test = "F")
+```
+
+This is better. We need a `cabinet` effect here to deal with the fact that measurements within cabinets are not independent.
+
+> **Note**: here the `cabinet` effect **must** be included in the model. It does not make sense for us to drop the `cabinet` effect and test for whether it should be included or not. It needs to be included **by design**!
+
+```{task}
+Try with an **interaction** effect between `medai` and `cabinet`. What happens and why?
+```
+
+```{solution}
+
+``{r}
 bac_lm <- lm(growth ~ media * cabinet, data = bac)
 summary(bac_lm)
+``
+
+We are faced with all these `NA`s because the model is **SATURATED**: there is no replication so we cannot 
+calculate the residual deviance/variance. This also means that there are no degrees-of-freedom remaining in the model to calculate the residual sum-of-squares, and so we can't model simplify from this model.
 ```
 
-We are faced with all these `NA`s because the model is **SATURATED**: there is no replication so we cannot calculate the residual deviance/variance. 
+Let's re-do this analysis using a **mixed model**. If you haven't already, you will need to load the `lme4` package:
 
-```{task, title = "Question"}
-Why can't we model simplify here?
+```{r, eval = F}
+library(lme4)
 ```
+    
+> **Fixed and random effects**: 
+> 
+> * `cabinet` is a **random** effect---we don't care about the identity of each cabinet, each cabinet is sampled from a population of possible cabinets, we just want to predict and absorb the variance in bacterial growth rate explained by cabinet;
+> * `media` is a **fixed** effect---we chose the media to be tested, each media has a specific identity, we want to estimate the differences in bacterial growth between different media. 
 
-```{solution, title = "Answer"}
-Because there are no degrees-of-freedom remaining in the model to calculate the residual sum-of-squares.
+Now on with the analysis:
+
+```{r bac_lmer}
+bac_lmer <- lmer(growth ~ media + (1 | cabinet), data = bac)
+summary(bac_lmer)
 ```
-
-Now, three ways to do the analysis correctly:
-
-1. Using `aov` (i.e. the traditional approach using analysis of variance).
-
-    ```{r aov}
-    bac_aov <- aov(growth ~ media + Error(cabinet), data = bac)
-    summary(bac_aov)
-    ```
-
-2. Manually drop the `cabinet:media` interaction from the saturated model and test the statistical significance of `media`. (Note that this will not work for more complicated split plot experimental designs---see below.)
-
-    ```{r baccnoint}
-    bac_lm <- lm(growth ~ cabinet + media, data = bac)
-    anova(bac_lm)
-    ```
-
-3. A very useful and simple introduction to mixed effects models. Firstly, install if necessary (using `install.packages()`; uncomment the code below if required) and load the `lme4` package [@lme4]:
-
-    ```{r lme40, include = F}
-    library(lme4)
-    ```
     
-    ```{r lme4, eval = F}
-    ## install.packages("lme4")
-    library(lme4)
-    ```
-    
-    > **Fixed and random effects**: `Cabinet` is a **random** effect---we don't care about the identity of each cabinet, each cabinet is sampled from a population of possible cabinets, we just want to predict and absorb the variance in bacterial growth rate explained by cabinet. `Media` is a **fixed** effect---we chose the media to be tested, each media has a specific identity, we want to estimate the differences in bacterial growth between different media. See lecture notes to clarify this choice between random and fixed effects.
-    
-    Now on with the analysis:
-    
-    ```{r bac_lmer}
-    bac_lmer <- lmer(growth ~ media + (1 | cabinet), data = bac)
-    summary(bac_lmer)
-    ```
-    
-    > **Syntax for `lmer`**: The `lmer` command has two important sections. First is the 'fixed effects' part of the model (in this case, `growth ~ media`), which is identical to the model you would enter into `glm` if there were no problems of non-independence of data. The second part is where you enter the 'random effects' part of the model, where you tell R how the data is nested and where the non-independence lies. There is a whole world of possibilities here, from spatially autocorrelated variance/covariance matrices to independently varying random slopes and intercepts. We keep it simple in this course. For this example, we assume no interaction between media and cabinet, hence we just want to predict and absorb the additive variance due to different cabinets. Hence our random effect term is `(1 | cabinet)`. This means: 'the intercept of our linear model will vary according to cabinet'.
+> **Syntax for `lmer`**: The `lmer` command has two important sections. First is the 'fixed effects' part of the model (in this case, `growth ~ media`), which is identical to the model you would enter into `glm` if there were no problems of non-independence of data. The second part is where you enter the 'random effects' part of the model, where you tell R how the data is nested and where the non-independence lies. There is a whole world of possibilities here, from spatially autocorrelated variance/covariance matrices to independently varying random slopes and intercepts. We keep it simple in this course. For this example, we assume no interaction between media and cabinet, hence we just want to predict and absorb the additive variance due to different cabinets. Hence our random effect term is `(1 | cabinet)`. This means: 'the intercept of our linear model will vary according to cabinet'.
 
-    Now, I'm going to break with tradition. I can use `anova(model)` to provide F-tests associated with the fixed effects of the model. I am **ONLY** doing this to show that the F-test here is the same as the F-test from `aov` and from `glm`. For the remainder of this practical, we will change how we assess statistical significance in mixed effects models. The reason is that F-tests are pretty useful when you have a **balanced** experimental design, i.e. when all treatment and block combinations are equally replicated. When sample sizes vary, or when explanatory variables are correlated with each other, the F-test is invalid.
+> **NOTE:** for various reasons the authors of `lme4` do not provide p-values as standard from a call to `summary()` or `anova()`. We can perform a **likelihood ratio test** for the impact of dropping `media` from the fitted model. The simplest way to do this is to use the `drop1()` function:
+> 
+
+```{r, warning = F, message = F}
+drop1(bac_lmer, test = "Chisq")
+```
     
-    > **NOTE:** for various reasons the authors of `lme4` do not provide p-values as standard from a call to `anova()`. In this case, we can use a slightly different function from the `car` package [@car] called `Anova()`. (Notice the all important capital `A`!) Again, you might have to install this package. Another option is to re-fit using the `lme` function and then use `anova()`.
-    
-    ```{r bac_lmer1, warning = F, message = F, results = "hold"}
-    ## install.packages("car")
-    library(car)
-    Anova(bac_lmer, test = "F")
-    ```
-    
-    > Interpreting `lmer` output. Note two weaknesses of the outputs from `aov` and `lm` approaches to this analysis: `aov` was unable to give you estimates of the coefficients for each media; `lm` gave too much information---in this case we don't care what the coefficients are for each cabinet. `lmer` gives you ideal information on coefficients and much more. In particular, the 'intercept' of the `lmer` model is the mean growth rate in `media1` for an **AVERAGE** cabinet. `lmer` output also gives you information criteria about the model, tells you the standard deviation of the random effects, correlations between levels of fixed effects, and so on. Finally, the `Anova` output from `lmer` gave us exactly the F-value that we gained from the `aov` and `lm` approaches. This is because our design is completely balanced (each treatment replicated once in each block). Later we will discover analyses in which F-values will differ: `aov` analyses will be approximations in unbalanced designs.
+> The 'intercept' of the `lmer` model is the mean growth rate in `media1` for an **AVERAGE** cabinet. `lmer` output also gives you information criteria about the model, tells you the standard deviation of the random effects, correlations between levels of fixed effects, and so on. Here we have used a **likelihood ratio test** to assess whether the removal of `media` corresponds to a statistically significantly inferior model fit, which in this case it does at both the 5% and 1% levels.
+> 
+> **Note**: we use a likelihood ratio test (LRT) here, rather than an F-test. The F-test would be OK in this particular case, with Gaussian error structure. LRTs are more general, and thus for consistency I will use these (or AIC) throughout where required.
 
 ## Non-independent data: pseudoreplication, nested variance and derived variable analysis
 
@@ -128,24 +127,24 @@ Another way to think about this is to ask at what level of the experimental desi
 
 ### Working with data
 
-We take an example from Sokal & Rohlf (1981). The experiment involved a simple one-way anova with 3 treatments given to 6 rats. The analysis was complicated by the fact that three preparations were taken from the liver of each rat, and two readings of glycogen content were taken from each preparation. This generated 6 pseudoreplicates per rat to give a total of 36 readings in all. Clearly, it would be a mistake to analyse these data as if they were a straightforward one-way anova, because that would give us 33 degrees of freedom for error. In fact, since there are only two rats in each treatment, we have only one degree of freedom per treatment, giving a total of 3 d.f. for error. 
+We take an example from Sokal & Rohlf (1981). The experiment involved a simple one-way anova with 3 treatments given to 6 rats. The analysis was complicated by the fact that three preparations were taken from the liver of each rat, and two readings of glycogen content were taken from each preparation. This generated 6 pseudoreplicates per rat to give a total of 36 readings in all. A schematic is given in Figure \@ref(fig:rats).
+
+```{r, rats, fig.cap = "Schematic for glycogen in rats example", echo = F, out.width = "80%", out.height = "80%"}
+include_graphics("_img/rats.png")
+```
+
+Clearly, it would be a mistake to analyse these data as if they were a straightforward one-way anova, because that would give us 33 degrees of freedom for error. In fact, since there are only two rats in each treatment, we have only one degree of freedom per treatment, giving a total of 3 d.f. for error. 
  
 The variance is likely to be different at each level of this nested analysis because: 
  
-1. the readings differ because of variation in the glycogen detection method within each liver sample (measurement error),
-2. the pieces of liver may differ because of heterogeneity in the distribution of glycogen within the liver of a single rat,
-3. the rats will differ from one another in their glycogen levels because of sex, age, size, genotype, etc.,
+1. the readings differ because of variation in the glycogen detection method within each liver sample (measurement error);
+2. the pieces of liver may differ because of heterogeneity in the distribution of glycogen within the liver of a single rat;
+3. the rats will differ from one another in their glycogen levels because of sex, age, size, genotype, etc.;
 4. rats allocated different experimental treatments may differ as a result of the fixed effects of treatment. 
 
-If all we want to test is whether the experimental treatments have affected the glycogen levels, then we are not interested in liver bits within rat's livers, or in preparations within liver bits. We could combine all the pseudoreplicates together, and analyse the 6 averages. This would have the virtue of showing what a tiny experiment this really was (we do this later; see below). But to analyse the full data set:
+If all we want to test is whether the experimental treatments have affected the glycogen levels, then we are not interested in liver bits within rat's livers, or in preparations within liver bits. We could combine all the pseudoreplicates together, and analyse the 6 averages. This would have the virtue of showing what a tiny experiment this really was. This latter approach also ignores the nested sources of uncertainties. Instead we will use a linear mixed model.
  
-The new concept here is that we include an `Error` term in the model formula to show: 
-
-1. How many error terms are required (answer: as many as there are plot sizes).
-2. What is the hierarchy of plot sizes (biggest on the left, smallest on the right).
-3. After the tilde `~` in the model formula we have `Treatment` as the only fixed effect.
-4. The `Error` term follows a plus sign `+` and is enclosed in round brackets.
-5. The plots, ranked by their relative sizes are separated by slash operators as follows:
+The new concept here is that there are multiple random effects that are **nested**. First, read in the data:
 
 ```{r, echo = F}
 rats <- readRDS("_data/rats.rds")
@@ -154,26 +153,6 @@ rats <- readRDS("_data/rats.rds")
 ```{r, eval = F}
 rats <- readRDS("rats.rds")
 ```
-
-```{r}
-rats_aov <- aov(Glycogen ~ Treatment + Error(Treatment/Rat/Liver), data = rats) 
-summary(rats_aov)
-```
-
-There are several important things to see in this `aov` table: 
-
-1. First, you use the mean square from the spatial scale immediately below when assessing statistical significance. (You do not use the 'overall' error mean square, 21.17, as we have done up to now). So the F ratio for treatment is 778.8/265.9 = 2.9 on 2 and 3 d.f. which is way short of statistical significance (the critical value is 9.55).
-2. Second, a different recipe is used in nested designs to compute the residual degrees of freedom. `Treatment` and `Total` degrees of freedom are the same as usual but the others are different.
-3. There are 6 rats in total but there are not 5 d.f. of freedom for rats: there are two rats per treatment, so there is 1 d.f. for rats within each treatment. There are 3 treatments so there are 3 x 1 = 3 d.f. for rats within treatments. An alternative interpretation is that we have 6 rats, but have estimated 3 means (one per treatment) so we have 6 - 3 = 3 d.f.
-4. There are 18 liver bits in total but there are not 17 d.f. for liver bits: there are 3 bits in each liver, so there are 2 d.f. for liver bits within each liver. Since there are 6 livers in total (one for each rat) there are 6 x 2 = 12 d.f. for liver bits within rats. An alternative interpretation is that we have 18 measurements but we have estimated 6 means, so we have 18 - 6 = 12 d.f.
-5. There are 36 preparations but there are not 35 d.f. for preparations; there are 2 preparations per liver bit, so there is 1 d.f. for preparation within each liver bit. There are 18 liver bits in all (3 from each of 6 rats) and so there are 1 x 18 = 18 d.f. for preparations within liver bits. Alternatively, we have measured 36 preparations but we have estimated 18 means, one for each liver bit, so we have 36 - 18 = 18 d.f.
-6. Using the 3 different error variances to carry out the appropriate F tests we learn that there are no statistically significant differences between treatments but there are statistically significant differences between rats, and between parts of the liver within rats (i.e. small scale spatial heterogeneity in the distribution of glycogen within livers):
-
-The F test for the effect of treatment is $F_{2, 3} = 778.8/265.9 = 2.9$ (n.s.s.); for differences between rats within treatments it is $F_{3, 12} =  265.9/49.5 = 5.4$ (p < 0.05); and for liver bits within rats we have $F_{12, 18} = 49.5/21.2 = 2.2$ (p = 0.05). 
-
-> **ASIDE**: to obtain the p-values from these distributions we can use the `pf(q, df1, df2)` function, which returns the cumulative distribution function for a quantile `q` (i.e. the probability that the variable $X$ takes values less than $q$: $P(X < q)$). Remember, a p-value is the probability that our test statistic takes a value *at least as or more extreme* than the observed value, therefore we are looking for $P(X > q)$, which can be obtained using the `lower.tail = F` argument e.g. `pf(49.5 / 21.17, 12, 18, lower.tail = F)` = `r round(pf(49.5 / 21.17, 12, 18, lower.tail = F), 2)` and so on.
-
-> In general, we use the slash operator in model formulas where the variables are random effects (i.e. where the factor levels are uninformative), and the asterisk operator in model formulas where the variables are fixed effects (i.e. the factor levels are informative). Knowing that a rat is number 2 tells us nothing about that rat. Knowing a rat is male tells us a lot about that rat. In error formulas we always use the slash operator (never the asterisk operator) to indicate the order of ‘plot-sizes’: the largest plots are on the left of the list and the smallest on the right (see below).
 
 ### The Wrong Analysis 
 
@@ -193,18 +172,31 @@ This says that there was a highly statistically significant difference between t
  
 ### Derived variables avoid pseudoreplication 
 
-The idea is to get rid of the pseudoreplication by averaging over the liver bits and preparations for each rat. A useful way of averaging, in R, is to use `aggregate`:
+The idea is to get rid of the pseudoreplication by averaging over the liver bits and preparations for each rat. A useful way of averaging, in R, is to use `aggregate` (or `tidyverse`):
 
-```{r agg}
-rats_new <- aggregate(Glycogen ~ Rat + Treatment, data = rats, mean)
-rats_new
+```{multCode}
+
+``{r}
+ratsNew <- aggregate(Glycogen ~ Rat + Treatment, data = rats, mean)
+ratsNew
+``
+
+####
+
+``{r}
+ratsNew <- rats %>%
+    group_by(Rat, Treatment) %>%
+    summarise(Glycogen = mean(Glycogen))
+ratsNew
+``
+
 ```
 
-Here, `rats_new` is a new dataset (hopefully shorter than its ancestral dataset) but has the same column headings as `rats`. (Hence be careful to specify the **correct** data set using the `data` argument where necessary.)
+Here, `ratsNew` is a new dataset (hopefully shorter than its ancestral dataset) but has the same column headings as `rats`. (Hence be careful to specify the **correct** data set using the `data` argument where necessary.)
 
 ```{r ratsagg}
-rats_new.lm <- lm(Glycogen ~ Treatment, data = rats_new)
-anova(rats_new.lm)
+ratsNew_lm <- lm(Glycogen ~ Treatment, data = ratsNew)
+drop1(ratsNew_lm)
 ```
 
 
