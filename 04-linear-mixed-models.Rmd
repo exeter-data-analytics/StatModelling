@@ -108,7 +108,7 @@ summary(bac_lmer)
 > 
 
 ```{r, warning = F, message = F}
-drop1(bac_lmer, test = "Chisq")
+drop1(bac_lmer)
 ```
     
 > The 'intercept' of the `lmer` model is the mean growth rate in `media1` for an **AVERAGE** cabinet. `lmer` output also gives you information criteria about the model, tells you the standard deviation of the random effects, correlations between levels of fixed effects, and so on. Here we have used a **likelihood ratio test** to assess whether the removal of `media` corresponds to a statistically significantly inferior model fit, which in this case it does at both the 5% and 1% levels.
@@ -231,7 +231,6 @@ pander(temp, style = "rmarkdown", table.emphasize.rownames = F)
 ```
 
 First, we'll do this analysis via traditional split-plot ANOVA using `aov`, then attempt the analysis using `lmer`.
-
 
 ### Analysing split-plot designs using `aov`
 
