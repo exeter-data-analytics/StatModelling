@@ -13,6 +13,10 @@ library(lme4)
 library(car)
 ```
 
+REML / ML model choice
+
+F-test / chi-squared etc.
+
 ## Introduction
 
 This practical will focus on how to analyse data when the experimental design (or the surveyed explanatory variables) obliges us to study non-independent experimental units. You will find yourself distinguishing between random effects and fixed effects. You will find yourself frustrated at the lack of consensus regarding how to simplify fixed factors in mixed models. It takes a long time to understand how to deal with blocks (and other random effects): don't expect understanding to come overnight, and do rely on books and websites to help you. But be warned, at this level of statistical prowess, much of the literature is written in Greek symbols and matrix algebra.
@@ -481,3 +485,35 @@ ggplot(hg, aes(x = Number, y = Distance, col = Species)) +
 ``
 
 ```
+
+This na&iuml;ve analysis is fundamentally flawed because the distance estimations are not independent of each other. Several estimates come from each of 8 student groups, and it's easy to imagine (or remember) that observers vary dramatically in the bias of their distance estimates (and indeed in their estimates of group size, possibly even species identity). It's entirely possible that a group of observers who estimate "short" distances also encountered strangely large groups of zebras: such a correlation between `Group.Name` and `Distance` could drive the observed relationship for zebras. 
+
+One solution would be to fit `Group.Name` as a categorical explanatory variable to our model. This approach has two main problems:
+
+1. It wastes valuable degrees of freedom (8 student groups, therefore 7 d.f. as a main effect and 7 d.f. more for each interaction), giving the residual variance fewer d.f. and therefore weakening the power of our analysis. 
+2. It could easily result in a complicated minimal adequate model involving something that we don't really care about and which does not appear in our hypothesis: `Group.Name`.
+
+Instead we would like to be able to absorb the variance in distance estimates among student groups. Such a model would estimate the relationship between `Distance`, `Species` and `Number` for an **average** group of observers. It could also tell us just how much variance exists among groups of observers.
+
+This is a classic example of where a **mixed-effects model** is useful. We care about the influence of `Species` and `Number` on `Distance`. These are **fixed effects**. We know that `Group.Name` will have an influence on `Distance`, but the categories of `Group.Name` are uninformative to the lay reader and cannot be replicated in future field trips. Hence we treat `Group.Name` as a **random effect**. An ideal mixed-effects model will test the influence of `Species` and `Number` on `Distance`, meanwhile absorbing the influence of `Group.Name`.
+
+```{r}
+hg_lmer <- lmer(ldist ~ Species * Number + (1 | Group.Name), data = hg)
+```
+
+Note that there is no nesting going on here; `Species` and `Number` have the same interpretation regardless of the `Group.Name`. Let's take a look at the summary of the fitted model.
+
+```{r}
+summary(hg_lmer)
+```
+
+This summary table is packed with information. First, we can see that the standard deviation in `Distance` among student groups is 0.46, which is almost as big as the residual standard deviation of 0.55. This suggests variation among observers is important and could dramatically change our results. Second, the estimates of slopes and differences between species are going in the 'same direction' as the estimates from the na&iuml;ve `lm()` analysis, but seem to be smaller. 
+
+With **unbalanced** experimental designs like this, the fixed effects part of the model cannot be simplified in the usual way. This is because the removal of a fixed effect will **fundamentally** change the model fit: it's not just a case of dumping the deviance explained by a fixed effect into the residual deviance, because the residual deviance is different for each nested level of the experimental design. Furthermore, if the experiment is unbalanced, we should beware of using F-tests to check the statistical significance of terms. Instead, we should use AIC or **likelihood ratio tests**, and if we do this we need to change the fitting mechanism from REML to ML whilst performing LRT. (We do this *in situ* using the `update()` function.)
+
+```{r}
+drop1(update(hg_lmer, REML = F), test = "Chisq")
+```
+
+As usual, likelihood ratio tests in this context have a chi-squared distribution with d.f. equal to the difference in d.f. between the models. Here we have 8 - 6 = 2 d.f. So, here we find no evidence for an interaction between `Species` and `Number` ($X^2_2 = 2.16$, $p = 0.34$).
+
