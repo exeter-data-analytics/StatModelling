@@ -298,59 +298,34 @@ panderOptions("table.split.table", Inf)
 pander(temp, style = "rmarkdown", table.emphasize.rownames = F)
 ```
 
-First, we'll do this analysis via traditional split-plot ANOVA using `aov`, then attempt the analysis using `lmer`.
-
-### Analysing split-plot designs using `aov`
+First, let's read in the data and take a look at it.
 
 ```{r, eval = F}
 splityield <- readRDS("splityield.rds")
+head(splityield)
 summary(splityield)
 ```
 
 ```{r, echo = F}
 splityield <- readRDS("_data/splityield.rds")
+head(splityield)
 summary(splityield)
 ```
 
-```{r splityield, tidy = F}
-split.aov <- aov(yield ~ irrigation * density * fertilizer + 
-                     Error(block/irrigation/density/fertilizer), data = splityield)
-```
- 
-The model is long, but not particularly complicated. Note the two parts: the model formula (the factorial design: `irrigation * density * fertilizer`), and the `Error` structure (with plot sizes listed left to right from largest to smallest, separated by slash `/` operators). The main replicates are blocks, and these provide the estimate of the error variance for the largest treatment plots (irrigation). We use asterisks in the model formula because these are fixed effects (i.e. their factor levels are informative). 
+### Analysing split-plot designs using `lmer`
 
-```{r sumaov}
-summary(split.aov)
-```
- 
-This produces a series of ANOVA tables, one for each plot size, starting with the largest plots (block), then looking at irrigation within blocks, then density within irrigation within block, then finally fertilizer within density within irrigation within block. Notice that the error degrees of freedom are correct in each case (e.g. there are only 3 d.f. for error in assessing the irrigation main effect, but it is nevertheless statistically significant; p = 0.025). 
+Now, how do we set up a mixed effects model to analyse these data? `block` is the only random effect but our data are nested. Our fixed effects are `irrigation`, `density` and `fertilizer`. Here is the model, including prediction of the variance due to block's random effect on the intercept of the model.
 
-There are two statistically significant interactions. A useful way to understand these is to use the `interaction.plot` function. The variables are listed in a non-obvious order: first the factor to go on the $x$-axis, then the factor to go as different lines on the plot, then the response variable. There are 3 plots to look at so we make a $2 \times 2$ plotting area: 
- 
-```{r intplot, fig.width = 10, fig.height = 10}
-par(mfrow = c(2, 2))
-interaction.plot(splityield$fertilizer, splityield$density, splityield$yield) 
-interaction.plot(splityield$fertilizer, splityield$irrigation, splityield$yield) 
-interaction.plot(splityield$density, splityield$irrigation, splityield$yield)
-par(mfrow = c(1, 1))
+**Note**: Ordinarily we would write the nested random effect terms using the syntax:
+
+```{r, error = TRUE, tidy = F}
+split_lmer <- lmer(yield ~ irrigation * density * fertilizer + 
+                       (1 | block / irrigation / density / fertilizer), data = splityield)
 ```
 
-The really pronounced interaction is that between irrigation and density, with a reversal of the high to low density difference on the irrigated and control plots. Interestingly, this is not the most statistically significant interaction. That honour goes to the `fertilizer:irrigation` interaction (top right graph). 
+However, if you run this, you will notice that the function returns an error. This is because there are no replicates within the final nesting (i.e. the table above on has a single replicate in each cell). To overcome this we need to remove the final nesting. Unfortunately, this leads to a rather more horrible formula. 
 
-Overall, the 3-way interaction was not statistically significant, nor was the 2-way interaction between density and fertilizer. The 2-way interaction between irrigation and fertilizer, however, was highly statistically significant and, not surprisingly, there was a highly statistically significant main effect of fertilizer. 
-
-### Analyzing split-plot designs using `lmer`
-
-Now, how do we set up a mixed effects model to analyse this data? `block` is the only random effect but our data are nested. Our fixed effects are `irrigation`, `density` and `fertilizer`. Here is the model, including prediction of the variance due to block's random effect on the intercept of the model:
-
-**NOTE**: Ordinarily we would write the nested random effect terms using the syntax:
-
-```{r wrongsynt, error = TRUE, tidy = F}
-split.lmer <- lmer(yield ~ irrigation * density * fertilizer + 
-                       (1 | block/irrigation/density/fertilizer), data = splityield)
-```
-
-However, if you run this, you will notice that the function returns an error. This is because there are no replicates within the final nesting (i.e. the table above on has a single replicate in each cell). To overcome this we need to remove the final nesting. Unfortunately, this leads to a rather more horrible formula. Another way of writing the command above is:
+Another way of writing the command above is:
 
 ```{r wrongsynt1, eval = F, tidy = F}
 split.lmer <- lmer(yield ~ irrigation * density * fertilizer + (1 | block) + 
@@ -370,6 +345,22 @@ Anova(split.lmer, test = "F")
 This is a balanced design (all treatment combinations have the same number of replicates) so I'm safe to ask for an ANOVA table of the full model. But this is the last time I'm going to do it. After this example, I will be testing statistical significance of terms using our old friend, model simplification.
 
 If you really want to know all the coefficients, type `summary(split.lmer)` and suffer the consequences! Note however that the ANOVA table got the F-values absolutely right. Also, a word of caution: `aov` got the same answer as `lmer` here because the experimental design was completely balanced, all treatment combinations appearing once at each level of the split-plot design. If the design was unbalanced, F-values from `aov` and from `lmer` would differ, would only be approximate, and may be tested against the wrong residual degrees of freedom.
+
+
+There are two statistically significant interactions. A useful way to understand these is to use the `interaction.plot` function. The variables are listed in a non-obvious order: first the factor to go on the $x$-axis, then the factor to go as different lines on the plot, then the response variable. There are 3 plots to look at so we make a $2 \times 2$ plotting area: 
+ 
+```{r intplot, fig.width = 10, fig.height = 10}
+par(mfrow = c(2, 2))
+interaction.plot(splityield$fertilizer, splityield$density, splityield$yield) 
+interaction.plot(splityield$fertilizer, splityield$irrigation, splityield$yield) 
+interaction.plot(splityield$density, splityield$irrigation, splityield$yield)
+par(mfrow = c(1, 1))
+```
+
+The really pronounced interaction is that between irrigation and density, with a reversal of the high to low density difference on the irrigated and control plots. Interestingly, this is not the most statistically significant interaction. That honour goes to the `fertilizer:irrigation` interaction (top right graph). 
+
+Overall, the 3-way interaction was not statistically significant, nor was the 2-way interaction between density and fertilizer. The 2-way interaction between irrigation and fertilizer, however, was highly statistically significant and, not surprisingly, there was a highly statistically significant main effect of fertilizer. 
+
 
 ## Absorbing the influence of random effects
 
