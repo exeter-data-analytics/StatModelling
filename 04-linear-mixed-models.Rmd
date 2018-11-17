@@ -1,5 +1,7 @@
 # Mixed effects models
 
+My thanks in particular to [Dave Hodgson](http://biosciences.exeter.ac.uk/staff/index.php?web_id=david_hodgson), who's fantastic Master's course offered up the prototype for this workshop.
+
 ## DATA
 
 DATA!!!!
@@ -23,9 +25,72 @@ This practical will focus on how to analyse data when the experimental design (o
 
 ***Health Warning: some of these mixed-effects modelling packages are quickly evolving, and future updates might play some havoc with the coding, and outputs from, the scripts written here. You will need to keep your eye on the forums in the future if this happens. As always, let me or your demonstrators know if you encounter difficulties.***
 
+## A note on variable selection and model simplification
+
+By design we have been a bit wary in focussing on the eponymous null hypothesis significance testing ideas (and associated idolisation of p-values so beloved in many fields of science). We have done this because we want to emphasise that a statistical model is more than just a p-value, and also that a p-value on its own (without some measure of effect size) is meaningless. We appreciate that this might fly in the face of the way that many of you might have seen statistical models presented in courses or papers, and this section is our attempt to explain to you some of the controversies surrounding these approaches.
+
+There is are many philosophical complexities with the way that p-values are used in many papers, and there have been many papers published discussing their misuse and misinterpretations. A good one is [Halsey et al. (2015)](https://www.nature.com/articles/nmeth.3288.pdf?origin=ppub). 
+
+This is not to say that null hypothesis significance testing (hereafter NHST) is wrong, it's just that it's easy to misuse, even for experienced data modellers.
+
+1. A p-value is the *"probability of observing a test statistic equal to or more extreme than the observed test statistic if the null hypothesis is true"*; it is **not** the "probability that the null hypothesis is false".
+2. Leads to a binary interpretation: *"is there an effect?"*", rather than, *"what is the size of the effect"*?
+3. They are heavily dependent on **sample size**:
+    * a *larger* study with the same effect size and variance will be *more* statistically significant.
+    Example: study is exploring differences between sample means from two groups, $\bar{x}$ and $\bar{y}$.
+        * $~~\bar{x} = 10$, $\bar{y} = 12$, $s = 5$ (pooled SD), $n = 5$ (per group): $\mathbf{p = 0.4}$.
+        * $~~\bar{x} = 10$, $\bar{y} = 12$, $s = 5$ (pooled SD), $n = 30$ (per group): $\mathbf{p = 0.0332}$.
+4. The p-value itself is a **random variable**, and can have a very wide variance
+    * Geoff Cumming's ['dance of the p-values'](https://www.youtube.com/embed/5OL1RqHrZQ8).
+    * Type I, II, S and M errors.
+5. Often, the null hypothesis of a **zero effect** is not a **biologically** valid one.
+    * [The difference between "significant" and "not significant" is not itself statistically significant...](http://www.tandfonline.com/doi/abs/10.1198/000313006X152649)
+6. Direction and magnitude of effects are important.
+    * Consider a **large** study which finds a **small** effect size of $x$ ($p < 0.001$), with the **minimum biologically significant** effect size being ***larger*** than $x$.
+    * Therefore, the ***highly (statistically) significant*** p-value provides strong evidence of a **lack-of-effect**. It corresponds to a **negligible real-world** effect estimated with high precision!
+    
+Many of these problems go away when a study is appropriately **powered**, with careful experimental design. In this case the sample size is large enough to have high power for the comparison of interest, and the study is often set up in such a way as to make the comparison of interest meaningful. Note that these kinds of study were what NHST were derived to model.
+
+That being said, there are times when NHST can be useful, particularly if you have a complex system (perhaps with large numbers of explanatory variables), and you wish to produce a more parsimonious model (perhaps because it is easier to interpret). Traditionally, if the response variable is Gaussian (normal), then two options were available:
+
+* F-tests: based on comparing the residual mean squared error with the regression mean squared error, or
+* Likelihood ratio tests (LRT): based on comparing the model deviance between two models.
+
+Both of these cases are **exact** tests for linear regression with Gaussian errors. Let's have a look at a simple example using the fruitflies data from earlier practicals.
+
+```{r, eval=FALSE}
+ff <- readRDS("fruitfly.rds")
+```
+
+```{r, echo=FALSE, eval=TRUE}
+ff <- readRDS("_data/fruitfly.rds")
+```
+
+```{r}
+ff_lm <- lm(longevity ~ type, data = ff)
+summary(ff_lm)
+drop1(ff_lm, test = "F")
+```
+Here the `drop1()` function drops each explanatory variable in turn from the base line model and performs an F-test. Here there is only one variable, `type`, and so dropping this variable produces a test statistic of 15.738, which can be compared against an F-distribution on 2 and 122 degrees-of-freedom (d.f.), which gives a p-value of $8.3 \times 10^{-7}$ (i.e. a statistically significant change even at the 1% and 0.1% levels). Thus we would conclude that dropping `type` produces a statistically significantly inferior model fit compared to when it is left in the model.
+
+We can do the same thing but using a likelihood ratio test as:
+
+```{r}
+drop1(ff_lm, test = "Chisq")
+```
+Here the test statistic produces a p-value of $5.9 \times 10^{-7}$; again highly statistically significant even at the 0.1% level, but slightly different to the F-test (because they are different tests). Here we are comparing to a chi-squared distribution on 2 d.f. (the difference in the number of parameters between the two nested models). In general, in linear regression with Gaussian errors the F-test is slightly more powerful than the LRT, but you can use either.
+
+For Generalised Linear Models (with non-Gaussian error structure) the F-test is no longer valid, and the LRT is **approximate** (the latter is in fact **asymptotically chi-squared**, which means that the approximation gets better for larger sample sizes, but can be misleading in small samples).
+
+If using F-tests or LRTs to compare models, then the models must be **nested** (i.e. you can get one model to equal the other by fixing some of the parameters---usually setting coefficients to be zero, as in the fruitflies examples). An alternative is to use something like Akaike's Information Criterion (AIC), which does not assess statistical significance and does not require the models to be nested (it is in essence a measure of predictive accuracy).
+
+For **mixed models** things get trickier again, and there is much debate about optimal ways to perform model simplification and inference---see [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html) for more discussion. In practice I only perform model simplification if I have a lot of variables, and I wish to make a more parsimonious model for interpretational reasons. Even then I would present the final model results in terms of effect sizes and confidence intervals where possible (or via predictive plots), since these at least focus on the magnitude of the effects. If I have large enough sample sizes and not too many variables, then it may well be fine just to fit one model and perform inference from that (noting that variables with small effect sizes will get presented as such).
+
+In this workshop we will introduce some common scenarios in which mixed models can be applied, and give examples of model simplification and inference in these cases.
+
 ## Randomised Complete Block Design
 
-> Often you will find it impossible to allocate treatments to experimental units at random because they are structured in time or in space. This means that units are not independent of each other, hence their residuals will not be independent, and we have violated an important assumption of generalised linear modeling (and, indeed, of analysis of variance). However the recognition of natural structuring in our population of experimental units can be **VERY** useful. If the experimental design can be stratified so that all units that share a common 'trait' (e.g. share a corner of a field, or share a single incubator) can represent one or more full replicate of the proposed experiment, then we should use this natural structuring to absorb some of our enemy: noise (also called residual deviance).
+> Often you will find it impossible to allocate treatments to experimental units at random because they are structured in time or in space. This means that units are not independent of each other, hence their residuals will not be independent, and we have violated an important assumption of generalised linear modeling (and, indeed, of analysis of variance). However the recognition of natural structuring in our population of experimental units can be **very** useful. If the experimental design can be stratified so that all units that share a common 'trait' (e.g. share a corner of a field, or share a single incubator) can represent one or more full replicate of the proposed experiment, then we should use this natural structuring to absorb some of our enemy: noise (also called residual deviance).
 
 An extreme case of using error-absorbers is the Randomised Complete Block Experimental Design. So-called because it includes blocks, each block contains a single replicate of the experiment, and experimental units **WITHIN** blocks are allocated to treatment combinations **AT RANDOM**. The concept is best explained using an example.
 
