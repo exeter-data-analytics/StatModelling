@@ -373,7 +373,7 @@ Overall, the 3-way interaction was not statistically significant, nor was the 2-
 
 ## Absorbing the influence of random effects
 
-Eight groups of students walked through Hell's Gate National Park and estimated the distance to groups or individuals of several species of mammalian herbivores. Here we work with data on distances to three key species: Thomson's gazelle, warthog and zebra. We are interested in whether distances to these animals differ among species, whether distances depend on animal group size, and also whether the relationship between distance and group size differs among species. Previously we have worked with data from the first and the last group to walk through Hell's Gate. Here we will work with data from all the groups. The data is in file "HG data all groups three species.csv".
+Eight groups of students walked through Hell's Gate National Park and estimated the distance to groups or individuals of several species of mammalian herbivores. Here we work with data on distances to three key species: Thomson's gazelle, warthog and zebra. We are interested in whether distances to these animals differ among species, whether distances depend on animal group size, and also whether the relationship between distance and group size differs among species. Previously we have worked with data from the first and the last group to walk through Hell's Gate. Here we will work with data from all the groups. The data is in file "hg.rds".
 
 A na&iuml;ve analysis would ignore the identity of the student group, and therefore treat all the distance observations as independent. It would probably fit a `lm` of distance against species, number and the interaction between species and number. My own exploration of the data suggests that raw distances are skewed, and that a log-transformation improves homoscedasticity and normality of residuals. So before analysing we do this transformation.
 
@@ -397,33 +397,9 @@ This suggests a statistically significant interaction between `Species` and `Num
 summary(hg_lm)
 ```
 
-The interaction appears to be driven by a decrease in distance with increasing group size, but only in zebras. We can draw the relevant figure.
-
-Plot the axes and raw data:
+The interaction appears to be driven by a decrease in distance with increasing group size, but only in zebras. We can draw the relevant figure (notice that this is where `tidyverse` comes into its own, with much more concise code resulting in a better plot).
 
 ```{multCode}
-
-``{r, plothg}
-plot(Distance ~ Number, data = hg, type = "n")
-points(Distance ~ Number, 
-       data = hg, 
-       subset = (Species == "thomsons gazelle"), 
-       pch = 16)
-points(Distance ~ Number, 
-       data = hg, 
-       subset = (Species == "warthog"), 
-       pch = 16,
-       col = "red")
-points(Distance ~ Number, 
-       data = hg, 
-       subset = (Species == "zebra"), 
-       pch = 16,
-       col = "blue")
-legend(15, 1000, 
-       pch = rep(16, 3), 
-       col = c("black", "red", "blue"), 
-       legend = c("gazelle", "warthog", "zebra"))
-``
 
 Generate 'fake' data in order to plot fitted lines:
 
@@ -432,18 +408,17 @@ newdata <- expand.grid(
     Number = seq(min(hg$Number), max(hg$Number), length = 100),
     Species = levels(hg$Species)
 )
-newdata$Species <- factor(newdata$Species)
 ``
 
 Now get the predicted values for the fake data, and back-transform log-distance to real distances, using the `exp` command:
 
 ``{r}
-hg_pred <- exp(predict(hg_lm, newdata))
+newdata$Distance <- exp(predict(hg_lm, newdata))
 ``
 
-Now add the fitted lines to the plot:
+Now plot the fitted lines against the observed data points:
 
-``{r, echo = F}
+``{r}
 plot(Distance ~ Number, data = hg, type = "n")
 points(Distance ~ Number, 
        data = hg, 
@@ -459,50 +434,27 @@ points(Distance ~ Number,
        subset = (Species == "zebra"), 
        pch = 16,
        col = "blue")
+lines(Distance ~ Number, 
+      data = newdata, 
+      subset = (newdata$Species == "thomsons gazelle"), 
+      lwd = 2)
+lines(Distance ~ Number, 
+      data = newdata,
+      subset = (newdata$Species == "warthog"), 
+      lwd = 2, 
+      col = "red")
+lines(Distance ~ Number, 
+      data = newdata,
+      subset = (newdata$Species == "zebra"), 
+      lwd = 2, 
+      col = "blue")
 legend(15, 1000, 
        pch = rep(16, 3), 
        col = c("black", "red", "blue"), 
        legend = c("gazelle", "warthog", "zebra"))
-lines(hg_pred ~ newdata$Number, 
-      data = hg, 
-      subset = (newdata$Species == "thomsons gazelle"), 
-      lwd = 2)
-lines(hg_pred ~ newdata$Number, 
-      data = hg, 
-      subset = (newdata$Species == "warthog"), 
-      lwd = 2, 
-      col = "red")
-lines(hg_pred ~ newdata$Number, 
-      data = hg, 
-      subset = (newdata$Species == "zebra"), 
-      lwd = 2, 
-      col = "blue")
-``
-
-``{r, eval = F}
-lines(hg_pred ~ newdata$Number, 
-      data = hg, 
-      subset = (newdata$Species == "thomsons gazelle"), 
-      lwd = 2)
-lines(hg_pred ~ newdata$Number, 
-      data = hg, 
-      subset = (newdata$Species == "warthog"), 
-      lwd = 2, 
-      col = "red")
-lines(hg_pred ~ newdata$Number, 
-      data = hg, 
-      subset = (newdata$Species == "zebra"), 
-      lwd = 2, 
-      col = "blue")
 ``
 
 ####
-
-``{r}
-p <- ggplot(hg, aes(x = Distance, y = Number, col = Species)) +
-    geom_point()
-print(p)
-``
 
 Generate 'fake' data in order to plot fitted lines:
 
@@ -510,22 +462,22 @@ Generate 'fake' data in order to plot fitted lines:
 newdata <- expand.grid(
         Number = seq(min(hg$Number), max(hg$Number), length = 100),
         Species = levels(hg$Species)
-    ) %>%
-    mutate(Species = factor(Species))
+    )
 ``
 
 Now get the predicted values for the fake data, and back-transform log-distance to real distances, using the `exp` command:
 
 ``{r}
-hg_pred <- newdata %>%
+newdata <- newdata %>%
     mutate(Distance = exp(predict(hg_lm, newdata)))
 ``
 
-Now add the fitted lines to the plot:
+Now plot the fitted lines against the observed data points:
 
 ``{r}
-p <- p + geom_line(data = hg_pred)
-print(p)
+ggplot(hg, aes(x = Number, y = Distance, col = Species)) +
+    geom_point() + 
+    geom_line(data = newdata)
 ``
 
 ```
