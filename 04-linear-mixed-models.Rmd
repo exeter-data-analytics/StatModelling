@@ -640,3 +640,19 @@ This is a short section, but very important. When you perform ANOVA or linear re
 When you perform Generalised Linear Modelling with non-normal error structures, you have to use likelihood ratio testing (i.e. chi-square tests). In the case of a standard GLM, then the LRT test statistic is **asymptotically chi-squared** (i.e. it's approximately chi-squared, where the approximation gets better as the sample size gets bigger). However, these are based only on 'model' deviance and do not take into account residual deviance.  Hence a model of non-independent data cannot provide correct chi-square tests because they ignore the nesting in the experimental design.
 
 > **Moral**: It's far better to use **Generalised Linear Mixed Modelling** in these cases. 
+
+## Generalised Linear Mixed Modelling (GLMM)
+
+Obviously given your expertise with non-normal data and error structures, by now (if you're still reading) you'll be craving a mixed-effects modelling technique that copes with Poisson, binomial, quasi etc. errors: `glmer()` gives it a good try.
+
+As an example, suppose our hypotheses change. Now we believe that the group sizes vary among species and with distance from the road. Using `Number` as a response variable is unlikely to have normal residuals (I'm confident). If this was a GLM, we would start by trying `family = poisson`, because the data are counts (close to zero). Miraculously, that's all we have to do in `glmer()` as well.
+
+```{r glmer}
+hometime <- glmer(Number ~ Species * ldist + (1 | Group.Name), 
+    data = hg, family = poisson)
+summary(hometime)
+```
+
+Simplification to find the Minimal Adequate Model is... a challenge for you to complete!
+
+Congratulations.
