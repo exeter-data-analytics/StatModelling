@@ -517,3 +517,42 @@ drop1(update(hg_lmer, REML = F), test = "Chisq")
 
 As usual, likelihood ratio tests in this context have a chi-squared distribution with d.f. equal to the difference in d.f. between the models. Here we have 8 - 6 = 2 d.f. So, here we find no evidence for an interaction between `Species` and `Number` ($X^2_2 = 2.16$, $p = 0.34$).
 
+Since we have an **unbalanced** design here, we can continue model simplification by dropping each of the main effect terms from the current model and seeing which has the largest impact on model fit (in this case the model simplification will be different depending on the ***order*** in which variables are added/removed from the model). 
+
+```{r}
+## set baseline model from previous round
+hg_lmer <- update(hg_lmer, ~ . - Species:Number)
+
+## now drop terms compare to baseline model
+drop1(update(hg_lmer, REML = F), test = "Chisq")
+```
+
+Here dropping `Number` has little impact on the model fit, whereas dropping `Species` results in a statistically significantly inferior fit. Hence the next stage is to drop `Number`. Therefore our baseline model now has just the main effect for `Species`. The final stage is to drop `Species` and assess the change in fit relative to our current model.
+
+```{task, title = "Question"} 
+Why do we need to do this last step, since we assessed the impact of removing `Species` before?
+```
+
+```{solution, title = "Answer"}
+Because the LRT at the previous stage was comparing the baseline model `ldist ~ Species + Number` with the model `ldist ~ Number`. Since we have now removed `Number`, the new LRT will compare the baseline model `ldist ~ Species` with the null model `ldist ~ 1` (i.e. a model with just a single intercept value). In **unbalanced** designs these two comparisons are different tests and thus can give different results.
+```
+
+```{r}
+## set baseline model from previous round
+hg_lmer <- update(hg_lmer, ~ . - Number)
+
+## now drop terms compare to baseline model
+drop1(update(hg_lmer, REML = F), test = "Chisq")
+```
+
+This suggests there is a clear effect of `Species` identity on `log(Distance)` ($X^2_2 = 54.0$, $p < 0.001$).
+
+Now we'd like to see our model summary (notice that R has automatically kept the REML fit; since we only converted the model objects to use ML during the model comparison exercise):
+
+```{r}
+summary(hg_lmer)
+```
+
+This final summary tells us that the standard deviation among observer groups is almost as big as the residual standard deviation in distances. It tells us that both warthogs and zebra are closer to the observer than Thomson's gazelles, which are approximately $e^{5.44} = 230$ metres away on average. The number of animals in a group has negligible influence on distance given the uncertainties in the data.
+
+We're now left with a final model that has a single categorical variable. We could provide a boxplot of the raw data to describe it, but in this instance it would be misleading because it would not differentiate between observer-level noise and residual noise. In this instance we will produce confidence intervals for the mean distance from the road for each species and plot them.
