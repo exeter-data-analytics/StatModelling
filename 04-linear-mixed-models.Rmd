@@ -606,3 +606,37 @@ ggplot(hg_cis, aes(x = Species)) +
 ``
 
 ```
+
+## Model checking with mixed models 
+
+We need to be just as conscious of testing the assumptions of mixed effects models as we are with any other. The assumptions are:
+
+1. Within-group errors are independent and normally distributed with mean zero and variance $\sigma^2$.
+2. Within-group errors are independent of the random effects.
+3. Random effects are normally distributed with mean zero.
+4. Random effects have a covariance matrix $\Psi$ that does not depend on the group... this is rather advanced.
+5. Random effects are independent for different groups, except as specified by nesting... I'm not really sure what this means.
+
+Several model check plots would help us to confirm/deny these assumptions, but note that QQ-plots may not be relevant because of the model structure. Two commonly-used plots are:
+
+1. A simple plot of residuals against fitted values, irrespective of random effects (note we have to do this "by hand" here):
+
+```{r}
+plot(resid(hg_lmer) ~ fitted(hg_lmer))
+```
+
+It can often be useful to check the distribution of residuals in each of the groups (e.g. blocks) to check assumptions 1 and 2. We can do this by plotting the residuals against the fitted values, separately for each level of the random effect, using the precious `coplot` function:
+
+```{r, fig.height = 10}
+coplot(resid(hg_lmer) ~ fitted(hg_lmer) | hg$Group.Name)
+```
+
+You'll notice that each sub-figure of this plot, which refers to an individual group of observers, doesn't contain much data. Therefore it's hard to judge whether the spread of residuals around fitted values is the same for each observer group. But, with better-replicated experiments (i.e. with many more animals seen per observer group) we could check that the residuals are homoscedastic both **within** and **among** observers. (Note that the order of the coplots relating to the groups denoted in the top plot is left-to-right, bottom-to-top: so `bilbo's badgers` are bottom-left, `Mega-my-fauna` are bottom-middle and so on...)
+
+## Why aren't GLMs much good at modelling non-independent data?
+
+This is a short section, but very important. When you perform ANOVA or linear regression with a Gaussian (normal) error structure, you can use F-tests which are based on 'model' and 'residual' mean-squares or deviances (remember an F-statistic is the ratio of two variances). When data are non-independent, this is really useful because you can choose which part of the experimental design structure from which to select your residual deviance. Remember that you can also use likelihood ratio testing, in which case the chi-squared test statistic is an **exact** test (although subtlely different to the F-test).
+
+When you perform Generalised Linear Modelling with non-normal error structures, you have to use likelihood ratio testing (i.e. chi-square tests). In the case of a standard GLM, then the LRT test statistic is **asymptotically chi-squared** (i.e. it's approximately chi-squared, where the approximation gets better as the sample size gets bigger). However, these are based only on 'model' deviance and do not take into account residual deviance.  Hence a model of non-independent data cannot provide correct chi-square tests because they ignore the nesting in the experimental design.
+
+> **Moral**: It's far better to use **Generalised Linear Mixed Modelling** in these cases. 
