@@ -327,29 +327,39 @@ However, if you run this, you will notice that the function returns an error. Th
 
 Another way of writing the command above is:
 
-```{r wrongsynt1, eval = F, tidy = F}
-split.lmer <- lmer(yield ~ irrigation * density * fertilizer + (1 | block) + 
-                       ( 1 | block:irrigation) + (1 | block:irrigation:density) + 
-                       ( 1 | block:irrigation:density:fertilizer), data = splityield)
+```{r, eval = F, tidy = F}
+split_lmer <- lmer(yield ~ irrigation * density * fertilizer + (1 | block) + 
+                       (1 | block:irrigation) + (1 | block:irrigation:density) + 
+                       (1 | block:irrigation:density:fertilizer), data = splityield)
 ```
 
 Pretty grim eh? However, in this case we note that the final nested random effect only has one replicate per group, so we simply remove this term. Leaving:
 
-```{r split.lmer, tidy = F}
-split.lmer <- lmer(yield ~ irrigation * density * fertilizer + (1 | block) + 
-                       (1 | block:irrigation) + (1 | block:irrigation:density), 
-                       data = splityield)
-Anova(split.lmer, test = "F")
+```{r, tidy = F}
+split_lmer <- lmer(yield ~ irrigation * density * fertilizer + (1 | block) + 
+       (1 | block:irrigation) + (1 | block:irrigation:density), 
+       data = splityield)
+drop1(update(split_lmer, REML = F), test = "Chisq")
+```
+We can see that the three-way interaction term is not statistically significant, so we can drop it from the model and then test dropping the two-way interaction effects.
+
+```{r, tidy = F}
+split_lmer <- update(split_lmer, ~ . - irrigation:density:fertilizer)
+drop1(update(split_lmer, REML = F), test = "Chisq")
 ```
 
-This is a balanced design (all treatment combinations have the same number of replicates) so I'm safe to ask for an ANOVA table of the full model. But this is the last time I'm going to do it. After this example, I will be testing statistical significance of terms using our old friend, model simplification.
+We are thus safe to remove the `density:fertilizer` interaction term:
 
-If you really want to know all the coefficients, type `summary(split.lmer)` and suffer the consequences! Note however that the ANOVA table got the F-values absolutely right. Also, a word of caution: `aov` got the same answer as `lmer` here because the experimental design was completely balanced, all treatment combinations appearing once at each level of the split-plot design. If the design was unbalanced, F-values from `aov` and from `lmer` would differ, would only be approximate, and may be tested against the wrong residual degrees of freedom.
+```{r, tidy = F}
+split_lmer <- update(split_lmer, ~ . - density:fertilizer)
+drop1(update(split_lmer, REML = F), test = "Chisq")
+```
 
+We thus have a simplified final model. If you really want to know all the coefficients, type `summary(split.lmer)`, but here we will try to understand the interaction terms graphically.
 
-There are two statistically significant interactions. A useful way to understand these is to use the `interaction.plot` function. The variables are listed in a non-obvious order: first the factor to go on the $x$-axis, then the factor to go as different lines on the plot, then the response variable. There are 3 plots to look at so we make a $2 \times 2$ plotting area: 
+A useful way to understand these is to use the `interaction.plot()` function. The variables are listed in a non-obvious order: first the factor to go on the $x$-axis, then the factor to go as different lines on the plot, then the response variable. There are 3 plots to look at so we make a $2 \times 2$ plotting area: 
  
-```{r intplot, fig.width = 10, fig.height = 10}
+```{r, fig.width = 10, fig.height = 10, fig.show = "hold"}
 par(mfrow = c(2, 2))
 interaction.plot(splityield$fertilizer, splityield$density, splityield$yield) 
 interaction.plot(splityield$fertilizer, splityield$irrigation, splityield$yield) 
@@ -360,7 +370,6 @@ par(mfrow = c(1, 1))
 The really pronounced interaction is that between irrigation and density, with a reversal of the high to low density difference on the irrigated and control plots. Interestingly, this is not the most statistically significant interaction. That honour goes to the `fertilizer:irrigation` interaction (top right graph). 
 
 Overall, the 3-way interaction was not statistically significant, nor was the 2-way interaction between density and fertilizer. The 2-way interaction between irrigation and fertilizer, however, was highly statistically significant and, not surprisingly, there was a highly statistically significant main effect of fertilizer. 
-
 
 ## Absorbing the influence of random effects
 
