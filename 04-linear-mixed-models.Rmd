@@ -47,7 +47,7 @@ Let's do the analysis **WRONGLY** to begin with:
 
 ```{r bacwrong}
 bac_lm <- lm(growth ~ media, data = bac)
-anova(bac_lm)
+drop1(bac_lm, test = "F")
 ```
 
 ```{task, title = "Question"}
@@ -159,13 +159,14 @@ rats <- readRDS("rats.rds")
 Here is what not to do (try it anyway)!
 
 ```{r wrong} 
-rats_aov <- aov(Glycogen ~ Treatment * Rat * Liver, data = rats)
+rats_lm <- lm(Glycogen ~ Treatment * Rat * Liver, data = rats)
 ```
 
 The model has been specified as if it were a full factorial with no nesting and no pseudoreplication. Note that the structure of the data allows this mistake to be made. It is a very common problem with data frames that include pseudoreplication. A summary of the model fit looks like this:
 
-```{r sumrats}
-summary(rats_aov)
+```{r}
+summary(rats_lm)
+drop1(rats_lm, test = "F")
 ```
 
 This says that there was a highly statistically significant difference between the treatment means, at least some of the rats were statistically significantly different from one another, and there was a statistically significant interaction effect between treatments and rats. This is wrong! The analysis is flawed because it is based on the assumption that there is only one error variance and that its value is 21.2. This value is actually the measurement error; that is to say the variation between one reading and another from the same piece of liver. For testing whether the treatment has had any effect, it is the rats that are the replicates, and there were only 6 of them in the whole experiment. 
@@ -196,9 +197,76 @@ Here, `ratsNew` is a new dataset (hopefully shorter than its ancestral dataset) 
 
 ```{r ratsagg}
 ratsNew_lm <- lm(Glycogen ~ Treatment, data = ratsNew)
-drop1(ratsNew_lm)
+drop1(ratsNew_lm, test = "F")
 ```
 
+This is a statistically valid analysis, but it ignores the uncertainties around the pseudo-replicates, and the interpretation of the response variable is actually the mean of a bunch of measurements, not the measurements themselves. So it's giving the correct result for a different model.
+
+
+### Mixed model approach
+
+#### Nested and crossed random effects
+
+We have to be careful to get the model formula correct. Notice that in the `rats` data the `Rat` column is coded as a `0` or a `1`. This means that we could use the formula:
+
+```{r, eval = F}
+rats_lmer <- lmer(Glycogen ~ Treatment + (1 | Rat), data = rats)
+```
+
+**without** throwing an error.
+
+```{task, title = "Question"}
+Why is this wrong?
+```
+
+```{solution, title = "Answer"}
+It is wrong because this would add **two** random effect terms, one for rat `0` and one for rat `1`. This is wrong. There are 6 rats altogether. The way that the data have been coded allows for these kinds of mistakes to happen. The same is true for `Liver`, which is coded as a `1`, `2` or `3`. This means that we could write:
+    
+``{r, eval = F}
+rats_lmer <- lmer(Glycogen ~ Treatment + (1 | Rat) + (1 | Liver), data = rats)
+``
+
+thinking that we are including the correct random effects for `Rat` and `Liver`. In fact, this assumes that the data come from a **crossed** design, in which there are 2 rats and 3 parts of the liver, and that `Liver = 1` corresponds to the same type of measurement in rats `0` and `1` and so on. Sometimes this is appropriate, but not here!
+    
+The nature of the way that many data sets are coded makes these kinds of mistakes very easy to make!
+```
+
+In this case we must tell `lmer()` that `Liver` is **nested** within `Rat`, and `Rat` within `Treatment`. We can do this in various ways, but the easiest thing here is to generate a unique coding for each of the 6 rats.
+
+```{multCode}
+
+``{r, echo = F}
+rats_orig <- rats
+``
+
+``{r}
+rats$Rat <- paste(rats$Treatment, "_", rats$Rat)
+rats$Rat <- as.numeric(factor(rats$Rat))
+``
+
+####
+
+``{r, echo = F}
+rats <- rats_orig
+``
+
+``{r}
+rats <- rats %>%
+    unite(Rat, Treatment, Rat, sep = "_", remove = F) %>%
+    mutate(Rat = as.numeric(factor(Rat)))
+``
+
+```
+
+We can use **nested** random effects to account for the hierarchy of measurements:
+
+```{r}
+rats_lmer <- lmer(Glycogen ~ Treatment + (1 | Rat / Liver), data = rats)
+anova(rats_lmer, update(rats_lmer, ~ . - Treatment), test = "Chisq")
+#drop1(rats_lmer, test = "Chisq")
+```
+
+> **Note**: the syntax `Rats / Liver` means that the `Liver` levels are **nested** within the `Rat` levels. In this case we do not have to recode `Liver` to be unique, since the nesting ensures that `lmer()` knows that `Liver = 1` inside `Rat = 1` is different from `Liver = 1` inside `Rat = 2`.
 
 ## Non-independent data: Split-plot analyses
 
@@ -302,3 +370,162 @@ Anova(split.lmer, test = "F")
 This is a balanced design (all treatment combinations have the same number of replicates) so I'm safe to ask for an ANOVA table of the full model. But this is the last time I'm going to do it. After this example, I will be testing statistical significance of terms using our old friend, model simplification.
 
 If you really want to know all the coefficients, type `summary(split.lmer)` and suffer the consequences! Note however that the ANOVA table got the F-values absolutely right. Also, a word of caution: `aov` got the same answer as `lmer` here because the experimental design was completely balanced, all treatment combinations appearing once at each level of the split-plot design. If the design was unbalanced, F-values from `aov` and from `lmer` would differ, would only be approximate, and may be tested against the wrong residual degrees of freedom.
+
+## Absorbing the influence of random effects
+
+Eight groups of students walked through Hell's Gate National Park and estimated the distance to groups or individuals of several species of mammalian herbivores. Here we work with data on distances to three key species: Thomson's gazelle, warthog and zebra. We are interested in whether distances to these animals differ among species, whether distances depend on animal group size, and also whether the relationship between distance and group size differs among species. Previously we have worked with data from the first and the last group to walk through Hell's Gate. Here we will work with data from all the groups. The data is in file "HG data all groups three species.csv".
+
+A na&iuml;ve analysis would ignore the identity of the student group, and therefore treat all the distance observations as independent. It would probably fit a `lm` of distance against species, number and the interaction between species and number. My own exploration of the data suggests that raw distances are skewed, and that a log-transformation improves homoscedasticity and normality of residuals. So before analysing we do this transformation.
+
+```{r, echo = F}
+hg <- readRDS("_data/hg.rds")
+```
+
+```{r, eval = F}
+hg <- readRDS("hg.rds")
+```
+
+```{r}
+hg$ldist <- log(hg$Distance)
+hg_lm <- lm(ldist ~ Species * Number, data = hg)
+drop1(hg_lm, test = "F")
+```
+
+This suggests a statistically significant interaction between `Species` and `Number` ($F_{2, 456} = 5.78$, $p = 0.003$).
+
+```{r sumhg}
+summary(hg_lm)
+```
+
+The interaction appears to be driven by a decrease in distance with increasing group size, but only in zebras. We can draw the relevant figure.
+
+Plot the axes and raw data:
+
+```{multCode}
+
+``{r, plothg}
+plot(Distance ~ Number, data = hg, type = "n")
+points(Distance ~ Number, 
+       data = hg, 
+       subset = (Species == "thomsons gazelle"), 
+       pch = 16)
+points(Distance ~ Number, 
+       data = hg, 
+       subset = (Species == "warthog"), 
+       pch = 16,
+       col = "red")
+points(Distance ~ Number, 
+       data = hg, 
+       subset = (Species == "zebra"), 
+       pch = 16,
+       col = "blue")
+legend(15, 1000, 
+       pch = rep(16, 3), 
+       col = c("black", "red", "blue"), 
+       legend = c("gazelle", "warthog", "zebra"))
+``
+
+Generate 'fake' data in order to plot fitted lines:
+
+``{r}
+newdata <- expand.grid(
+    Number = seq(min(hg$Number), max(hg$Number), length = 100),
+    Species = levels(hg$Species)
+)
+newdata$Species <- factor(newdata$Species)
+``
+
+Now get the predicted values for the fake data, and back-transform log-distance to real distances, using the `exp` command:
+
+``{r}
+hg_pred <- exp(predict(hg_lm, newdata))
+``
+
+Now add the fitted lines to the plot:
+
+``{r, echo = F}
+plot(Distance ~ Number, data = hg, type = "n")
+points(Distance ~ Number, 
+       data = hg, 
+       subset = (Species == "thomsons gazelle"), 
+       pch = 16)
+points(Distance ~ Number, 
+       data = hg, 
+       subset = (Species == "warthog"), 
+       pch = 16,
+       col = "red")
+points(Distance ~ Number, 
+       data = hg, 
+       subset = (Species == "zebra"), 
+       pch = 16,
+       col = "blue")
+legend(15, 1000, 
+       pch = rep(16, 3), 
+       col = c("black", "red", "blue"), 
+       legend = c("gazelle", "warthog", "zebra"))
+lines(hg_pred ~ newdata$Number, 
+      data = hg, 
+      subset = (newdata$Species == "thomsons gazelle"), 
+      lwd = 2)
+lines(hg_pred ~ newdata$Number, 
+      data = hg, 
+      subset = (newdata$Species == "warthog"), 
+      lwd = 2, 
+      col = "red")
+lines(hg_pred ~ newdata$Number, 
+      data = hg, 
+      subset = (newdata$Species == "zebra"), 
+      lwd = 2, 
+      col = "blue")
+``
+
+``{r, eval = F}
+lines(hg_pred ~ newdata$Number, 
+      data = hg, 
+      subset = (newdata$Species == "thomsons gazelle"), 
+      lwd = 2)
+lines(hg_pred ~ newdata$Number, 
+      data = hg, 
+      subset = (newdata$Species == "warthog"), 
+      lwd = 2, 
+      col = "red")
+lines(hg_pred ~ newdata$Number, 
+      data = hg, 
+      subset = (newdata$Species == "zebra"), 
+      lwd = 2, 
+      col = "blue")
+``
+
+####
+
+``{r}
+p <- ggplot(hg, aes(x = Distance, y = Number, col = Species)) +
+    geom_point()
+print(p)
+``
+
+Generate 'fake' data in order to plot fitted lines:
+
+``{r}
+newdata <- expand.grid(
+        Number = seq(min(hg$Number), max(hg$Number), length = 100),
+        Species = levels(hg$Species)
+    ) %>%
+    mutate(Species = factor(Species))
+``
+
+Now get the predicted values for the fake data, and back-transform log-distance to real distances, using the `exp` command:
+
+``{r}
+hg_pred <- newdata %>%
+    mutate(Distance = exp(predict(hg_lm, newdata)))
+``
+
+Now add the fitted lines to the plot:
+
+``{r}
+p <- p + geom_line(data = hg_pred)
+print(p)
+``
+
+```
