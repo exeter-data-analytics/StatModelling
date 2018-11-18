@@ -51,7 +51,7 @@ This is not to say that null hypothesis significance testing (hereafter NHST) is
     
 Many of these problems go away when a study is appropriately **powered**, with careful experimental design. In this case the sample size is large enough to have high power for the comparison of interest, and the study is often set up in such a way as to make the comparison of interest meaningful. Note that these kinds of study were what NHST were derived to model.
 
-That being said, there are times when NHST can be useful, particularly if you have a complex system (perhaps with large numbers of explanatory variables), and you wish to produce a more parsimonious model (perhaps because it is easier to interpret). Traditionally, if the response variable is Gaussian (normal), then two options were available:
+That being said, there are times when NHST can be useful, particularly if you have a complex system (perhaps with large numbers of explanatory variables), and you wish to produce a more parsimonious model (perhaps because it is easier to interpret). Traditionally, if the response variable is Gaussian (normal), then you may have come across two frequently used approaches:
 
 * F-tests: based on comparing the residual mean squared error with the regression mean squared error, or
 * Likelihood ratio tests (LRT): based on comparing the model deviance between two models.
@@ -71,7 +71,9 @@ ff_lm <- lm(longevity ~ type, data = ff)
 summary(ff_lm)
 drop1(ff_lm, test = "F")
 ```
-Here the `drop1()` function drops each explanatory variable in turn from the base line model and performs an F-test. Here there is only one variable, `type`, and so dropping this variable produces a test statistic of 15.738, which can be compared against an F-distribution on 2 and 122 degrees-of-freedom (d.f.), which gives a p-value of $8.3 \times 10^{-7}$ (i.e. a statistically significant change even at the 1% and 0.1% levels). Thus we would conclude that dropping `type` produces a statistically significantly inferior model fit compared to when it is left in the model.
+Here the `drop1()` function drops each explanatory variable in turn from the baseline model and performs an F-test. The null hypothesis can be thought of as *"if the fit from the competing models is the same"*. 
+
+Here there is only one variable, `type`, and so dropping this variable produces a test statistic of 15.738, which can be compared against an F-distribution on 2 and 122 degrees-of-freedom (d.f.), which gives a p-value of $8.3 \times 10^{-7}$ (i.e. a statistically significant change even at the 1% and 0.1% levels). Thus we would conclude that dropping `type` produces a statistically significantly inferior model fit compared to when it is left in the model.
 
 We can do the same thing but using a likelihood ratio test as:
 
@@ -80,13 +82,24 @@ drop1(ff_lm, test = "Chisq")
 ```
 Here the test statistic produces a p-value of $5.9 \times 10^{-7}$; again highly statistically significant even at the 0.1% level, but slightly different to the F-test (because they are different tests). Here we are comparing to a chi-squared distribution on 2 d.f. (the difference in the number of parameters between the two nested models). In general, in linear regression with Gaussian errors the F-test is slightly more powerful than the LRT, but you can use either.
 
-For Generalised Linear Models (with non-Gaussian error structure) the F-test is no longer valid, and the LRT is **approximate** (the latter is in fact **asymptotically chi-squared**, which means that the approximation gets better for larger sample sizes, but can be misleading in small samples).
+For Generalised Linear Models (GLMs) with non-Gaussian error structure the F-test is no longer valid, and the LRT is **approximate** (the latter is in fact **asymptotically chi-squared**, which means that the approximation gets better for larger sample sizes, but can be misleading in small samples).
 
-If using F-tests or LRTs to compare models, then the models must be **nested** (i.e. you can get one model to equal the other by fixing some of the parameters---usually setting coefficients to be zero, as in the fruitflies examples). An alternative is to use something like Akaike's Information Criterion (AIC), which does not assess statistical significance and does not require the models to be nested (it is in essence a measure of predictive accuracy).
+If using F-tests or LRTs to compare models, then the models must be **nested** (i.e. you can get one model to equal the other by fixing some of the parameters---usually setting coefficients to be zero, as in the fruitflies example). An alternative is to use something like Akaike's Information Criterion (AIC), which does not assess statistical significance and does not require the models to be nested (it is in essence a measure of predictive accuracy).
 
-For **mixed models** things get trickier again, and there is much debate about optimal ways to perform model simplification and inference---see [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html) for more discussion. In practice I only perform model simplification if I have a lot of variables, and I wish to make a more parsimonious model for interpretational reasons. Even then I would present the final model results in terms of effect sizes and confidence intervals where possible (or via predictive plots), since these at least focus on the magnitude of the effects. If I have large enough sample sizes and not too many variables, then it may well be fine just to fit one model and perform inference from that (noting that variables with small effect sizes will get presented as such).
+For **mixed models** things get trickier again, and there is much debate about optimal ways to perform model simplification and inference---see [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html) for more discussion. A nice description of the types of approaches we can use in different cases can be found at:
 
-In this workshop we will introduce some common scenarios in which mixed models can be applied, and give examples of model simplification and inference in these cases.
+[https://rdrr.io/cran/lme4/man/pvalues.html](https://rdrr.io/cran/lme4/man/pvalues.html)
+
+The developers of `lme4` recommend (from **worst** to **best**):
+
+* Wald Z-tests;
+* For **balanced**, **nested LMMs** where degrees of freedom can be computed according to classical rules: Wald t-tests;
+* Likelihood ratio test, either by setting up the model so that the parameter can be isolated/dropped (via `anova()` or `drop1()`, or via computing likelihood profiles;
+* Markov chain Monte Carlo (MCMC) or **parametric bootstrap confidence intervals**.
+
+If I do perform model simplification or variable selection, even then I would present the final model results in terms of effect sizes and confidence intervals where possible (or via predictive plots), since although CIs suffer with some of the same problems as p-values, at least they focus on the magnitude of the effects. If I have large enough sample sizes and not too many variables, then it may well be fine just to fit one model and perform inference from that.
+
+In this workshop we will introduce some common scenarios in which mixed models can be applied, and give examples of model simplification and inference in these cases. We will tend to use LRTs and profile confidence intervals simply because they are easier to compute. A [section](#parboot) at the end will explore the use of parametric bootstrapping.
 
 ## Randomised Complete Block Design
 
@@ -736,3 +749,13 @@ summary(hometime)
 Simplification to find the Minimal Adequate Model is... a challenge for you to complete!
 
 Congratulations.
+
+## Parametric bootstrapping {#parboot}
+
+## Bayesian modelling
+
+Many of the challenges associated with **mixed effects** models go away if you move your inference into a **Bayesian** framework. Thats not to say that other challenges do not arise in their place, mainly in terms of variable selection, however, in general I would recommend using a Bayesian framework for complex models with hierarchical structures, particularly spatio-temporal modelling. 
+
+For GLMMs there is an R package called [`MCMCglmm`](https://cran.r-project.org/web/packages/MCMCglmm/index.html) that will fit a wide range of models in a Bayesian framework. Alternatively there are general purpose Bayesian packages such as [WinBUGS](https://www.mrc-bsu.cam.ac.uk/software/bugs/the-bugs-project-winbugs/), [OpenBUGS](http://www.openbugs.net/w/FrontPage), [JAGS](http://mcmc-jags.sourceforge.net/) or more recently [Stan](http://mc-stan.org/).
+
+These approaches are beyond the scope of this course, but we are hoping to run a Bayesian Modelling workshop next year, so keep your ears to the ground!
