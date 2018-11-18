@@ -211,16 +211,6 @@ The first two terms are the CIs for $\sigma_{\gamma}$ and $\sigma$ respectively.
 
 ## Non-independent data: pseudoreplication, nested variance and derived variable analysis
 
-A motivating example: the value of endosymbionts to aphids.
-
-Recently [Dave](http://biosciences.exeter.ac.uk/staff/index.php?web_id=david_hodgson) reviewed a paper submitted to Biology Letters, in which the fitness of 8 aphid clones was measured. Fitness was measured using 100 aphids per clone. Four of the clones harboured a single species of endosymbiont (bacteria that inhabit aphid cells and help them to synthesise essential amino acids), while four clones harboured multiple endosymbiont species. The hypothesis was that harbouring multiple species of endosymbiont is 'good' for fitness. The statistical analysis considered the fitness of each aphid as its response variable, and tested the influence of 'endosymbiont diversity' (one vs. many species) as a categorical explanatory variable. Importantly, the analysis correctly recognized that 100 aphids came from each clone, and therefore 'absorbed' the effect of aphid clone as a random effect in a mixed-effects model. 
-
-However, the fundamental test of `fitness ~ endosymbiont.diversity` used **ALL THE DATA** and had 797 residual degrees of freedom (800 minus 2 (estimation of the two treatment means) minus 1 (estimation of the among-clone variance)). This is wrong. It's wrong because the diversity of endosymbionts is a feature of the aphid **CLONE**, not of the individual aphid. All the aphids within each clone shared lots of features alongside endosymbiont diversity. Absorbing the variation among clones is a good idea, but the analysis remains fundamentally **PSEUDOREPLICATED**. The only valid analysis to test this hypothesis is to calculate mean fitness per clone, and compare the means of the four clones with a single endosymbiont to the means of the four clones with more than one endosymbiont. The use of mixed models is not a panacea for poor experimental design.
-
-Another way to think about this is to ask at what level of the experimental design is the explanatory variable manipulated? Here, endosymbiont diversity happens at the level of the **CLONE**. So, the test of the impact of endosymbiont diversity must be performed at the level of the **CLONE**. If the experimenter had manipulated endosymbiont diversity within each individual aphid, then the analysis could use all the aphids as experimental units, absorb the 'extra' similarities among clonemates by including `clone` as a random effect, and correctly use the test that they used. But they didn't do that so their paper got rejected. 
-
-### Working with data
-
 We take an example from Sokal & Rohlf (1981). The experiment involved a simple one-way anova with 3 treatments given to 6 rats. The analysis was complicated by the fact that three preparations were taken from the liver of each rat, and two readings of glycogen content were taken from each preparation. This generated 6 pseudoreplicates per rat to give a total of 36 readings in all. A schematic is given in Figure \@ref(fig:rats).
 
 ```{r, rats, fig.cap = "Schematic for glycogen in rats example", echo = F, out.width = "80%", out.height = "80%"}
