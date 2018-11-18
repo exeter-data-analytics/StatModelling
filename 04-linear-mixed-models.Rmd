@@ -325,7 +325,7 @@ rats_orig <- rats
 
 ``{r}
 rats$Rat <- paste(rats$Treatment, "_", rats$Rat)
-rats$Rat <- as.numeric(factor(rats$Rat))
+rats$Rat <- factor(as.numeric(factor(rats$Rat)))
 ``
 
 ####
@@ -337,7 +337,7 @@ rats <- rats_orig
 ``{r}
 rats <- rats %>%
     unite(Rat, Treatment, Rat, sep = "_", remove = F) %>%
-    mutate(Rat = as.numeric(factor(Rat)))
+    mutate(Rat = factor(as.numeric(factor(Rat))))
 ``
 
 ```
@@ -346,8 +346,7 @@ We can use **nested** random effects to account for the hierarchy of measurement
 
 ```{r}
 rats_lmer <- lmer(Glycogen ~ Treatment + (1 | Rat / Liver), data = rats)
-anova(rats_lmer, update(rats_lmer, ~ . - Treatment), test = "Chisq")
-#drop1(rats_lmer, test = "Chisq")
+drop1(update(rats_lmer, REML = F), test = "Chisq")
 ```
 
 > **Note**: the syntax `Rats / Liver` means that the `Liver` levels are **nested** within the `Rat` levels. In this case we do not have to recode `Liver` to be unique, since the nesting ensures that `lmer()` knows that `Liver = 1` inside `Rat = 1` is different from `Liver = 1` inside `Rat = 2`.
@@ -355,11 +354,6 @@ anova(rats_lmer, update(rats_lmer, ~ . - Treatment), test = "Chisq")
 ## Non-independent data: Split-plot analyses
 
 Split-plot experiments are like nested designs in that they involve plots of different sizes and hence have multiple error terms (one error term for each plot size). They are also like nested designs in that they involve pseudoreplication: measurements made on the smaller plots are pseudoreplicates as far as the treatments applied to larger plots are concerned. This is spatial pseudoreplication, and arises because the smaller plots nested within the larger plots are not spatially independent of one another. The only real difference between nested analysis and split plot analysis is that other than blocks, all of the factors in a split-plot experiment are typically fixed effects, whereas in most nested analyses most (or all) of the factors are random effects.  
- 
-The only things to remember about split plot experiments are that:
- 
-1. We need to draw up as many anova tables as there are plot sizes, 
-2. the error term in each table is the interaction between blocks and all factors applied at that plot size or larger. This is an extension of the logic for Randomized Complete Block Designs, in which fixed effects are tested against interactions with block.
  
 This experiment involves the yield of cereals in a factorial experiment with 3 treatments, each applied to plots of different sizes within 4 blocks. The largest plots (half of each block) were irrigated or not because of the practical difficulties of watering large numbers of small plots. Next, the irrigated plots were split into 3 smaller split-plots and seeds were sown at different densities. Again, because the seeds were machine sown, larger plots were preferred. Finally, each sowing density plot was split into 3 small split-split plots and fertilisers applied by hand (N alone, P alone and N + P together). A schematic is given in Figure \@ref(fig:splityields).
 
