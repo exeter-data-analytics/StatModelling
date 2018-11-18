@@ -361,7 +361,13 @@ The only things to remember about split plot experiments are that:
 1. We need to draw up as many anova tables as there are plot sizes, 
 2. the error term in each table is the interaction between blocks and all factors applied at that plot size or larger. This is an extension of the logic for Randomized Complete Block Designs, in which fixed effects are tested against interactions with block.
  
-This experiment involves the yield of cereals in a factorial experiment with 3 treatments, each applied to plots of different sizes within 4 blocks. The largest plots (half of each block) were irrigated or not because of the practical difficulties of watering large numbers of small plots. Next, the irrigated plots were split into 3 smaller split-plots and seeds were sown at different densities. Again, because the seeds were machine sown, larger plots were preferred. Finally, each sowing density plot was split into 3 small split-split plots and fertilisers applied by hand (N alone, P alone and N + P together). The data look like:
+This experiment involves the yield of cereals in a factorial experiment with 3 treatments, each applied to plots of different sizes within 4 blocks. The largest plots (half of each block) were irrigated or not because of the practical difficulties of watering large numbers of small plots. Next, the irrigated plots were split into 3 smaller split-plots and seeds were sown at different densities. Again, because the seeds were machine sown, larger plots were preferred. Finally, each sowing density plot was split into 3 small split-split plots and fertilisers applied by hand (N alone, P alone and N + P together). A schematic is given in Figure \@ref(fig:splityields).
+
+```{r, splityields, fig.cap = "Schematic for split plot example", echo = F, out.width = "80%", out.height = "80%"}
+include_graphics("_img/splitPlot.png")
+```
+
+The data look like:
 
 ```{r splityield0, echo = F}
 splityield <- readRDS("_data/splityield.rds")
