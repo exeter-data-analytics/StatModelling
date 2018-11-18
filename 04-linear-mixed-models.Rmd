@@ -131,25 +131,24 @@ Let's refit the model with a `cabinet` effect, and then test for the statistical
 
 ```{r}
 bac_lm <- lm(growth ~ media + cabinet, data = bac)
-anova(bac_lm, update(bac_lm, ~ . - media), test = "F")
+drop1(bac_lm, test = "F")
 ```
 
-This is better. We need a `cabinet` effect here to deal with the fact that measurements within cabinets are not independent.
+This is better. We need a `cabinet` effect here to deal with the fact that measurements within cabinets are not independent. Notice that the sum-of-squares for `media` is the same in this model compared to the one without `cabinet` in it. This is because we have a **balanced design** (i.e. the same number of measurements in each combination of explanatory variables). However, the F-statistic is different, and this is because this depends on the **residual sum-of-squares**, which is the second model is different due to the inclusion of `cabinet`, which soaks up some of the residual variance that can be attributed to differences between cabinets.
 
-> **Note**: here the `cabinet` effect **must** be included in the model. It does not make sense for us to drop the `cabinet` effect and test for whether it should be included or not. It needs to be included **by design**!
+> **Note**: here the `cabinet` effect **must** be included in the model. It does not make sense for us to drop the `cabinet` effect and test for whether it should be included or not. It needs to be included **by design**! Hence we can ignore the `cabinet` line output by `drop1()`.
 
 ```{task}
-Try with an **interaction** effect between `medai` and `cabinet`. What happens and why?
+Try with an **interaction** effect between `media` and `cabinet`. What happens and why?
 ```
 
 ```{solution}
 
 ``{r}
-bac_lm <- lm(growth ~ media * cabinet, data = bac)
-summary(bac_lm)
+summary(lm(growth ~ media * cabinet, data = bac))
 ``
 
-We are faced with all these `NA`s because the model is **SATURATED**: there is no replication so we cannot 
+We are faced with all these `NA`s because the model is **saturated**: there is no replication so we cannot 
 calculate the residual deviance/variance. This also means that there are no degrees-of-freedom remaining in the model to calculate the residual sum-of-squares, and so we can't model simplify from this model.
 ```
 
@@ -171,18 +170,44 @@ bac_lmer <- lmer(growth ~ media + (1 | cabinet), data = bac)
 summary(bac_lmer)
 ```
     
-> **Syntax for `lmer`**: The `lmer` command has two important sections. First is the 'fixed effects' part of the model (in this case, `growth ~ media`), which is identical to the model you would enter into `glm` if there were no problems of non-independence of data. The second part is where you enter the 'random effects' part of the model, where you tell R how the data is nested and where the non-independence lies. There is a whole world of possibilities here, from spatially autocorrelated variance/covariance matrices to independently varying random slopes and intercepts. We keep it simple in this course. For this example, we assume no interaction between media and cabinet, hence we just want to predict and absorb the additive variance due to different cabinets. Hence our random effect term is `(1 | cabinet)`. This means: 'the intercept of our linear model will vary according to cabinet'.
+> **Syntax for `lmer`**: The `lmer` command has two important sections:
+> 
+> * The first part corresponds to the 'fixed effects' part of the model (in this case, `growth ~ media`), which is identical to the model you would enter into `glm` if there were no problems of non-independence of data. 
+> * The second part is where you enter the 'random effects' part of the model, where you tell R how the data is nested and where the non-independence lies. There is a whole world of possibilities here, from spatially autocorrelated variance/covariance matrices to independently varying random slopes and intercepts. We keep it simple in this course. For this example, we assume no interaction between media and cabinet, hence we just want to predict and absorb the additive variance due to different cabinets. Hence our random effect term is `(1 | cabinet)`. This means: 'the intercept of our linear model will vary according to cabinet'.
+
+Mathematically this correspond to:
+$$
+    Y_i = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2}+ \beta_3 x_{i3} + \gamma_{C_i} + \epsilon_i
+$$
+where $\epsilon_i \sim N(0, \sigma^2)$, the $x_{i*}$ are dummy variables corresponding to each level of `media`, and $\gamma_{C_i}$ is the random effect term for each `cabinet` ($C_i = 1, \dots, 5$). The reason why $\gamma_{C_i}$ are denoted as **random** effects, is that we assume they come from some distribution such that $\gamma_j \sim N(0, \sigma^2_{\gamma})$. I promise this will be the last equation in these notes!
 
 > **NOTE:** for various reasons the authors of `lme4` do not provide p-values as standard from a call to `summary()` or `anova()`. We can perform a **likelihood ratio test** for the impact of dropping `media` from the fitted model. The simplest way to do this is to use the `drop1()` function:
 > 
 
 ```{r, warning = F, message = F}
-drop1(bac_lmer)
+drop1(bac_lmer, test = "Chisq")
+summary(bac_lmer)
 ```
     
-> The 'intercept' of the `lmer` model is the mean growth rate in `media1` for an **AVERAGE** cabinet. `lmer` output also gives you information criteria about the model, tells you the standard deviation of the random effects, correlations between levels of fixed effects, and so on. Here we have used a **likelihood ratio test** to assess whether the removal of `media` corresponds to a statistically significantly inferior model fit, which in this case it does at both the 5% and 1% levels.
-> 
+The 'intercept' of the `lmer` model is the mean growth rate in `media1` for an **average** cabinet. `lmer` output also gives you information criteria about the model, tells you the standard deviation of the random effects, correlations between levels of fixed effects, and so on. Here we have used a **likelihood ratio test** to assess whether the removal of `media` corresponds to a statistically significantly inferior model fit, which in this case it does at both the 5% and 1% levels.
+
 > **Note**: we use a likelihood ratio test (LRT) here, rather than an F-test. The F-test would be OK in this particular case, with Gaussian error structure. LRTs are more general, and thus for consistency I will use these (or AIC) throughout where required.
+
+We can derive confidence intervals using `confint()`, and also produce predictions from the model using `predict()`.
+
+```{task}
+Produce a 97% confidence interval for each regression coefficient of the model. What do each of these coefficients mean?
+```
+
+```{solution}
+
+``{r}
+confint(bac_lmer, level = 0.97)
+``
+
+The first two terms are the CIs for $\sigma_{\gamma}$ and $\sigma$ respectively. The third term is the CI for bacterial growth within an **average** cabinet. The next three terms correspond to the difference in bacterial growth for `media` levels 2, 3 and 4, relative to `media` level 1. Each of these effects are statistically significantly different to the baseline `media` at the 3% level. The model suggests that `media3` and `media4` have attenuated growth compared to `media1`, whereas `media2` has exacerbated growth.
+
+```
 
 ## Non-independent data: pseudoreplication, nested variance and derived variable analysis
 
