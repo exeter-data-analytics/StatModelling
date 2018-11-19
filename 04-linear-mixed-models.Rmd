@@ -1,5 +1,9 @@
 # Mixed effects models
 
+```{r, include = F, purl = F, cache = F}
+opts_chunk$set(titles = c(ifelse(opts_knit$get("rmarkdown.pandoc.to") != "latex", "<tt>tidyverse</tt>", "\\texttt{tidyverse}"), "Base R"))
+```
+
 My thanks in particular to [Dave Hodgson](http://biosciences.exeter.ac.uk/staff/index.php?web_id=david_hodgson), who's fantastic Master's course offered up the prototype for this workshop.
 
 Firstly, install if necessary (using `install.packages()`; uncomment the code below if required) and load the `lme4` package [@lme4]:
@@ -9,6 +13,8 @@ Firstly, install if necessary (using `install.packages()`; uncomment the code be
 library(tidyverse)
 library(lme4)
 ```
+
+> **Note**: In this session I will use `tidyverse` as the principal way to generate plots etc. because it's ***far*** easier for many of the examples in this workshop. The base R code is provided for those of you that are not familiar with `tidyverse`.
 
 ## Introduction
 
@@ -297,16 +303,16 @@ The idea is to get rid of the pseudoreplication by averaging over the liver bits
 ```{multCode}
 
 ``{r}
-ratsNew <- aggregate(Glycogen ~ Rat + Treatment, data = rats, mean)
+ratsNew <- rats %>%
+    group_by(Rat, Treatment) %>%
+    summarise(Glycogen = mean(Glycogen))
 ratsNew
 ``
 
 ####
 
 ``{r}
-ratsNew <- rats %>%
-    group_by(Rat, Treatment) %>%
-    summarise(Glycogen = mean(Glycogen))
+ratsNew <- aggregate(Glycogen ~ Rat + Treatment, data = rats, mean)
 ratsNew
 ``
 
@@ -358,8 +364,9 @@ rats_orig <- rats
 ``
 
 ``{r}
-rats$Rat <- paste(rats$Treatment, "_", rats$Rat)
-rats$Rat <- factor(as.numeric(factor(rats$Rat)))
+rats <- rats %>%
+    unite(Rat, Treatment, Rat, sep = "_", remove = F) %>%
+    mutate(Rat = factor(as.numeric(factor(Rat))))
 ``
 
 ####
@@ -369,9 +376,8 @@ rats <- rats_orig
 ``
 
 ``{r}
-rats <- rats %>%
-    unite(Rat, Treatment, Rat, sep = "_", remove = F) %>%
-    mutate(Rat = factor(as.numeric(factor(Rat))))
+rats$Rat <- paste(rats$Treatment, "_", rats$Rat)
+rats$Rat <- factor(as.numeric(factor(rats$Rat)))
 ``
 
 ```
@@ -510,6 +516,20 @@ Now to plot these predictions (note, once again these ease of `ggplot2` compared
 
 ```{multCode}
 
+In `ggplot2` we can use the `geom_pointrange()` function, a `colour` aesthetic and a `facet_wrap()`.
+
+``{r, fig.width = 10, fig.height = 5}
+## plot confidence intervals
+ggplot(newdata, 
+    aes(x = fertilizer, colour = density)) + 
+    geom_pointrange(aes(y = yield, ymin = lci, ymax = uci), 
+        position = position_dodge(width = 0.5)) +
+    facet_wrap(~ irrigation) +
+    labs(title = "CIs based on fixed-effects uncertainty ONLY")
+``
+
+####
+
 To plot the CIs in base R, we can proceed as follows:
 
 1. Set the figure layout to have two figures side-by-side.
@@ -573,20 +593,6 @@ par(mfrow = c(1, 1))
 
 ``
 
-####
-
-In `ggplot2` we can use the `geom_pointrange()` function, a `colour` aesthetic and a `facet_wrap()`.
-
-``{r, fig.width = 10, fig.height = 5}
-## plot confidence intervals
-ggplot(newdata, 
-    aes(x = fertilizer, colour = density)) + 
-    geom_pointrange(aes(y = yield, ymin = lci, ymax = uci), 
-        position = position_dodge(width = 0.5)) +
-    facet_wrap(~ irrigation) +
-    labs(title = "CIs based on fixed-effects uncertainty ONLY")
-``
-
 ```
 
 So we can see that in the control group the `medium` density sowing seems to produce slightly higher yields on average than the `low` or `high` density settings, but we note that these differences are not statistically significantly different at the 5% level. However, irrigation tends to not only produce higher yields on average (except for the `N` fertiliser), but also to favour `high` density sowing efforts, which are now much preferred over `low` density sowing efforts (although not too dissimilar from `medium` density efforts). The model tends to favour the `NP` fertiliser in all cases, though there's not much between `NP` and `P`.
@@ -622,6 +628,32 @@ summary(hg_lm)
 The interaction appears to be driven by a decrease in distance with increasing group size, but only in zebras. We can draw the relevant figure (notice that this is where `tidyverse` comes into its own, with much more concise code resulting in a better plot).
 
 ```{multCode}
+
+Generate 'fake' data in order to plot fitted lines:
+
+``{r}
+newdata <- expand.grid(
+        Number = seq(min(hg$Number), max(hg$Number), length = 100),
+        Species = levels(hg$Species)
+    )
+``
+
+Now get the predicted values for the fake data, and back-transform log-distance to real distances, using the `exp` command:
+
+``{r}
+newdata <- newdata %>%
+    mutate(Distance = exp(predict(hg_lm, newdata)))
+``
+
+Now plot the fitted lines against the observed data points:
+
+``{r}
+ggplot(hg, aes(x = Number, y = Distance, col = Species)) +
+    geom_point() + 
+    geom_line(data = newdata)
+``
+
+####
 
 Generate 'fake' data in order to plot fitted lines:
 
@@ -674,32 +706,6 @@ legend(15, 1000,
        pch = rep(16, 3), 
        col = c("black", "red", "blue"), 
        legend = c("gazelle", "warthog", "zebra"))
-``
-
-####
-
-Generate 'fake' data in order to plot fitted lines:
-
-``{r}
-newdata <- expand.grid(
-        Number = seq(min(hg$Number), max(hg$Number), length = 100),
-        Species = levels(hg$Species)
-    )
-``
-
-Now get the predicted values for the fake data, and back-transform log-distance to real distances, using the `exp` command:
-
-``{r}
-newdata <- newdata %>%
-    mutate(Distance = exp(predict(hg_lm, newdata)))
-``
-
-Now plot the fitted lines against the observed data points:
-
-``{r}
-ggplot(hg, aes(x = Number, y = Distance, col = Species)) +
-    geom_point() + 
-    geom_line(data = newdata)
 ``
 
 ```
@@ -796,6 +802,16 @@ hg_cis
 
 ```{multCode}
 
+In `ggplot2` we can use the `geom_pointrange()` function.
+
+``{r}
+ggplot(hg_cis, aes(x = Species)) +
+    geom_pointrange(aes(y = mean, ymin = lci, ymax = uci)) +
+    xlab("Species") + ylab("Distance from road (m)")
+``
+
+####
+
 To plot the CIs in base R, we can proceed as follows:
 
 1. Calculate limits for the $y$-axis based on the range of the CIs to be plotted.
@@ -813,16 +829,6 @@ axis(1, 1:nrow(hg_cis), hg_cis$Species)
 for(i in 1:nrow(hg_cis)) {
     arrows(i, hg_cis$lci[i], i, hg_cis$uci[i], code = 3, angle = 90, length = 0.1)
 }
-``
-
-####
-
-In `ggplot2` we can use the `geom_pointrange()` function.
-
-``{r}
-ggplot(hg_cis, aes(x = Species)) +
-    geom_pointrange(aes(y = mean, ymin = lci, ymax = uci)) +
-    xlab("Species") + ylab("Distance from road (m)")
 ``
 
 ```
