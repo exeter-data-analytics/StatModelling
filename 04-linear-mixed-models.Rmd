@@ -505,6 +505,8 @@ split_pred <- readRDS("split_pred.rds")
 newdata <- readRDS("_data/split_pred.rds")
 ```
 
+<a name="splitplot"></a>
+
 Now to plot these predictions (note, once again these ease of `ggplot2` compared to base R graphics):
 
 ```{multCode}
@@ -877,6 +879,12 @@ Simplification to find the Minimal Adequate Model is... a challenge for you to c
 Congratulations.
 
 ## Parametric bootstrapping {#parboot}
+
+Bootstrapping is a resampling technique that was designed for inference when it is not possible (or hard) to generate theoretical sampling distributions for particular quantities of interest. It was introduced by [Bradley Efron](https://en.wikipedia.org/wiki/Bradley_Efron) in 1979. The name is based on the adage: "to pull oneself up by one's bootstraps".
+
+The basic idea is that we can generate **empirical** sampling distributions for a quantity of interest (e.g. a median for example) by sampling from the underlying system a very large number of times and calculating the quantity in each case. This sampling distribution can be used directly to generate confidence intervals for example. Of course, in practice we cannot sample multiple times from the underlying system (we often only have one replicate---the **observed data**). Instead, bootstrapping aims to approximate this idea by instead **re-sampling with replacement** from the observed data, and then generating empirical bootstrapped sampling distributions. These ideas have been developed greatly over the years, but the technique is attractive because it is simple to implement (although the estimates are often slightly biased). `lme4` has a function `bootMer()` that can be used to implement specific types of bootstrapping---in this case we want to use **parametric** bootstrapping. We do not dwell on the details here, but if you want more information please come and see me.
+
+To generate the confidence intervals used in the [split-plot](#secsplit) design [earlier](#splitplot), you can use the following code:
 
 ```{r, eval = F}
 ## new data to predict to
