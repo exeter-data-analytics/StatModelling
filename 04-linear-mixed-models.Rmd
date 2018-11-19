@@ -29,7 +29,7 @@ This practical will focus on how to analyse data when the experimental design (o
 
 By design we have been a bit wary in focusing on the eponymous null hypothesis significance testing (NHST) ideas (and associated idolisation of p-values). We have done this because we want to emphasise that a statistical model is more than just a p-value, and also that a p-value on its own (without some measure of effect size) is meaningless. We appreciate that this might fly in the face of the way that you might have seen statistical models presented in courses or papers, and this section is our attempt to explain to you some of the controversies surrounding these approaches.
 
-There is are many philosophical complexities with the way that p-values are used in many papers, and there have been many papers published discussing their misuse and misinterpretations. A good one is [Halsey et al. (2015)](https://www.nature.com/articles/nmeth.3288.pdf?origin=ppub). 
+There are many philosophical complexities with the way that p-values are used in many papers, and there have been many papers published discussing their misuse and misinterpretations. A good one is [Halsey et al. (2015)](https://www.nature.com/articles/nmeth.3288.pdf?origin=ppub). 
 
 This is not to say that null hypothesis significance testing (hereafter NHST) is wrong, it's just that it's easy to misuse, even for experienced data modellers. Here are some common challenges / misconceptions:
 
@@ -164,7 +164,9 @@ summary(lm(growth ~ media * cabinet, data = bac))
 ``
 
 We are faced with all these `NA`s because the model is **saturated**: there is no replication so we cannot 
-calculate the residual deviance/variance. This also means that there are no degrees-of-freedom remaining in the model to calculate the residual sum-of-squares, and so we can't model simplify from this model.
+calculate the residual deviance/variance. This also means that there are no degrees-of-freedom remaining in the model to calculate the residual sum-of-squares. We have twenty observations and twenty parameters to estimate.
+This is analgous to fitting a straight line through *two* data points; we get a perfect fit, and 
+thus likely to overfit.
 ```
 
 ### Mixed model approach
@@ -221,13 +223,13 @@ We may have to switch between these two approaches depending on what we want to 
 drop1(update(bac_lmer, REML = F), test = "Chisq")
 ```
     
-We have used a **likelihood ratio test** to assess whether the removal of `media` corresponds to a statistically significantly inferior model fit, which in this case it does at both the 5% and 1% levels. Hence we should leave `medai` in the model. Once we have the final model, we can look at a sumamry of the model fit:
+We have used a **likelihood ratio test** to assess whether the removal of `media` corresponds to a statistically significantly inferior model fit, which in this case it does at both the 5% and 1% levels. Hence we should leave `media` in the model. Once we have the final model, we can look at a sumamry of the model fit:
 
 ```{r}
 summary(bac_lmer)
 ```
 
-(**Note** that this summary has been produced from the model fit using REML, even though the LRT was conducted using the model fitted using ML---this is because we updated the model *in situ* within `drop1()`.) The 'intercept' of the `lmer` model is the mean growth rate in `media1` for an **average** cabinet. `lmer` output also gives you information criteria about the model, tells you the standard deviation of the random effects, correlations between levels of fixed effects, and so on. 
+**Note** that this summary has been produced from the model fit using REML, even though the LRT was conducted using the model fitted using ML---this is because we updated the model *in situ* within `drop1()`. The 'intercept' of the `lmer` model is the mean growth rate in `media1` for an **average** cabinet. `lmer` output also gives you information criteria about the model, tells you the standard deviation of the random effects, correlations between levels of fixed effects, and so on. 
 
 > **Note**: we use a likelihood ratio test (LRT) here, rather than an F-test. The F-test would be OK in this particular case, with Gaussian error structure and fully balanced design. However, LRTs are more general, and thus for consistency I will use these (or AIC) throughout where required.
 
@@ -270,14 +272,12 @@ If all we want to test is whether the experimental treatments have affected the 
  
 The new concept here is that there are multiple random effects that are **nested**. First, read in the data:
 
-```{r, eval = F}
-rats <- readRDS("rats.rds")
-summary(rats)
-```
-
 ```{r, echo = F}
 rats <- readRDS("_data/rats.rds")
-summary(rats)
+```
+
+```{r, eval = F}
+rats <- readRDS("rats.rds")
 ```
 
 ### The Wrong Analysis 
@@ -288,17 +288,14 @@ Here is what not to do (try it anyway)!
 rats_lm <- lm(Glycogen ~ Treatment * Rat * Liver, data = rats)
 ```
 
-The model has been specified as if it were a full factorial with no nesting and no pseudoreplication. Note that the structure of the data allows this mistake to be made. It is a very common problem with data frames that include pseudoreplication. An ANOVA table gives:
+The model has been specified as if it were a full factorial with no nesting and no pseudoreplication. Note that the structure of the data allows this mistake to be made. It is a very common problem with data frames that include pseudoreplication. A summary of the model fit looks like this:
 
 ```{r}
-anova(rats_lm)
+summary(rats_lm)
+drop1(rats_lm, test = "F")
 ```
 
-> **Note**: I can only use the `anova()` function in this way because the data are **balanced** (or at least the model formulation above with no nesting and no pseudoreplication ends up treating the data s if they were balanced). In general you have to be very careful to use `anova()` in this way.
-
-This says that there was a highly statistically significant difference between the treatment means, at least some of the rats were statistically significantly different from one another, and there was a statistically significant interaction effect between treatments and rats. **This is wrong!** The analysis is flawed because it is based on the assumption that there is only one error variance and that its value is 21.2. This value is actually the measurement error; that is to say the variation between one reading and another from the same piece of liver. For testing whether the treatment has had any effect, it is the rats that are the replicates, and there were only 6 of them in the whole experiment. Note also that the way the rats have been coded makes it look like there are only two rat "groups". Again this is wrong (see [mixed models](#secmixed) section below).
-
-One way that we could analyse these data is to use a **derived variable** analysis.
+This says that there was a highly statistically significant difference between the treatment means, at least some of the rats were statistically significantly different from one another, and there was a statistically significant interaction effect between treatments and rats. This is wrong! The analysis is flawed because it is based on the assumption that there is only one error variance and that its value is 21.2. This value is actually the measurement error; that is to say the variation between one reading and another from the same piece of liver. For testing whether the treatment has had any effect, it is the rats that are the replicates, and there were only 6 of them in the whole experiment. 
  
 ### Derived variables avoid pseudoreplication 
 
@@ -329,32 +326,31 @@ ratsNew_lm <- lm(Glycogen ~ Treatment, data = ratsNew)
 drop1(ratsNew_lm, test = "F")
 ```
 
-This is a statistically valid analysis, but it ignores the uncertainties around the pseudo-replicates, and the interpretation of the response variable is actually the mean of a bunch of measurements, not the measurements themselves. So it's giving the correct result for a different model, and ultimately not the model we want.
+This is a statistically valid analysis, but it ignores the uncertainties around the pseudo-replicates, and the interpretation of the response variable is actually the mean of a bunch of measurements, not the measurements themselves. So it's giving the correct result for a different model.
 
-### Mixed model approach {#secmixed}
+
+### Mixed model approach
 
 #### Nested and crossed random effects
 
-We have to be careful to get the model formula correct. Notice that in the `rats` data the `Rat` column is coded as a `1` or a `2`. This means that we could use the formula:
+We have to be careful to get the model formula correct. Notice that in the `rats` data the `Rat` column is coded as a `0` or a `1`. This means that we could use the formula:
 
 ```{r, eval = F}
 rats_lmer <- lmer(Glycogen ~ Treatment + (1 | Rat), data = rats)
 ```
-
-**without** throwing an error.
 
 ```{task, title = "Question"}
 Why is this wrong?
 ```
 
 ```{solution, title = "Answer"}
-It is wrong because this would add **two** random effect terms, one for rat `1` and one for rat `2`. In fact there are 6 rats altogether. The way that the data have been coded allows for these kinds of mistakes to happen. The same is true for `Liver`, which is coded as a `1`, `2` or `3`. This means that we could write:
+It is wrong because this would add **two** random effect terms, one for rat `0` and one for rat `1`. This is wrong. There are 6 rats altogether. The way that the data have been coded allows for these kinds of mistakes to happen. The same is true for `Liver`, which is coded as a `1`, `2` or `3`. This means that we could write:
     
 ``{r, eval = F}
 rats_lmer <- lmer(Glycogen ~ Treatment + (1 | Rat) + (1 | Liver), data = rats)
 ``
 
-thinking that we are including the correct random effects for `Rat` and `Liver`. In fact, this assumes that the data come from a **crossed** design, in which there are 2 rats and 3 parts of the liver, and that `Liver = 1` corresponds to the same type of measurement in rats `1` and `2` and so on. Sometimes this is appropriate, but not here!
+thinking that we are including the correct random effects for `Rat` and `Liver`. In fact, this assumes that the data come from a **crossed** design, in which there are 2 rats and 3 parts of the liver, and that `Liver = 1` corresponds to the same type of measurement in rats `0` and `1` and so on. Sometimes this is appropriate, but not here!
     
 The nature of the way that many data sets are coded makes these kinds of mistakes very easy to make!
 ```
@@ -467,14 +463,8 @@ Pretty grim eh? However, in this case we note that the final nested random effec
 split_lmer <- lmer(yield ~ irrigation * density * fertilizer + (1 | block) + 
        (1 | block:irrigation) + (1 | block:irrigation:density), 
        data = splityield)
-```
-
-We can now perform model simplification (remembering to refit the model using ML in each case):
-
-```{r}
 drop1(update(split_lmer, REML = F), test = "Chisq")
 ```
-
 We can see that the three-way interaction term is not statistically significant, so we can drop it from the model and then test dropping the two-way interaction effects.
 
 ```{r, tidy = F}
@@ -489,7 +479,9 @@ split_lmer <- update(split_lmer, ~ . - density:fertilizer)
 drop1(update(split_lmer, REML = F), test = "Chisq")
 ```
 
-We thus have a simplified final model. If you really want to know all the coefficients, type `summary(split.lmer)`, but here we will try to understand the interaction terms graphically. A useful way to do this is to use the `interaction.plot()` function. The variables are listed in a non-obvious order: first the factor to go on the $x$-axis, then the factor to go as different lines on the plot, then the response variable. There are 3 plots to look at so we make a $2 \times 2$ plotting area: 
+We thus have a simplified final model. If you really want to know all the coefficients, type `summary(split.lmer)`, but here we will try to understand the interaction terms graphically.
+
+A useful way to understand these is to use the `interaction.plot()` function. The variables are listed in a non-obvious order: first the factor to go on the $x$-axis, then the factor to go as different lines on the plot, then the response variable. There are 3 plots to look at so we make a $2 \times 2$ plotting area: 
  
 ```{r, fig.width = 10, fig.height = 10, fig.show = "hold"}
 par(mfrow = c(2, 2))
@@ -499,95 +491,13 @@ interaction.plot(splityield$density, splityield$irrigation, splityield$yield)
 par(mfrow = c(1, 1))
 ```
 
-The really pronounced interaction is that between irrigation and density, with a reversal of the high to low density difference on the irrigated and control plots. Overall, the 3-way interaction was not statistically significant, nor was the 2-way interaction between density and fertilizer. The 2-way interaction between irrigation and fertilizer, however, was highly statistically significant. 
+The really pronounced interaction is that between irrigation and density, with a reversal of the high to low density difference on the irrigated and control plots. Interestingly, this is not the most statistically significant interaction. That honour goes to the `fertilizer:irrigation` interaction (top right graph). 
 
-```{r}
-## predict yield from model
-newdata <- expand.grid(
-    density = levels(splityield$density),
-    irrigation = levels(splityield$irrigation),
-    fertilizer = levels(splityield$fertilizer)
-)
-newdata$yield <- predict(split_lmer, newdata, re.form = NA)
-
-## generate model matrix for predictions
-mm <- model.matrix(terms(split_lmer), newdata)
-
-## generate error terms
-pvar1 <- diag(mm %*% tcrossprod(vcov(split_lmer), mm))
-
-## use Gaussian approximation
-cmult <- 1.96 
-newdata <- cbind(
-    newdata,
-    lci = newdata$yield - cmult * sqrt(pvar1),
-    uci = newdata$yield + cmult * sqrt(pvar1)
-)
-```
-
-```{multCode}
-
-``{r}
-## set plot layout
-par(mfrow = c(1, 2))
-    
-## set plot limits
-ylims <- min(newdata[, -c(1:3)])
-ylims <- c(ylims, max(newdata[, -c(1:3)]))
-xlims <- c(0, 3.5)
-
-for(m in levels(newdata$irrigation)) {
-    ## extract control predictions
-    temp <- newdata[newdata$irrigation == m, ]
-    
-    ## produce empty plot
-    plot(NULL, ylim = ylims, xlim = xlims, 
-         xaxt = "n", main = paste("irrigation =", m),
-         xlab = "fertilizer", ylab = "yield")
-    
-    ## plot yield against fertiliser stratified by density
-    for(i in 1:length(levels(newdata$density))) {
-        temp1 <- temp[temp$density == levels(newdata$density)[i], ]
-        temp1 <- temp1[order(temp1$fertilizer), ]
-        for(j in 1:nrow(temp1)){
-            points(j - 0.2 * (2 - i), temp1$yield[j], col = i, pch = 16)
-            arrows(j - 0.2 * (2 - i), temp1$lci[j], j - 0.2 * (2 - i), temp1$uci[j], 
-                length = 0.1, col = i, angle = 90, code = 3)
-        }
-    }
-    
-    ## add custom x-axis
-    axis(side = 1, at = 1:3, labels = levels(newdata$fertilizer))
-    
-    ## add legend
-    legend(0.1, diff(par("usr")[3:4]) * 0.95 + par("usr")[3], 
-        legend = levels(newdata$density),
-        col = 1:3,
-        lty = 1,
-        pch = 16)
-}
-``
-
-####
-
-``{r}
-## plot confidence intervals
-ggplot(newdata, 
-    aes(x = fertilizer, colour = density, shape = density)) + 
-    geom_pointrange(aes(y = yield, ymin = lci, ymax = uci), 
-        position = position_dodge(width = 0.5)) +
-    facet_wrap(~ irrigation) +
-    labs(title = "CIs based on fixed-effects uncertainty ONLY")
-``
-
-```
-So we can see that in the control group the `medium` density sowing seems to produce slightly higher yields on average than the `low` or `high` density settings, but we note that these differences are not statistcally significantly different at the 5% level. However, irrigation tends to not only produce higher yields on average (except for the `N` fertiliser ), but also to favour `high` density sowing efforts, which are now much preferred over `low` density sowing efforts (although not too dissimilar from `medium` density efforts). The model tends to favour the `NP` fertiliser in all cases, though there's not much between `NP` and `P`.
-
-> **Note**: This approach does now take into account the random effects variances or covariances. It is therefore likely to underestimate the variance. To account for these additional uncertainties is difficult. If you want a more consistent approach, go [Bayesian](#secbayes).
+Overall, the 3-way interaction was not statistically significant, nor was the 2-way interaction between density and fertilizer. The 2-way interaction between irrigation and fertilizer, however, was highly statistically significant and, not surprisingly, there was a highly statistically significant main effect of fertilizer. 
 
 ## Absorbing the influence of random effects
 
-Eight groups of students walked through Hell's Gate National Park and estimated the distance to groups or individuals of several species of mammalian herbivores. Here we work with data on distances to three key species: Thomson's gazelle, warthog and zebra. We are interested in whether distances to these animals differ among species, whether distances depend on animal group size, and also whether the relationship between distance and group size differs among species. Previously we have worked with data from the first and the last group to walk through Hell's Gate. Here we will work with data from all the groups. The data is in file "hg.rds".
+Eight groups of students walked through Hell's Gate National Park and estimated the distance to groups of individuals of several species of mammalian herbivores. Here we work with data on distances to three key species: Thomson's gazelle, warthog and zebra. We are interested in whether distances to these animals differ among species, whether distances depend on animal group size, and also whether the relationship between distance and group size differs among species. The data is in file "hg.rds".
 
 A na&iuml;ve analysis would ignore the identity of the student group, and therefore treat all the distance observations as independent. It would probably fit a `lm` of distance against species, number and the interaction between species and number. My own exploration of the data suggests that raw distances are skewed, and that a log-transformation improves homoscedasticity and normality of residuals. So before analysing we do this transformation.
 
@@ -869,44 +779,9 @@ Congratulations.
 
 ## Parametric bootstrapping {#parboot}
 
-```{r}
-## predict yield from model
-newdata <- expand.grid(
-    density = levels(splityield$density),
-    irrigation = levels(splityield$irrigation),
-    fertilizer = levels(splityield$fertilizer)
-)
-predFun <- function(mod) {
-  predict(mod, newdata = newdata, re.form = NA)
-}
-sumBoot <- function(merBoot) {
-    data.frame(
-        yield = apply(merBoot$t, 2, function(x){
-            mean(x, na.rm = T)
-        }),
-        lci = apply(merBoot$t, 2, function(x){
-            quantile(x, probs = 0.025, na.rm = T)
-        }),
-        uci = apply(merBoot$t, 2, function(x){
-            quantile(x, probs = 0.975, na.rm = T)
-        })
-    )
-}
-boot1 <- bootMer(split_lmer, predFun, nsim = 250, type = "parametric", re.form = NA)
-newdata <- cbind(newdata, sumBoot(boot1))
+## Bayesian modelling
 
-## plot confidence intervals
-ggplot(newdata, 
-    aes(x = fertilizer, colour = density, shape = density)) + 
-    geom_pointrange(aes(y = yield, ymin = lci, ymax = uci), 
-        position = position_dodge(width = 0.5)) +
-    facet_wrap(~ irrigation) +
-    labs(title = "CIs based on fixed-effects uncertainty ONLY")
-```
-
-## Bayesian modelling {#secbayes}
-
-Many of the challenges associated with **mixed effects** models go away if you move your inference into a **Bayesian** framework. Thats not to say that other challenges do not arise in their place, mainly in terms of variable selection, however, in general I would recommend using a Bayesian framework for complex models with hierarchical structures, particularly spatio-temporal modelling. 
+Many of the challenges associated with **mixed effects** models go away if you move your inference into a **Bayesian** framework. That's not to say that other challenges do not arise in their place, mainly in terms of variable selection, however, in general I would recommend using a Bayesian framework for complex models with hierarchical structures, particularly spatio-temporal modelling. 
 
 For GLMMs there is an R package called [`MCMCglmm`](https://cran.r-project.org/web/packages/MCMCglmm/index.html) that will fit a wide range of models in a Bayesian framework. Alternatively there are general purpose Bayesian packages such as [WinBUGS](https://www.mrc-bsu.cam.ac.uk/software/bugs/the-bugs-project-winbugs/), [OpenBUGS](http://www.openbugs.net/w/FrontPage), [JAGS](http://mcmc-jags.sourceforge.net/) or more recently [Stan](http://mc-stan.org/).
 
