@@ -539,7 +539,7 @@ Phew! (Now check out the `tidyverse` solution and tell me it's not worth the eff
 ``{r, fig.width = 10, fig.height = 5}
 
 ## set plot layout
-par(mfrow = c(2, 1))
+par(mfrow = c(1, 2))
     
 ## set plot limits
 ylims <- min(newdata[, -c(1:3)])
