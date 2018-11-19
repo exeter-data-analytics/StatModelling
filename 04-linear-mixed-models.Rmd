@@ -16,8 +16,6 @@ library(lme4)
 
 > **Note**: In this session I will use `tidyverse` as the principal way to generate plots etc. because it's ***far*** easier for many of the examples in this workshop. The base R code is provided for those of you that are not familiar with `tidyverse`.
 
-## Introduction
-
 This practical will focus on how to analyse data when the experimental design (or the surveyed explanatory variables) obliges us to study non-independent experimental units. You will find yourself distinguishing between random effects and fixed effects. You will find yourself frustrated at the lack of consensus regarding how to simplify fixed factors in mixed models. It takes a long time to understand how to deal with blocks (and other random effects): don't expect understanding to come overnight, and do rely on books and websites to help you. But be warned, at this level of statistical prowess, much of the literature is written in Greek symbols and matrix algebra.
 
 ***Health Warning: some of these mixed-effects modelling packages are quickly evolving, and future updates might play some havoc with the coding, and outputs from, the scripts written here. You will need to keep your eye on the forums in the future if this happens. As always, let me or your demonstrators know if you encounter difficulties.***
