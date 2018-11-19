@@ -774,14 +774,17 @@ This final summary tells us that the standard deviation among observer groups is
 
 We're now left with a final model that has a single categorical variable. We could provide a boxplot of the raw data to describe it, but in this instance it would be misleading because it would not differentiate between observer-level noise and residual noise. In this instance we will produce confidence intervals for the mean distance from the road for each species and plot them.
 
-The simplest way to generate confidence intervals for each of the three parameters of the model is to refit the model three times, changing the baseline species each time and using the `confint` function to extract the confidence intervals (converting to the correct scale at the end).
+The simplest way to generate confidence intervals for each of the three parameters of the model is to refit the model three times, changing the baseline species each time and using the `confint` function to extract the confidence intervals (converting to the correct scale at the end). For consistency we'll use a bootstrap method to generate the intervals (using 500 replicates, which is the default, though you might want to change to a larger number in practice). (Note that you could use a `predict()` solution as in the [earlier example](#parboot), which is often easier for more complex predictions.)
 
 ```{r}
 hg_cis <- matrix(NA, length(levels(hg$Species)), 3)
 for(i in 1:length(levels(hg$Species))){
     hg$Species <- relevel(hg$Species, ref = levels(hg$Species)[i])
     hg_lmer <- update(hg_lmer, data = hg)
-    hg_cis[i, ] <- c(coef(summary(hg_lmer))[ , "Estimate"][1], confint(hg_lmer, quiet = T)[3, ])
+    hg_cis[i, ] <- c(
+        coef(summary(hg_lmer))[ , "Estimate"][1], 
+        confint(hg_lmer, quiet = T, method = "boot")[3, ]
+    )
 }
 hg_cis <- exp(hg_cis)
 hg_cis <- as.data.frame(hg_cis)
