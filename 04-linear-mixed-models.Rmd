@@ -27,13 +27,13 @@ This practical will focus on how to analyse data when the experimental design (o
 
 ## A note on variable selection and model simplification
 
-By design we have been a bit wary in focussing on the eponymous null hypothesis significance testing ideas (and associated idolisation of p-values so beloved in many fields of science). We have done this because we want to emphasise that a statistical model is more than just a p-value, and also that a p-value on its own (without some measure of effect size) is meaningless. We appreciate that this might fly in the face of the way that many of you might have seen statistical models presented in courses or papers, and this section is our attempt to explain to you some of the controversies surrounding these approaches.
+By design we have been a bit wary in focusing on the eponymous null hypothesis significance testing (NHST) ideas (and associated idolisation of p-values). We have done this because we want to emphasise that a statistical model is more than just a p-value, and also that a p-value on its own (without some measure of effect size) is meaningless. We appreciate that this might fly in the face of the way that you might have seen statistical models presented in courses or papers, and this section is our attempt to explain to you some of the controversies surrounding these approaches.
 
 There is are many philosophical complexities with the way that p-values are used in many papers, and there have been many papers published discussing their misuse and misinterpretations. A good one is [Halsey et al. (2015)](https://www.nature.com/articles/nmeth.3288.pdf?origin=ppub). 
 
-This is not to say that null hypothesis significance testing (hereafter NHST) is wrong, it's just that it's easy to misuse, even for experienced data modellers.
+This is not to say that null hypothesis significance testing (hereafter NHST) is wrong, it's just that it's easy to misuse, even for experienced data modellers. Here are some common challenges / misconceptions:
 
-1. A p-value is the *"probability of observing a test statistic equal to or more extreme than the observed test statistic if the null hypothesis is true"*; it is **not** the "probability that the null hypothesis is false".
+1. A p-value is the *"probability of observing a test statistic equal to or more extreme than the observed test statistic if the null hypothesis is true"*; it is **not** the *"probability that the null hypothesis is false"*.
 2. Leads to a binary interpretation: *"is there an effect?"*", rather than, *"what is the size of the effect"*?
 3. They are heavily dependent on **sample size**:
     * a *larger* study with the same effect size and variance will be *more* statistically significant.
@@ -56,7 +56,7 @@ That being said, there are times when NHST can be useful, particularly if you ha
 * F-tests: based on comparing the residual mean squared error with the regression mean squared error, or
 * Likelihood ratio tests (LRT): based on comparing the model deviance between two models.
 
-Both of these cases are **exact** tests for linear regression with Gaussian errors. Let's have a look at a simple example using the fruitflies data from earlier practicals.
+Both of these cases are **exact** tests for linear regression with Gaussian errors (but for mixed models these become approximate). Let's have a look at a simple example using the fruitflies data from earlier practicals.
 
 ```{r, eval=FALSE}
 ff <- readRDS("fruitfly.rds")
@@ -71,6 +71,7 @@ ff_lm <- lm(longevity ~ type, data = ff)
 summary(ff_lm)
 drop1(ff_lm, test = "F")
 ```
+
 Here the `drop1()` function drops each explanatory variable in turn from the baseline model and performs an F-test. The null hypothesis can be thought of as *"if the fit from the competing models is the same"*. 
 
 Here there is only one variable, `type`, and so dropping this variable produces a test statistic of 15.738, which can be compared against an F-distribution on 2 and 122 degrees-of-freedom (d.f.), which gives a p-value of $8.3 \times 10^{-7}$ (i.e. a statistically significant change even at the 1% and 0.1% levels). Thus we would conclude that dropping `type` produces a statistically significantly inferior model fit compared to when it is left in the model.
@@ -80,6 +81,7 @@ We can do the same thing but using a likelihood ratio test as:
 ```{r}
 drop1(ff_lm, test = "Chisq")
 ```
+
 Here the test statistic produces a p-value of $5.9 \times 10^{-7}$; again highly statistically significant even at the 0.1% level, but slightly different to the F-test (because they are different tests). Here we are comparing to a chi-squared distribution on 2 d.f. (the difference in the number of parameters between the two nested models). In general, in linear regression with Gaussian errors the F-test is slightly more powerful than the LRT, but you can use either.
 
 For Generalised Linear Models (GLMs) with non-Gaussian error structure the F-test is no longer valid, and the LRT is **approximate** (the latter is in fact **asymptotically chi-squared**, which means that the approximation gets better for larger sample sizes, but can be misleading in small samples).
@@ -90,7 +92,7 @@ For **mixed models** things get trickier again, and there is much debate about o
 
 [https://rdrr.io/cran/lme4/man/pvalues.html](https://rdrr.io/cran/lme4/man/pvalues.html)
 
-The developers of `lme4` recommend (from **worst** to **best**):
+The developers of `lme4` recommend (from **worst** to **best**)^[see [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html)]:
 
 * Wald Z-tests;
 * For **balanced**, **nested LMMs** where degrees of freedom can be computed according to classical rules: Wald t-tests;
@@ -103,11 +105,11 @@ In this workshop we will introduce some common scenarios in which mixed models c
 
 ## Randomised Complete Block Design
 
-> Often you will find it impossible to allocate treatments to experimental units at random because they are structured in time or in space. This means that units are not independent of each other, hence their residuals will not be independent, and we have violated an important assumption of generalised linear modeling (and, indeed, of analysis of variance). However the recognition of natural structuring in our population of experimental units can be **very** useful. If the experimental design can be stratified so that all units that share a common 'trait' (e.g. share a corner of a field, or share a single incubator) can represent one or more full replicate of the proposed experiment, then we should use this natural structuring to absorb some of our enemy: noise (also called residual deviance).
+> Often you will find it impossible to allocate treatments to experimental units at random because they are structured in time or in space. This means that units are not independent of each other, hence their residuals will not be independent, and we have violated an important assumption of generalised linear modelling (and, indeed, of analysis of variance). However the recognition of natural structuring in our population of experimental units can be **very** useful. If the experimental design can be stratified so that all units that share a common 'trait' (e.g. share a corner of a field, or share a single incubator) can represent one or more full replicate of the proposed experiment, then we should use this natural structuring to absorb some of our enemy: noise (also called residual deviance).
 
-An extreme case of using error-absorbers is the Randomised Complete Block Experimental Design. So-called because it includes blocks, each block contains a single replicate of the experiment, and experimental units **WITHIN** blocks are allocated to treatment combinations **AT RANDOM**. The concept is best explained using an example.
+An extreme case of using error-absorbers is the Randomised Complete Block Experimental Design. So-called because it includes blocks, each block contains a single replicate of the experiment, and experimental units **within** blocks are allocated to treatment combinations **at random**. The concept is best explained using an example.
 
-A microbiologist wishes to know which of four growth media is best for rearing large populations of anthrax, quickly. However, this poorly funded scientist does not own a large enough incubator in which to grow lots of replicate populations. Instead he requests space in five different incubators owned by other, better-funded researchers. Each incubator just has space for four bottles of medium. Our scientist allocates each growth medium to one bottle per incubator **AT RANDOM**, inoculates with anthrax then monitors population growth rate.
+A microbiologist wishes to know which of four growth media is best for rearing large populations of anthrax, quickly. However, this poorly funded scientist does not own a large enough incubator in which to grow lots of replicate populations. Instead he requests space in five different incubators owned by other, better-funded researchers. Each incubator just has space for four bottles of medium. Our scientist allocates each growth medium to one bottle per incubator **at random**, inoculates with anthrax then monitors population growth rate.
 
 A schematic is given in Figure \@ref(fig:bacCabinets).
 
@@ -125,7 +127,7 @@ bac <- readRDS("_data/bacCabinets.rds")
 bac <- readRDS("bacCabinets.rds")
 ```
 
-Let's do the analysis **WRONGLY** to begin with:
+Let's do the analysis **wrongly** to begin with:
 
 ```{r bacwrong}
 bac_lm <- lm(growth ~ media, data = bac)
@@ -165,6 +167,8 @@ We are faced with all these `NA`s because the model is **saturated**: there is n
 calculate the residual deviance/variance. This also means that there are no degrees-of-freedom remaining in the model to calculate the residual sum-of-squares, and so we can't model simplify from this model.
 ```
 
+### Mixed model approach
+
 Let's re-do this analysis using a **mixed model**. If you haven't already, you will need to load the `lme4` package:
 
 ```{r, eval = F}
@@ -173,8 +177,8 @@ library(lme4)
     
 > **Fixed and random effects**: 
 > 
-> * `cabinet` is a **random** effect---we don't care about the identity of each cabinet, each cabinet is sampled from a population of possible cabinets, we just want to predict and absorb the variance in bacterial growth rate explained by cabinet;
-> * `media` is a **fixed** effect---we chose the media to be tested, each media has a specific identity, we want to estimate the differences in bacterial growth between different media. 
+> * `media` is a **fixed** effect---we chose the media to be tested, each media has a specific identity, we want to estimate the differences in bacterial growth between different media;
+> * `cabinet` is a **random** effect---we don't care about the identity of each cabinet, each cabinet is sampled from a population of possible cabinets, we just want to predict and absorb the variance in bacterial growth rate explained by cabinet.
 
 Now on with the analysis:
 
@@ -187,24 +191,45 @@ summary(bac_lmer)
 > 
 > * The first part corresponds to the 'fixed effects' part of the model (in this case, `growth ~ media`), which is identical to the model you would enter into `glm` if there were no problems of non-independence of data. 
 > * The second part is where you enter the 'random effects' part of the model, where you tell R how the data is nested and where the non-independence lies. There is a whole world of possibilities here, from spatially autocorrelated variance/covariance matrices to independently varying random slopes and intercepts. We keep it simple in this course. For this example, we assume no interaction between media and cabinet, hence we just want to predict and absorb the additive variance due to different cabinets. Hence our random effect term is `(1 | cabinet)`. This means: 'the intercept of our linear model will vary according to cabinet'.
+> 
 
-Mathematically this correspond to:
+Mathematically this corresponds to:
 $$
     Y_i = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2}+ \beta_3 x_{i3} + \gamma_{C_i} + \epsilon_i
 $$
-where $\epsilon_i \sim N(0, \sigma^2)$, the $x_{i*}$ are dummy variables corresponding to each level of `media`, and $\gamma_{C_i}$ is the random effect term for each `cabinet` ($C_i = 1, \dots, 5$). The reason why $\gamma_{C_i}$ are denoted as **random** effects, is that we assume they come from some distribution such that $\gamma_j \sim N(0, \sigma^2_{\gamma})$. I promise this will be the last equation in these notes!
+where $\epsilon_i \sim N(0, \sigma^2)$, the $x_{i*}$ are dummy **binary** variables corresponding to each level of `media`. For example:
+$$
+    x_{i1} = \left\{ \begin{array}{ll}
+    1 & \mbox{if measurement $i$ has `media` = 2}\\
+    0 & \mbox{otherwise},
+    \end{array}
+    \right.
+$$
+and similarly for $x_{i2}$ and $x_{i3}$. Here $\gamma_{C_i}$ is the random effect term for each `cabinet` ($C_i = 1, \dots, 5$). The reason why $\gamma_{C_i}$ are denoted as **random** effects, is that we assume they come from some distribution such that $\gamma_{j} \sim N(0, \sigma^2_{\gamma})$ (for $j = 1, \dots, 5$). I promise this will be the last equation in these notes!
+
+#### **REML** vs. **ML**
+
+To fit these models we use an approach called **maximum likelihood** (**ML**). ML is a very general technique with desirable *asymptotic* properties. However, ML estimators can be **biased**, particularly for small sample sizes. In mixed models an alternative approach, known as **restricted maximum likelihood** (**REML**), can be used, which produces better estimates of the model coefficients, particularly for small sample sizes. However, the REML likelihood function is different to the ML likelihood function, and only makes sense for mixed models (since it's designed to estimate the variance components). 
+
+We may have to switch between these two approaches depending on what we want to do. In general, if you want to compare nested models that only differ in the random effects, then you can use either REML or ML. However, if you want to compare models that differ in their fixed effects, then you need to use ML. Hence, if we are performing variable selection or model simplification, then we may have to switch to ML when comparing models, but then refit the model using REML in order to produce estimates of the coefficients.
 
 > **NOTE:** for various reasons the authors of `lme4` do not provide p-values as standard from a call to `summary()` or `anova()`. We can perform a **likelihood ratio test** for the impact of dropping `media` from the fitted model. The simplest way to do this is to use the `drop1()` function:
 > 
+> In order to use likelihood ratio tests for assessing the impact of dropping **fixed** effects, we must refit the model using ML (rather than REML). Here we will do this *in situ*, using the `update()` function and setting the argument `REML = F`. This does not change the original `bac_lmer` model object
 
 ```{r, warning = F, message = F}
-drop1(bac_lmer, test = "Chisq")
-summary(bac_lmer)
+drop1(update(bac_lmer, REML = F), test = "Chisq")
 ```
     
-The 'intercept' of the `lmer` model is the mean growth rate in `media1` for an **average** cabinet. `lmer` output also gives you information criteria about the model, tells you the standard deviation of the random effects, correlations between levels of fixed effects, and so on. Here we have used a **likelihood ratio test** to assess whether the removal of `media` corresponds to a statistically significantly inferior model fit, which in this case it does at both the 5% and 1% levels.
+We have used a **likelihood ratio test** to assess whether the removal of `media` corresponds to a statistically significantly inferior model fit, which in this case it does at both the 5% and 1% levels. Hence we should leave `medai` in the model. Once we have the final model, we can look at a sumamry of the model fit:
 
-> **Note**: we use a likelihood ratio test (LRT) here, rather than an F-test. The F-test would be OK in this particular case, with Gaussian error structure. LRTs are more general, and thus for consistency I will use these (or AIC) throughout where required.
+```{r}
+summary(bac_lmer)
+```
+
+(**Note** that this summary has been produced from the model fit using REML, even though the LRT was conducted using the model fitted using ML---this is because we updated the model *in situ* within `drop1()`.) The 'intercept' of the `lmer` model is the mean growth rate in `media1` for an **average** cabinet. `lmer` output also gives you information criteria about the model, tells you the standard deviation of the random effects, correlations between levels of fixed effects, and so on. 
+
+> **Note**: we use a likelihood ratio test (LRT) here, rather than an F-test. The F-test would be OK in this particular case, with Gaussian error structure and fully balanced design. However, LRTs are more general, and thus for consistency I will use these (or AIC) throughout where required.
 
 We can derive confidence intervals using `confint()`, and also produce predictions from the model using `predict()`.
 
@@ -219,6 +244,8 @@ confint(bac_lmer, level = 0.97)
 ``
 
 The first two terms are the CIs for $\sigma_{\gamma}$ and $\sigma$ respectively. The third term is the CI for bacterial growth within an **average** cabinet. The next three terms correspond to the difference in bacterial growth for `media` levels 2, 3 and 4, relative to `media` level 1. Each of these effects are statistically significantly different to the baseline `media` at the 3% level. The model suggests that `media3` and `media4` have attenuated growth compared to `media1`, whereas `media2` has exacerbated growth.
+
+This approach uses the profile likelihood to calculate CIs. There is an option to `confint()` that allows you to calculate parameteric bootstrapped CIs if you prefer. The latter are likely to be more accurate, and thus are beneficial if your CI/p-value is hovering around the required level of statistical significance and you wish to improve this estimate. However, bootstrapping is a simulation-based approach and can be computationally expensive.
 
 ```
 
