@@ -8,12 +8,7 @@ Firstly, install if necessary (using `install.packages()`; uncomment the code be
 ## load libraries
 library(tidyverse)
 library(lme4)
-library(car)
 ```
-
-REML / ML model choice
-
-F-test / chi-squared etc.
 
 ## Introduction
 
