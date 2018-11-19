@@ -895,7 +895,7 @@ sumBoot <- function(merBoot) {
 boot1 <- bootMer(split_lmer, predFun, nsim = 250, type = "parametric", re.form = NA)
 newdata <- cbind(newdata, sumBoot(boot1))
 
-# #plot confidence intervals
+## plot confidence intervals
 ggplot(newdata, 
     aes(x = fertilizer, colour = density, shape = density)) + 
     geom_pointrange(aes(y = yield, ymin = lci, ymax = uci), 
