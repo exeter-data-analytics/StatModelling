@@ -904,20 +904,6 @@ ggplot(newdata,
     labs(title = "CIs based on fixed-effects uncertainty ONLY")
 ```
 
-```{r}
-newdata <- expand.grid(
-    block = levels(splityield$block),
-    density = levels(splityield$density),
-    irrigation = levels(splityield$irrigation),
-    fertilizer = levels(splityield$fertilizer)
-)
-predFun <- function(mod) {
-  predict(mod, newdata = newdata, re.form = NULL)
-}
-boot2 <- bootMer(split_lmer, predFun, nsim = 250, type = "parametric", re.form = NULL)
-split_boot2 <- cbind(newdata, sumBoot(boot2))
-```
-
 ## Bayesian modelling {#secbayes}
 
 Many of the challenges associated with **mixed effects** models go away if you move your inference into a **Bayesian** framework. Thats not to say that other challenges do not arise in their place, mainly in terms of variable selection, however, in general I would recommend using a Bayesian framework for complex models with hierarchical structures, particularly spatio-temporal modelling. 
