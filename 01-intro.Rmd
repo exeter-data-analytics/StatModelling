@@ -4,6 +4,10 @@
 IMG <- "_img" ## image path
 ```
 
+## Data files and slides {-}
+
+All data files can be downloaded as a ZIP file from [here](https://exeter-data-analytics.github.io/StatModelling/dataFiles.zip).
+
 ## Motivation
 
 Scientists acquire knolwedge about the state of nature (the real-world) by collecting data.

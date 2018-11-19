@@ -2,10 +2,6 @@
 
 My thanks in particular to [Dave Hodgson](http://biosciences.exeter.ac.uk/staff/index.php?web_id=david_hodgson), who's fantastic Master's course offered up the prototype for this workshop.
 
-## DATA
-
-DATA!!!!
-
 Firstly, install if necessary (using `install.packages()`; uncomment the code below if required) and load the `lme4` package [@lme4]:
 
 ```{r, message = F, warning = F}
@@ -56,7 +52,7 @@ That being said, there are times when NHST can be useful, particularly if you ha
 * F-tests: based on comparing the residual mean squared error with the regression mean squared error, or
 * Likelihood ratio tests (LRT): based on comparing the model deviance between two models.
 
-Both of these cases are **exact** tests for linear regression with Gaussian errors (but for mixed models these become approximate). Let's have a look at a simple example using the fruitflies data from earlier practicals.
+Both of these cases are **exact** tests for linear regression with Gaussian errors (but for mixed models these become approximate). Let's have a look at a simple example using the fruitflies data from earlier practicals. These data are available in the ["fruitfly.rds"](https://exeter-data-analytics.github.io/StatModelling/_data/fruitfly.rds) file.
 
 ```{r, eval=FALSE}
 ff <- readRDS("fruitfly.rds")
@@ -117,7 +113,7 @@ A schematic is given in Figure \@ref(fig:bacCabinets).
 include_graphics("_img/bacCabinets.png")
 ```
 
-The data are available in the 'bacCabinets.rds' file. Read in this dataset and familiarise yourself with its structure. 
+The data are available in the 'bacCabinets.rds' file.  These data are available in the ["bacCabinets.rds"](https://exeter-data-analytics.github.io/StatModelling/_data/bacCabinets.rds) file. Read in this dataset and familiarise yourself with its structure. 
 
 ```{r, echo = F}
 bac <- readRDS("_data/bacCabinets.rds")
@@ -267,7 +263,7 @@ The variance is likely to be different at each level of this nested analysis bec
 
 If all we want to test is whether the experimental treatments have affected the glycogen levels, then we are not interested in liver bits within rat's livers, or in preparations within liver bits. We could combine all the pseudoreplicates together, and analyse the 6 averages. This would have the virtue of showing what a tiny experiment this really was. This latter approach also ignores the nested sources of uncertainties. Instead we will use a linear mixed model.
  
-The new concept here is that there are multiple random effects that are **nested**. First, read in the data:
+The new concept here is that there are multiple random effects that are **nested**.  These data are available in the ["rats.rds"](https://exeter-data-analytics.github.io/StatModelling/_data/rats.rds) file. First, read in the data:
 
 ```{r, echo = F}
 rats <- readRDS("_data/rats.rds")
@@ -425,7 +421,7 @@ panderOptions("table.split.table", Inf)
 pander(temp, style = "rmarkdown", table.emphasize.rownames = F)
 ```
 
-First, let's read in the data and take a look at it.
+ These data are available in the ["splityield.rds"](https://exeter-data-analytics.github.io/StatModelling/_data/splityield.rds) file. First, let's read in the data and take a look at it.
 
 ```{r, eval = F}
 splityield <- readRDS("splityield.rds")
@@ -501,7 +497,7 @@ par(mfrow = c(1, 1))
 
 The really pronounced interaction is that between irrigation and density, with a reversal of the high to low density difference on the irrigated and control plots. Overall, the 3-way interaction was not statistically significant, nor was the 2-way interaction between density and fertilizer. The 2-way interaction between irrigation and fertilizer, however, was highly statistically significant. 
 
-Another way to visualise the model outputs would be to generate a plot of the predicted yield (plus confidence intervals), for each combination of explanatory factors. I have created a `data.frame` with these predictions using bootstrapping. The code to replicate this can be found [here](#parboot), but is a bit time consuming to run, so I have included the predictions as a file called ["split_pred.rds"](_data/split_pred.rds).
+Another way to visualise the model outputs would be to generate a plot of the predicted yield (plus confidence intervals), for each combination of explanatory factors. I have created a `data.frame` with these predictions using bootstrapping. The code to replicate this can be found [here](#parboot), but is a bit time consuming to run, so I have included the predictions as a file called ["split_pred.rds"](https://exeter-data-analytics.github.io/StatModelling/_data/split_pred.rds).
 
 First, read in the predictions:
 
@@ -604,7 +600,7 @@ So we can see that in the control group the `medium` density sowing seems to pro
 
 ## Non-independent data: Absorbing the influence of random effects
 
-Eight groups of students walked through Hell's Gate National Park and estimated the distance to groups of individuals of several species of mammalian herbivores. Here we work with data on distances to three key species: Thomson's gazelle, warthog and zebra. We are interested in whether distances to these animals differ among species, whether distances depend on animal group size, and also whether the relationship between distance and group size differs among species. The data is in file "hg.rds".
+Eight groups of students walked through Hell's Gate National Park and estimated the distance to groups of individuals of several species of mammalian herbivores. Here we work with data on distances to three key species: Thomson's gazelle, warthog and zebra. We are interested in whether distances to these animals differ among species, whether distances depend on animal group size, and also whether the relationship between distance and group size differs among species.  These data are available in the ["hg.rds"](https://exeter-data-analytics.github.io/StatModelling/_data/hg.rds) file.
 
 A na&iuml;ve analysis would ignore the identity of the student group, and therefore treat all the distance observations as independent. It would probably fit a `lm` of distance against species, number and the interaction between species and number. My own exploration of the data suggests that raw distances are skewed, and that a log-transformation improves homoscedasticity and normality of residuals. So before analysing we do this transformation.
 
