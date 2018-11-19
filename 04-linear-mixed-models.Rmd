@@ -163,10 +163,7 @@ Try with an **interaction** effect between `media` and `cabinet`. What happens a
 summary(lm(growth ~ media * cabinet, data = bac))
 ``
 
-We are faced with all these `NA`s because the model is **saturated**: there is no replication so we cannot 
-calculate the residual deviance/variance. This also means that there are no degrees-of-freedom remaining in the model to calculate the residual sum-of-squares. We have twenty observations and twenty parameters to estimate.
-This is analgous to fitting a straight line through *two* data points; we get a perfect fit, and 
-thus likely to overfit.
+We are faced with all these `NA`s because the model is **saturated**: there is no replication so we cannot calculate the residual deviance/variance. This also means that there are no degrees-of-freedom remaining in the model to calculate the residual sum-of-squares. We have twenty observations and twenty parameters to estimate. This is analogous to fitting a straight line through *two* data points; we get a perfect fit, and thus overfits.
 ```
 
 ### Mixed model approach
@@ -274,10 +271,12 @@ The new concept here is that there are multiple random effects that are **nested
 
 ```{r, echo = F}
 rats <- readRDS("_data/rats.rds")
+summary(rats)
 ```
 
 ```{r, eval = F}
 rats <- readRDS("rats.rds")
+summary(rats)
 ```
 
 ### The Wrong Analysis 
@@ -288,14 +287,17 @@ Here is what not to do (try it anyway)!
 rats_lm <- lm(Glycogen ~ Treatment * Rat * Liver, data = rats)
 ```
 
-The model has been specified as if it were a full factorial with no nesting and no pseudoreplication. Note that the structure of the data allows this mistake to be made. It is a very common problem with data frames that include pseudoreplication. A summary of the model fit looks like this:
+The model has been specified as if it were a full factorial with no nesting and no pseudoreplication. Note that the structure of the data allows this mistake to be made. It is a very common problem with data frames that include pseudoreplication. An ANOVA table gives:
 
 ```{r}
-summary(rats_lm)
-drop1(rats_lm, test = "F")
+anova(rats_lm, test = "F")
 ```
 
-This says that there was a highly statistically significant difference between the treatment means, at least some of the rats were statistically significantly different from one another, and there was a statistically significant interaction effect between treatments and rats. This is wrong! The analysis is flawed because it is based on the assumption that there is only one error variance and that its value is 21.2. This value is actually the measurement error; that is to say the variation between one reading and another from the same piece of liver. For testing whether the treatment has had any effect, it is the rats that are the replicates, and there were only 6 of them in the whole experiment. 
+> **Note**: I can only use the `anova()` function in this way because the data are **balanced** (or at least the model formulation above with no nesting and no pseudoreplication ends up treating the data as if they were balanced). In general you have to be very careful to use `anova()` in this way.
+
+This says that there was a highly statistically significant difference between the treatment means, at least some of the rats were statistically significantly different from one another, and there was a statistically significant interaction effect between treatments and rats. **This is wrong!** The analysis is flawed because it is based on the assumption that there is only one error variance and that its value is 21.2. This value is actually the measurement error; that is to say the variation between one reading and another from the same piece of liver. For testing whether the treatment has had any effect, it is the rats that are the replicates, and there were only 6 of them in the whole experiment. Note also that the way the rats have been coded makes it look like there are only two rat "groups". Again this is wrong (see [mixed models](#secmixed) section below).
+
+One way that we could analyse these data is to use a **derived variable** analysis. 
  
 ### Derived variables avoid pseudoreplication 
 
@@ -326,31 +328,32 @@ ratsNew_lm <- lm(Glycogen ~ Treatment, data = ratsNew)
 drop1(ratsNew_lm, test = "F")
 ```
 
-This is a statistically valid analysis, but it ignores the uncertainties around the pseudo-replicates, and the interpretation of the response variable is actually the mean of a bunch of measurements, not the measurements themselves. So it's giving the correct result for a different model.
+This is a statistically valid analysis, but it ignores the uncertainties around the pseudo-replicates, and the interpretation of the response variable is actually the mean of a bunch of measurements, not the measurements themselves. So it's giving the correct result for a different model, and ultimately not the model we want.
 
-
-### Mixed model approach
+### Mixed model approach {#secmixed}
 
 #### Nested and crossed random effects
 
-We have to be careful to get the model formula correct. Notice that in the `rats` data the `Rat` column is coded as a `0` or a `1`. This means that we could use the formula:
+We have to be careful to get the model formula correct. Notice that in the `rats` data the `Rat` column is coded as a `1` or a `2`. This means that we could use the formula:
 
 ```{r, eval = F}
 rats_lmer <- lmer(Glycogen ~ Treatment + (1 | Rat), data = rats)
 ```
+
+**without** throwing an error.
 
 ```{task, title = "Question"}
 Why is this wrong?
 ```
 
 ```{solution, title = "Answer"}
-It is wrong because this would add **two** random effect terms, one for rat `0` and one for rat `1`. This is wrong. There are 6 rats altogether. The way that the data have been coded allows for these kinds of mistakes to happen. The same is true for `Liver`, which is coded as a `1`, `2` or `3`. This means that we could write:
+It is wrong because this would add **two** random effect terms, one for rat `1` and one for rat `2`. In fact there are 6 rats altogether. The way that the data have been coded allows for these kinds of mistakes to happen. The same is true for `Liver`, which is coded as a `1`, `2` or `3`. This means that we could write:
     
 ``{r, eval = F}
 rats_lmer <- lmer(Glycogen ~ Treatment + (1 | Rat) + (1 | Liver), data = rats)
 ``
 
-thinking that we are including the correct random effects for `Rat` and `Liver`. In fact, this assumes that the data come from a **crossed** design, in which there are 2 rats and 3 parts of the liver, and that `Liver = 1` corresponds to the same type of measurement in rats `0` and `1` and so on. Sometimes this is appropriate, but not here!
+thinking that we are including the correct random effects for `Rat` and `Liver`. In fact, this assumes that the data come from a **crossed** design, in which there are 2 rats and 3 parts of the liver, and that `Liver = 1` corresponds to the same type of measurement in rats `1` and `2` and so on. Sometimes this is appropriate, but not here!
     
 The nature of the way that many data sets are coded makes these kinds of mistakes very easy to make!
 ```
@@ -463,6 +466,11 @@ Pretty grim eh? However, in this case we note that the final nested random effec
 split_lmer <- lmer(yield ~ irrigation * density * fertilizer + (1 | block) + 
        (1 | block:irrigation) + (1 | block:irrigation:density), 
        data = splityield)
+```
+
+We can now perform model simplification (remembering to refit the model using ML in each case):
+
+```{r}
 drop1(update(split_lmer, REML = F), test = "Chisq")
 ```
 We can see that the three-way interaction term is not statistically significant, so we can drop it from the model and then test dropping the two-way interaction effects.
