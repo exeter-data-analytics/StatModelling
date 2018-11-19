@@ -103,7 +103,7 @@ If I do perform model simplification or variable selection, even then I would pr
 
 In this workshop we will introduce some common scenarios in which mixed models can be applied, and give examples of model simplification and inference in these cases. We will tend to use LRTs and profile confidence intervals simply because they are easier to compute. A [section](#parboot) at the end will explore the use of parametric bootstrapping.
 
-## Randomised Complete Block Design
+## Non-independent data: Randomised Complete Block Design
 
 > Often you will find it impossible to allocate treatments to experimental units at random because they are structured in time or in space. This means that units are not independent of each other, hence their residuals will not be independent, and we have violated an important assumption of generalised linear modelling (and, indeed, of analysis of variance). However the recognition of natural structuring in our population of experimental units can be **very** useful. If the experimental design can be stratified so that all units that share a common 'trait' (e.g. share a corner of a field, or share a single incubator) can represent one or more full replicate of the proposed experiment, then we should use this natural structuring to absorb some of our enemy: noise (also called residual deviance).
 
@@ -491,11 +491,84 @@ interaction.plot(splityield$density, splityield$irrigation, splityield$yield)
 par(mfrow = c(1, 1))
 ```
 
-The really pronounced interaction is that between irrigation and density, with a reversal of the high to low density difference on the irrigated and control plots. Interestingly, this is not the most statistically significant interaction. That honour goes to the `fertilizer:irrigation` interaction (top right graph). 
+The really pronounced interaction is that between irrigation and density, with a reversal of the high to low density difference on the irrigated and control plots. Overall, the 3-way interaction was not statistically significant, nor was the 2-way interaction between density and fertilizer. The 2-way interaction between irrigation and fertilizer, however, was highly statistically significant. 
 
-Overall, the 3-way interaction was not statistically significant, nor was the 2-way interaction between density and fertilizer. The 2-way interaction between irrigation and fertilizer, however, was highly statistically significant and, not surprisingly, there was a highly statistically significant main effect of fertilizer. 
+Another way to visualise the model outputs would be to generate a plot of the predicted yield (plus confidence intervals), for each combination of explanatory factors. I have created a `data.frame` with these predictions using bootstrapping. The code to replicate this can be found [here](#parboot), but is a bit time consuming to run, so I have included the predictions as a file called ["split_pred.rds"](_data/split_pred.rds).
 
-## Absorbing the influence of random effects
+First, read in the predictions:
+
+```{r, eval = F}
+split_pred <- readRDS("split_pred.rds")
+```
+
+```{r, echo = F}
+newdata <- readRDS("_data/split_pred.rds")
+```
+
+Now to plot these predictions (note, once again these ease of `ggplot2` compared to base R graphics):
+
+```{multCode}
+
+``{r, fig.width = 10, fig.height = 5}
+## set plot layout
+par(mfrow = c(1, 2))
+    
+## set plot limits
+ylims <- min(newdata[, -c(1:3)])
+ylims <- c(ylims, max(newdata[, -c(1:3)]))
+xlims <- c(0, 3.5)
+
+for(m in levels(newdata$irrigation)) {
+    ## extract control predictions
+    temp <- newdata[newdata$irrigation == m, ]
+    
+    ## produce empty plot
+    plot(NULL, ylim = ylims, xlim = xlims, 
+         xaxt = "n", main = paste("irrigation =", m),
+         xlab = "fertilizer", ylab = "yield")
+    
+    ## plot yield against fertiliser stratified by density
+    for(i in 1:length(levels(newdata$density))) {
+        temp1 <- temp[temp$density == levels(newdata$density)[i], ]
+        temp1 <- temp1[order(temp1$fertilizer), ]
+        for(j in 1:nrow(temp1)){
+            points(j - 0.2 * (2 - i), temp1$yield[j], col = i, pch = 16)
+            arrows(j - 0.2 * (2 - i), temp1$lci[j], j - 0.2 * (2 - i), temp1$uci[j], 
+                length = 0.1, col = i, angle = 90, code = 3)
+        }
+    }
+    
+    ## add custom x-axis
+    axis(side = 1, at = 1:3, labels = levels(newdata$fertilizer))
+    
+    ## add legend
+    legend(0.1, diff(par("usr")[3:4]) * 0.95 + par("usr")[3], 
+        legend = levels(newdata$density),
+        col = 1:3,
+        lty = 1,
+        pch = 16)
+}
+``
+
+####
+
+``{r}
+## plot confidence intervals
+ggplot(newdata, 
+    aes(x = fertilizer, colour = density)) + 
+    geom_pointrange(aes(y = yield, ymin = lci, ymax = uci), 
+        position = position_dodge(width = 0.5)) +
+    facet_wrap(~ irrigation) +
+    labs(title = "CIs based on fixed-effects uncertainty ONLY")
+``
+
+```
+
+So we can see that in the control group the `medium` density sowing seems to produce slightly higher yields on average than the `low` or `high` density settings, but we note that these differences are not statistically significantly different at the 5% level. However, irrigation tends to not only produce higher yields on average (except for the `N` fertiliser), but also to favour `high` density sowing efforts, which are now much preferred over `low` density sowing efforts (although not too dissimilar from `medium` density efforts). The model tends to favour the `NP` fertiliser in all cases, though there's not much between `NP` and `P`.
+
+> **Note**: This approach does now take into account the random effects variances or covariances. It is therefore likely to underestimate the variance. To account for these additional uncertainties is difficult. If you want a more consistent approach, go [Bayesian](#secbayes).
+
+## Non-independent data: Absorbing the influence of random effects
 
 Eight groups of students walked through Hell's Gate National Park and estimated the distance to groups of individuals of several species of mammalian herbivores. Here we work with data on distances to three key species: Thomson's gazelle, warthog and zebra. We are interested in whether distances to these animals differ among species, whether distances depend on animal group size, and also whether the relationship between distance and group size differs among species. The data is in file "hg.rds".
 
@@ -779,7 +852,42 @@ Congratulations.
 
 ## Parametric bootstrapping {#parboot}
 
-## Bayesian modelling
+```{r, eval = F}
+## new data to predict to
+newdata <- expand.grid(
+    density = levels(splityield$density),
+    irrigation = levels(splityield$irrigation),
+    fertilizer = levels(splityield$fertilizer)
+)
+
+## prediction function to use in bootstrap routine
+predFun <- function(mod) {
+  predict(mod, newdata = newdata, re.form = NA)
+}
+
+## produce 1000 bootstrapped samples
+boot1 <- bootMer(split_lmer, predFun, nsim = 1000, type = "parametric", re.form = NA)
+
+## function to produce percentile based CIs
+sumBoot <- function(merBoot) {
+    data.frame(
+        yield = apply(merBoot$t, 2, function(x){
+            mean(x, na.rm = T)
+        }),
+        lci = apply(merBoot$t, 2, function(x){
+            quantile(x, probs = 0.025, na.rm = T)
+        }),
+        uci = apply(merBoot$t, 2, function(x){
+            quantile(x, probs = 0.975, na.rm = T)
+        })
+    )
+}
+
+## bind CIs to newdata
+split_pred <- cbind(newdata, sumBoot(boot1))
+```
+
+## Bayesian modelling {#secbayes}
 
 Many of the challenges associated with **mixed effects** models go away if you move your inference into a **Bayesian** framework. That's not to say that other challenges do not arise in their place, mainly in terms of variable selection, however, in general I would recommend using a Bayesian framework for complex models with hierarchical structures, particularly spatio-temporal modelling. 
 
