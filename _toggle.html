@@ -2,12 +2,14 @@
     function toggle(id) {
         var ele = document.getElementById("toggleText" + id);
         var text = document.getElementById("displayText" + id);
+        var buttonText = text.innerHTML.replace("Show ", "");
+        buttonText = buttonText.replace("Hide ", "");
         if(ele.style.display == "block") {
             ele.style.display = "none";
-            text.innerHTML = "Show Solution";
+            text.innerHTML = "Show " + buttonText;
         } else {
             ele.style.display = "block";
-            text.innerHTML = "Hide Solution";
+            text.innerHTML = "Hide " + buttonText;
         }
     } 
 </script>

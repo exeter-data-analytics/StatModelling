@@ -2,7 +2,7 @@
 library(knitr)
 
 ## set knitr options
-opts_chunk$set(cache = FALSE, tidy.opts = list(width.cutoff = 55), tidy = F, fig.align = "center", fig.width = 5, fig.height = 5, multCode = F)
+opts_chunk$set(cache = TRUE, tidy.opts = list(width.cutoff = 55), tidy = F, fig.align = "center", fig.width = 5, fig.height = 5, multCode = F)
 
 ## variables to help save latex answers for appendix
 taskCtr <- 0
@@ -12,16 +12,18 @@ solLabels <- list()
 knit_engines$set(task = function(options) {
     ## increment counter
     assign("taskCtr", taskCtr + 1, pos = 1)
-    solLabels[[taskCtr]] <- c(taskCtr, NA)
+    solLabels[[taskCtr]] <- c(taskCtr, NA, NA)
     assign("solLabels", solLabels, pos = 1)
     ## knit child
     out <- gsub("``", "```", options$code)
     out <- knit_child(text = out)
+    ## extract header if provided
+    headerName <- ifelse(length(options$title) > 0, options$title, "Task")
     ## set up output
     if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
-        out <- paste("<div class=\"panel panel-default\"><div class=\"panel-heading\"> Task </div><div class=\"panel-body\">", out, "</div></div>")
+        out <- paste("<div class=\"panel panel-default\"><div class=\"panel-heading\">", headerName, "</div><div class=\"panel-body\">", out, "</div></div>")
     } else {
-        out <- paste0("\\hypertarget{tsk", taskCtr, "}{}\\bblockT{\\phantomsection\\label{sol", taskCtr, "}", taskCtr, "}\n", out, "\n\\eblockT\n")
+        out <- paste0("\\hypertarget{tsk", taskCtr, "}{}\\bblockT[", headerName, "]{\\phantomsection\\label{sol", taskCtr, "}", taskCtr, "}\n", out, "\n\\eblockT\n")
     }
     out
 })
@@ -31,12 +33,15 @@ knit_engines$set(solution = function(options) {
     if(!options$multCode) {
         out <- gsub("``", "```", options$code)
         out <- knit_child(text = out)
+        ## extract header if provided
+        headerName <- ifelse(length(options$title) > 0, options$title, "Solution")
         if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
-            out <- paste0("<button id=\"displayText", options$label, "\" onclick=\"javascript:toggle('", options$label, "');\">Show Solution</button>\n\n<div id=\"toggleText", options$label, "\" style=\"display: none\"><div class=\"panel panel-default\"><div class=\"panel-heading panel-heading1\"> Solution </div><div class=\"panel-body\">", out, "</div></div></div>\n")
+            out <- paste0("<button id=\"displayText", options$label, "\" onclick=\"javascript:toggle('", options$label, "');\">Show ", headerName, "</button>\n\n<div id=\"toggleText", options$label, "\" style=\"display: none\"><div class=\"panel panel-default\"><div class=\"panel-heading panel-heading1\"> ", headerName, " </div><div class=\"panel-body\">", out, "</div></div></div>\n")
         } else {
             solLabels[[taskCtr]][2] <- out
+            solLabels[[taskCtr]][3] <- headerName
             assign("solLabels", solLabels, pos = 1)
-            out <- paste0("\\hyperlink{sol", taskCtr, "}{\\buttonS{Show Solution on P\\colpageref{tsk", taskCtr, "}}}")
+            out <- paste0("\\hyperlink{sol", taskCtr, "}{\\buttonS{Show ", headerName, " on P\\colpageref{tsk", taskCtr, "}}}")
         }
         return(out)
     } else {
@@ -60,16 +65,19 @@ knit_engines$set(solution = function(options) {
                 return(x)
             }
         })
+        ## extract header if provided
+        headerName <- ifelse(length(options$title) > 0, options$title, "Solution")
         # opts_chunk$set(tidy = tempTidy, tidy.opts = tempTidyOpts)
         if(opts_knit$get("rmarkdown.pandoc.to") != "latex") {
             out <- paste0("<div class=\"tab\"><button class=\"tablinks", options$label, " active\" onclick=\"javascript:openCode(event, 'baseR", options$label, "', '", options$label, "');\">Base R</button><button class=\"tablinks", options$label, "\" onclick=\"javascript:openCode(event, 'tidyverse", options$label, "', '", options$label, "');\"><tt>tidyverse</tt></button></div><div id=\"baseR", options$label, "\" class=\"tabcontent", options$label, "\">", out[[1]], "</div><div id=\"tidyverse", options$label, "\" class=\"tabcontent", options$label, "\">", out[[2]], "</div><script> javascript:hide('tidyverse", options$label, "') </script>")
-            out <- paste0("<button id=\"displayText", options$label, "\" onclick=\"javascript:toggle('", options$label, "');\">Show Solution</button>\n\n<div id=\"toggleText", options$label, "\" style=\"display: none\"><div class=\"panel panel-default\"><div class=\"panel-heading panel-heading1\"> Solution </div><div class=\"panel-body\">", out, "</div></div></div>\n")
+            out <- paste0("<button id=\"displayText", options$label, "\" onclick=\"javascript:toggle('", options$label, "');\">Show ", headerName, "</button>\n\n<div id=\"toggleText", options$label, "\" style=\"display: none\"><div class=\"panel panel-default\"><div class=\"panel-heading panel-heading1\"> ", headerName, " </div><div class=\"panel-body\">", out, "</div></div></div>\n")
             return(out)
         } else {
             out <- paste0("\\bmp\n\\bblockST{Base R}\n", out[[1]], "\n\\eblockST\n\\emp\n\\hspace{0.01\\textwidth}\n\\bmp\\bblockST{\\texttt{tidyverse}}\n", out[[2]], "\n\\eblockST\n\\emp\n")
             solLabels[[taskCtr]][2] <- out
+            solLabels[[taskCtr]][3] <- headerName
             assign("solLabels", solLabels, pos = 1)
-            out <- paste0("\\hyperlink{sol", taskCtr, "}{\\buttonS{Show Solution on P\\colpageref{tsk", taskCtr, "}}}")
+            out <- paste0("\\hyperlink{sol", taskCtr, "}{\\buttonS{Show ", headerName, " on P\\colpageref{tsk", taskCtr, "}}}")
         }
         return(out)
     }
