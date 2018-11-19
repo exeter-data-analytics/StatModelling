@@ -509,9 +509,27 @@ Now to plot these predictions (note, once again these ease of `ggplot2` compared
 
 ```{multCode}
 
+To plot the CIs in base R, we can proceed as follows:
+
+1. Set the figure layout to have two figures side-by-side.
+2. Calculate limits for the $y$-axis based on the range of the CIs to be plotted.
+3. Calculate manual limits for the $x$-axis to enable us to jitter the error bars around each fertiliser level.
+4. For each level of `irrigation`: 
+    * Extract the subset of data corresponding to the level of `irrigation`.
+    * Produce an empty plot (setting the $y$-limits and $x$-limits). Remove the $x$-axis (using the `xaxt = "n"` argument). This latter step is so that we can add the `fertilizer` labels manually in the next step.
+    * For each level of `density`:
+        * Extract the subset of data corresponding to the level of `density`.
+        * Sort this so that the levels of `fertilizer` are the same at each stage of the `i` loop^[at this point, `temp1` will have three rows, one for each level of `fertilizer`].
+        * Add points for the estimates and add confidence intervals using the `arrows()` function^[I'll let you check the help file for `arrows()` to figure out the arguments and what they are doing]. Notice that I have used a `for` loop to allow me to plot the three CIs for each level of `fertilizer`. All that this loop does is to run the `arrows()` command 3 times, substituting `j` each time for the corresponding row of the sorted data set (which will be of length three here). You could do this explicitly in three lines of code if you prefer. Notice that I've jittered the points slightly so that the three levels of `density` can be plotted side-by-side.
+    * Add a new $x$-axis and set appropriate labels for the points.
+    * Add a legend.
+    
+Phew! (Now check out the `tidyverse` solution and tell me it's not worth the effort to learn `ggplot2`!)
+
 ``{r, fig.width = 10, fig.height = 5}
+
 ## set plot layout
-par(mfrow = c(1, 2))
+par(mfrow = c(2, 1))
     
 ## set plot limits
 ylims <- min(newdata[, -c(1:3)])
@@ -548,11 +566,17 @@ for(m in levels(newdata$irrigation)) {
         lty = 1,
         pch = 16)
 }
+
+## reset plot layout
+par(mfrow = c(1, 1))
+
 ``
 
 ####
 
-``{r}
+In `ggplot2` we can use the `geom_pointrange()` function, a `colour` aesthetic and a `facet_wrap()`.
+
+``{r, fig.width = 10, fig.height = 5}
 ## plot confidence intervals
 ggplot(newdata, 
     aes(x = fertilizer, colour = density)) + 
@@ -774,7 +798,7 @@ To plot the CIs in base R, we can proceed as follows:
 2. Calculate manual limits for the $x$-axis to enable the species names to render correctly.
 3. Produce a scatterplot of points defined on the ranges set above, but remove the $x$-axis (using the `xaxt = "n"` argument). This latter step is so that we can add the species labels manually in the next step.
 4. Add a new $x$-axis and set appropriate labels for the points.
-5. Add confidence intervals using the `arrows` function. I'll let you check the help file for `arrows` to figure out the arguments and what they are doing. Notice that I have used a `for` loop to allow me to plot the three CIs in one line of code. We haven't talked about R's programming features in this course so far, so don't worry about this too much here, except to notice that all the function does is to run the `arrows` command 3 times, substituting `i` each time for the numbers 1, 2 or 3 respectively. You could do this explicitly in three lines of code if you prefer.
+5. Add confidence intervals using the `arrows()` function. Notice that Ive used a `for` loop to allow me to plot the three CIs in one line of code as in the earlier example. You could do this explicitly in three lines of code if you prefer.
 
 ``{r}
 ylims <- c(0, max(hg_cis[, -ncol(hg_cis)]))
@@ -789,12 +813,11 @@ for(i in 1:nrow(hg_cis)) {
 
 ####
 
-In `ggplot2` we can use the `geom_errorbar()` function.
+In `ggplot2` we can use the `geom_pointrange()` function.
 
 ``{r}
 ggplot(hg_cis, aes(x = Species)) +
-    geom_point(aes(y = mean)) +
-    geom_errorbar(aes(ymin = lci, ymax = uci), width = 0.1) +
+    geom_pointrange(aes(y = mean, ymin = lci, ymax = uci)) +
     xlab("Species") + ylab("Distance from road (m)")
 ``
 
