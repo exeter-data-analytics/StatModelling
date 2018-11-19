@@ -50,6 +50,11 @@ I highly recommend the following books:
 * [Linear models with R](https://www.crcpress.com/Linear-Models-with-R/Faraway/p/book/9781439887332)
 * [Data Analysis Using Regression and Multilevel/Hierarchical Models](http://www.stat.columbia.edu/~gelman/arm/)
 * [An Introduction to Statistical Learning](http://www-bcf.usc.edu/~gareth/ISL/)
+* [Mixed Effects Models and Extensions in Ecology with R](https://www.springer.com/gb/book/9780387874579)
+
+## Data files {-}
+
+All data files can be downloaded as a ZIP file from [here](https://exeter-data-analytics.github.io/StatModelling/dataFiles.zip).
 
 ## Acknowledgements {-}
 
