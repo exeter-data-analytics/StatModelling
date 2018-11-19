@@ -467,8 +467,14 @@ Pretty grim eh? However, in this case we note that the final nested random effec
 split_lmer <- lmer(yield ~ irrigation * density * fertilizer + (1 | block) + 
        (1 | block:irrigation) + (1 | block:irrigation:density), 
        data = splityield)
+```
+
+We can now perform model simplification (remembering to refit the model using ML in each case):
+
+```{r}
 drop1(update(split_lmer, REML = F), test = "Chisq")
 ```
+
 We can see that the three-way interaction term is not statistically significant, so we can drop it from the model and then test dropping the two-way interaction effects.
 
 ```{r, tidy = F}
@@ -483,9 +489,7 @@ split_lmer <- update(split_lmer, ~ . - density:fertilizer)
 drop1(update(split_lmer, REML = F), test = "Chisq")
 ```
 
-We thus have a simplified final model. If you really want to know all the coefficients, type `summary(split.lmer)`, but here we will try to understand the interaction terms graphically.
-
-A useful way to understand these is to use the `interaction.plot()` function. The variables are listed in a non-obvious order: first the factor to go on the $x$-axis, then the factor to go as different lines on the plot, then the response variable. There are 3 plots to look at so we make a $2 \times 2$ plotting area: 
+We thus have a simplified final model. If you really want to know all the coefficients, type `summary(split.lmer)`, but here we will try to understand the interaction terms graphically. A useful way to do this is to use the `interaction.plot()` function. The variables are listed in a non-obvious order: first the factor to go on the $x$-axis, then the factor to go as different lines on the plot, then the response variable. There are 3 plots to look at so we make a $2 \times 2$ plotting area: 
  
 ```{r, fig.width = 10, fig.height = 10, fig.show = "hold"}
 par(mfrow = c(2, 2))
@@ -495,9 +499,91 @@ interaction.plot(splityield$density, splityield$irrigation, splityield$yield)
 par(mfrow = c(1, 1))
 ```
 
-The really pronounced interaction is that between irrigation and density, with a reversal of the high to low density difference on the irrigated and control plots. Interestingly, this is not the most statistically significant interaction. That honour goes to the `fertilizer:irrigation` interaction (top right graph). 
+The really pronounced interaction is that between irrigation and density, with a reversal of the high to low density difference on the irrigated and control plots. Overall, the 3-way interaction was not statistically significant, nor was the 2-way interaction between density and fertilizer. The 2-way interaction between irrigation and fertilizer, however, was highly statistically significant. 
 
-Overall, the 3-way interaction was not statistically significant, nor was the 2-way interaction between density and fertilizer. The 2-way interaction between irrigation and fertilizer, however, was highly statistically significant and, not surprisingly, there was a highly statistically significant main effect of fertilizer. 
+```{r}
+## predict yield from model
+newdata <- expand.grid(
+    density = levels(splityield$density),
+    irrigation = levels(splityield$irrigation),
+    fertilizer = levels(splityield$fertilizer)
+)
+newdata$yield <- predict(split_lmer, newdata, re.form = NA)
+
+## generate model matrix for predictions
+mm <- model.matrix(terms(split_lmer), newdata)
+
+## generate error terms
+pvar1 <- diag(mm %*% tcrossprod(vcov(split_lmer), mm))
+
+## use Gaussian approximation
+cmult <- 1.96 
+newdata <- cbind(
+    newdata,
+    lci = newdata$yield - cmult * sqrt(pvar1),
+    uci = newdata$yield + cmult * sqrt(pvar1)
+)
+```
+
+```{multCode}
+
+``{r}
+## set plot layout
+par(mfrow = c(1, 2))
+    
+## set plot limits
+ylims <- min(newdata[, -c(1:3)])
+ylims <- c(ylims, max(newdata[, -c(1:3)]))
+xlims <- c(0, 3.5)
+
+for(m in levels(newdata$irrigation)) {
+    ## extract control predictions
+    temp <- newdata[newdata$irrigation == m, ]
+    
+    ## produce empty plot
+    plot(NULL, ylim = ylims, xlim = xlims, 
+         xaxt = "n", main = paste("irrigation =", m),
+         xlab = "fertilizer", ylab = "yield")
+    
+    ## plot yield against fertiliser stratified by density
+    for(i in 1:length(levels(newdata$density))) {
+        temp1 <- temp[temp$density == levels(newdata$density)[i], ]
+        temp1 <- temp1[order(temp1$fertilizer), ]
+        for(j in 1:nrow(temp1)){
+            points(j - 0.2 * (2 - i), temp1$yield[j], col = i, pch = 16)
+            arrows(j - 0.2 * (2 - i), temp1$lci[j], j - 0.2 * (2 - i), temp1$uci[j], 
+                length = 0.1, col = i, angle = 90, code = 3)
+        }
+    }
+    
+    ## add custom x-axis
+    axis(side = 1, at = 1:3, labels = levels(newdata$fertilizer))
+    
+    ## add legend
+    legend(0.1, diff(par("usr")[3:4]) * 0.95 + par("usr")[3], 
+        legend = levels(newdata$density),
+        col = 1:3,
+        lty = 1,
+        pch = 16)
+}
+``
+
+####
+
+``{r}
+## plot confidence intervals
+ggplot(newdata, 
+    aes(x = fertilizer, colour = density, shape = density)) + 
+    geom_pointrange(aes(y = yield, ymin = lci, ymax = uci), 
+        position = position_dodge(width = 0.5)) +
+    facet_wrap(~ irrigation) +
+    labs(title = "CIs based on fixed-effects uncertainty ONLY")
+``
+
+```
+So we can see that in the control group the `medium` density sowing seems to produce slightly higher yields on average than the `low` or `high` density settings, but we note that these differences are not statistcally significantly different at the 5% level. However, irrigation tends to not only produce higher yields on average (except for the `N` fertiliser ), but also to favour `high` density sowing efforts, which are now much preferred over `low` density sowing efforts (although not too dissimilar from `medium` density efforts). The model tends to favour the `NP` fertiliser in all cases, though there's not much between `NP` and `P`.
+
+> **Note**: This approach does now take into account the random effects variances or covariances. It is therefore likely to underestimate the variance. To account for these additional uncertainties is difficult. If you want a more consistent approach, go [Bayesian](#secbayes).
 
 ## Absorbing the influence of random effects
 
@@ -783,7 +869,56 @@ Congratulations.
 
 ## Parametric bootstrapping {#parboot}
 
-## Bayesian modelling
+```{r}
+## predict yield from model
+newdata <- expand.grid(
+    density = levels(splityield$density),
+    irrigation = levels(splityield$irrigation),
+    fertilizer = levels(splityield$fertilizer)
+)
+predFun <- function(mod) {
+  predict(mod, newdata = newdata, re.form = NA)
+}
+sumBoot <- function(merBoot) {
+    data.frame(
+        yield = apply(merBoot$t, 2, function(x){
+            mean(x, na.rm = T)
+        }),
+        lci = apply(merBoot$t, 2, function(x){
+            quantile(x, probs = 0.025, na.rm = T)
+        }),
+        uci = apply(merBoot$t, 2, function(x){
+            quantile(x, probs = 0.975, na.rm = T)
+        })
+    )
+}
+boot1 <- bootMer(split_lmer, predFun, nsim = 250, type = "parametric", re.form = NA)
+newdata <- cbind(newdata, sumBoot(boot1))
+
+# #plot confidence intervals
+ggplot(newdata, 
+    aes(x = fertilizer, colour = density, shape = density)) + 
+    geom_pointrange(aes(y = yield, ymin = lci, ymax = uci), 
+        position = position_dodge(width = 0.5)) +
+    facet_wrap(~ irrigation) +
+    labs(title = "CIs based on fixed-effects uncertainty ONLY")
+```
+
+```{r}
+newdata <- expand.grid(
+    block = levels(splityield$block),
+    density = levels(splityield$density),
+    irrigation = levels(splityield$irrigation),
+    fertilizer = levels(splityield$fertilizer)
+)
+predFun <- function(mod) {
+  predict(mod, newdata = newdata, re.form = NULL)
+}
+boot2 <- bootMer(split_lmer, predFun, nsim = 250, type = "parametric", re.form = NULL)
+split_boot2 <- cbind(newdata, sumBoot(boot2))
+```
+
+## Bayesian modelling {#secbayes}
 
 Many of the challenges associated with **mixed effects** models go away if you move your inference into a **Bayesian** framework. Thats not to say that other challenges do not arise in their place, mainly in terms of variable selection, however, in general I would recommend using a Bayesian framework for complex models with hierarchical structures, particularly spatio-temporal modelling. 
 
