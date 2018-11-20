@@ -106,6 +106,37 @@ response ~ intercept + slope $\times$ explanatory + noise
 
 \ec
 
+## Aside: Null Hypothesis Significance Testing (NHST)
+\small
+We have not spent much time on significance testing in these workshops. This is because, whilst useful in some circumstances, NHST techniques are frequently misused and misunderstood.
+
+We have added a section in the notes (Section 4.1) explaining the pros-and-cons of NHST.
+
+That being said, there are times when NHST can be useful, particularly if you have a complex system (perhaps with large numbers of explanatory variables), and you wish to produce a more parsimonious model (perhaps because it is easier to interpret). 
+
+## Aside: NHST
+\small
+Traditionally, if the response variable is Gaussian (normal), then you may have come across two frequently used approaches:
+
+* **F-tests**: based on comparing the residual mean squared error with the regression mean squared error, or
+* **Likelihood ratio tests (LRT)**: based on comparing the model deviance between two models.
+
+Both of these cases are exact tests for linear regression with Gaussian errors (but for mixed models these become approximate). 
+
+## Aside: NHST
+\small
+For mixed models things get trickier again, and there is no consensus---see [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html) for more discussion. A nice description of the types of approaches we can use in different cases can be found at:
+
+\bc
+
+[https://rdrr.io/cran/lme4/man/pvalues.html](https://rdrr.io/cran/lme4/man/pvalues.html)
+
+\ec
+
+I always try to present final model results in terms of effect sizes and confidence intervals where possible (or via predictive plots). If we have large enough sample sizes and not too many variables, then it may well be fine just to fit one model and perform inference from that.
+
+In this workshop we will introduce some common scenarios in which mixed models can be applied, and give examples of model simplification and inference in these cases.
+
 ## Independence of errors
 
 Tests of statistical significance require that each experimental unit has the same $\epsilon$, unaffected by and uncorrelated with other residuals (samples are *independent and identically distributed* - i.i.d.).
@@ -247,6 +278,29 @@ library(car)
 Anova(bac_lmer, test = "F")
 ```
 
+## Restricted Maximum Likelihood (REML)
+
+Mixed models fitted using **REML**.
+
+Only possible thanks to powerful computers (fits models iteratively).
+
+Separates the influences of random and fixed effects, meanwhile retaining the nested structure of the dataset.
+
+Caveats: 
+
+1. Need good understanding of data structure. 
+2. Need to be careful during model simplification. 
+
+## Simplifying REML model
+
+Be very careful! Standard partitioning of deviance no longer applies.
+
+Use `update` but with `REML = F` argument. 
+
+This converts to **unrestricted maximum likelihood** (so it's a **biased** approximation, but usually a good one).
+
+Switch back to REML fit to perform inference. See **Section 4.2.1.1** of the notes for more details.
+
 ## Your turn
 
 Have a go at **Section 4.2** of the workshop notes.
@@ -333,7 +387,7 @@ anova(drunk_lm, test = "F")
 
 ## Correct (traditional) analysis
 
-1. **Derived variable analysis**: 
+**Derived variable analysis**: 
     * Cope with **pseudoreplication** by **averaging** them out.
     * Gives one average per student.
     * Analyse this smaller dataset.
@@ -371,7 +425,7 @@ In balanced designs this is OK, but it may not be possible to generate derived v
 
 ## Mixed effects model
 
-We ideally want to build a model that **accounts** for the variation due to the **peudoreplicates**, but models the effect we're interested in: here the effect of **breath freshener** on **alcohol content**.
+We ideally want to build a model that **accounts** for the variation due to the **pseudoreplicates**, but models the effect we're interested in: here the effect of **breath freshener** on **alcohol content**.
 
 This can be done with a **mixed model**.
 
@@ -380,9 +434,8 @@ This can be done with a **mixed model**.
 ```{r}
 head(drunk)
 ```
-\gap[-1]
 What is
-
+\gap[-1]
 * the **response**;
 * the **fixed** effect(s);
 * the **random** effect(s);
