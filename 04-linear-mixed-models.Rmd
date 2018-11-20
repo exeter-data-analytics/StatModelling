@@ -66,20 +66,20 @@ ff <- readRDS("_data/fruitfly.rds")
 ```{r}
 ff_lm <- lm(longevity ~ type, data = ff)
 summary(ff_lm)
-drop1(ff_lm, test = "F")
+anova(ff_lm, test = "F")
 ```
 
-Here the `drop1()` function drops each explanatory variable in turn from the baseline model and performs an F-test. The null hypothesis can be thought of as *"if the fit from the competing models is the same"*. 
+Here the `anova()` function performs an F-test for the `longevity ~ type` model vs. the null model (`longevity ~ 1`). The idea is that *if the fit from the competing models is the same*, then the ratio of mean squared errors will follow an F-distribution on 2 and 122 degrees-of-freedom (d.f.) in this case. 
 
-Here there is only one variable, `type`, and so dropping this variable produces a test statistic of 15.738, which can be compared against an F-distribution on 2 and 122 degrees-of-freedom (d.f.), which gives a p-value of $8.3 \times 10^{-7}$ (i.e. a statistically significant change even at the 1% and 0.1% levels). Thus we would conclude that dropping `type` produces a statistically significantly inferior model fit compared to when it is left in the model.
+Here we obtain a test statistic of 15.738, which can be compared against an F-distribution on 2 and 122 d.f., which gives a p-value of $8.3 \times 10^{-7}$ (i.e. a statistically significant change even at the 1% and 0.1% levels). Thus we would conclude that dropping `type` produces a statistically significantly inferior model fit compared to when it is left in the model.
 
 We can do the same thing but using a likelihood ratio test as:
 
 ```{r}
-drop1(ff_lm, test = "Chisq")
+anova(ff_lm, test = "Chisq")
 ```
 
-Here the test statistic produces a p-value of $5.9 \times 10^{-7}$; again highly statistically significant even at the 0.1% level, but slightly different to the F-test (because they are different tests). Here we are comparing to a chi-squared distribution on 2 d.f. (the difference in the number of parameters between the two nested models). In general, in linear regression with Gaussian errors the F-test is slightly more powerful than the LRT, but you can use either.
+Here the test statistic produces a p-value of $5.9 \times 10^{-7}$; again highly statistically significant even at the 0.1% level, but slightly different to the F-test (because they are different tests). Here we are comparing $-2 \times$ the difference in log-likelihoods between the competing models, which under the null hypothesis that the fits are similar, should follow a chi-squared distribution on 2 d.f. here (the d.f. is the difference in the number of parameters between the two nested models). In general, in linear regression with Gaussian errors the F-test is slightly more powerful than the LRT, but you can use either.
 
 For Generalised Linear Models (GLMs) with non-Gaussian error structure the F-test is no longer valid, and the LRT is **approximate** (the latter is in fact **asymptotically chi-squared**, which means that the approximation gets better for larger sample sizes, but can be misleading in small samples).
 
@@ -88,6 +88,10 @@ If using F-tests or LRTs to compare models, then the models must be **nested** (
 For **mixed models** things get trickier again, and there is much debate about optimal ways to perform model simplification and inference---see [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html) for more discussion. A nice description of the types of approaches we can use in different cases can be found at:
 
 [https://rdrr.io/cran/lme4/man/pvalues.html](https://rdrr.io/cran/lme4/man/pvalues.html)
+
+A useful quote from the [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html) is:
+
+> *"For special cases that correspond to classical experimental designs (i.e. balanced designs that are nested, split-plot, randomized block, etc.) ... we can show that the null distributions of particular ratios of sums of squares follow an F distribution with known numerator and denominator degrees of freedom (and hence the sampling distributions of particular contrasts are t-distributed with known df). In more complicated situations (unbalanced, GLMMs, crossed random effects, models with temporal or spatial correlation, etc.) it is not in general clear that the null distribution of the computed ratio of sums of squares is really an F distribution, for any choice of denominator degrees of freedom."*
 
 The developers of `lme4` recommend (from **worst** to **best**)^[see [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html)]:
 
@@ -98,7 +102,7 @@ The developers of `lme4` recommend (from **worst** to **best**)^[see [GLMM FAQ](
 
 If I do perform model simplification or variable selection, even then I would present the final model results in terms of effect sizes and confidence intervals where possible (or via predictive plots), since although CIs suffer with some of the same problems as p-values, at least they focus on the magnitude of the effects. If I have large enough sample sizes and not too many variables, then it may well be fine just to fit one model and perform inference from that.
 
-In this workshop we will introduce some common scenarios in which mixed models can be applied, and give examples of model simplification and inference in these cases. We will tend to use LRTs and profile confidence intervals simply because they are easier to compute. A [section](#parboot) at the end will explore the use of parametric bootstrapping.
+In this workshop we will introduce some common scenarios in which mixed models can be applied, and give examples of model simplification and inference in these cases. We will tend to use LRTs and profile confidence intervals simply because they are easier to compute. A [section](#parboot) at the end will explore the use of parametric bootstrapping for those of you who are interested.
 
 ## Non-independent data: Randomised Complete Block Design
 
