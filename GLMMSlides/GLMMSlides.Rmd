@@ -80,31 +80,7 @@ Assumptions:
 4. Samples collected at random.
 5. Errors are **independent**.
 
-Can use F-tests.
-
-## Assumptions
-
-**Previously**: used model checks and biological rationale to test linearity, normality and homoscedasticity of **residuals**.
-
-What about **independence of residuals**?
-
-Depends on **experimental design**.
-
-## Recap: linear model
-
-$$
-    Y_i = \beta_0 + \beta_1 X_i + \epsilon_i
-$$
-
-where $\epsilon_i \sim N\left(0, \sigma^2\right)$ and $\sigma^2$ is **variance**.
-
-In words:
-
-\bc
-
-response ~ intercept + slope $\times$ explanatory + noise
-
-\ec
+Can use F-tests (see Section 4.1.1 of the notes).
 
 ## Aside: Null Hypothesis Significance Testing (NHST)
 \small
@@ -125,7 +101,13 @@ Both of these cases are exact tests for linear regression with Gaussian errors (
 
 ## Aside: NHST
 \small
-For mixed models things get trickier again, and there is no consensus---see [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html) for more discussion. A nice description of the types of approaches we can use in different cases can be found at:
+For mixed models things get trickier again, and there is no consensus. A useful quote from the [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html) is:
+
+> "For special cases that correspond to classical experimental designs (i.e. balanced designs that are nested, split-plot, randomized block, etc.) ... we can show that the null distributions of particular ratios of sums of squares follow an F distribution with known numerator and denominator degrees of freedom (and hence the sampling distributions of particular contrasts are t-distributed with known df). In more complicated situations (unbalanced, GLMMs, crossed random effects, models with temporal or spatial correlation, etc.) it is not in general clear that the null distribution of the computed ratio of sums of squares is really an F distribution, for any choice of denominator degrees of freedom."
+
+## Aside: NHST
+\small
+See [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html) for more discussion. A nice description of the types of approaches we can use in different cases can be found at:
 
 \bc
 
@@ -137,26 +119,53 @@ I always try to present final model results in terms of effect sizes and confide
 
 In this workshop we will introduce some common scenarios in which mixed models can be applied, and give examples of model simplification and inference in these cases.
 
-## Independence of errors
+## Recap: linear model
 
-Tests of statistical significance require that each experimental unit has the same $\epsilon$, unaffected by and uncorrelated with other residuals (samples are *independent and identically distributed* - i.i.d.).
+$$
+    Y_i = \beta_0 + \beta_1 X_i + \epsilon_i
+$$
+
+where $\epsilon_i \sim N\left(0, \sigma^2\right)$ and $\sigma^2$ is **variance**.
+
+In words:
+
+\bc
+
+response ~ intercept + slope $\times$ explanatory + noise
+
+\ec
+
+## Assumptions
+
+**Previously**: used model checks and biological rationale to test linearity, normality and homoscedasticity of **residuals**.
+
+What about **independence of residuals**?
+
+Depends on **experimental design**.
+
+## Independence of errors
 
 \bcols
 \bcol{0.48}
+Tests of statistical significance require that each experimental unit has the same $\epsilon$, unaffected by and uncorrelated with other residuals (samples are *independent and identically distributed* - i.i.d.).\newline
 
-But this is often untrue.
-
-\gap
-
-**Example**: bacterial loads
+**But this is often untrue.**
 
 \ecol
 \bcol{0.48}
 
+\bc
+
+**Example**: bacterial loads
+\gap
+
 \includegraphics[width=0.8\textwidth]{images/EscherichiaColi_NIAID.jpg}
 \small
+\gap
 
 **Source**: [Wikipedia](https://en.wikipedia.org/wiki/Bacteria)
+
+\ec
 
 \ecol
 \ecols
@@ -228,7 +237,7 @@ It does not make sense to drop `cabinet` here. Why not?
 \small
 R provides a neat function to help update parts of a model, without having to re-write the full code.
 
-For example, to drop the `media` term from `bac_lm`, we can write^[to permanently update, we would need to save over the original object e.g. `bac_lm <- update(bac_lm, ...)`]
+For example, to drop the `media` term from `bac_lm`, we can write^[to permanently update, we would need to save over the original object e.g. \texttt{bac\_lm <- update(bac\_lm, ...)}]
 ```{r, eval = F}
 update(bac_lm, ~ . - media)
 ```
@@ -239,10 +248,12 @@ We can also use this in other ways (see the workshop examples).
 \gap
 
 ## Mixed effects model
+\small 
+This simple **balanced** design can be analysed in a straightforward way here, however in general we may have more complex error structures, unbalanced designs and/or potentially many blocks of different structures.
 
-We ideally want to build a model that **accounts** for the variation due to the **block**, but models the effect we're interested in: here the effect of **media** on **bacterial growth**.
+We ideally want a general framework that **accounts** for the variations due to the **blocks**, but models the effect we're interested in: here the effect of **media** on **bacterial growth**. Furthermore, we don't want to use up too many degrees-of-freedom.
 
-This can be done with a **mixed model**.
+These challenges can be dealt with using **mixed models**.
 
 A **mixed model** is so-called because it contains a mixture of **fixed** and **random** effects.
 
@@ -259,6 +270,41 @@ A **mixed model** is so-called because it contains a mixture of **fixed** and **
 * Wouldn't help us predict new values of response variable.
 * Instead we **predict** how much variance is absorbed by random effects.
 * Observations influenced by random effects are **not independent**.
+
+\gap
+
+## A mixed-effects model
+
+Response variable $Y$. Regression parameters for **fixed** explanatory variables: $\beta_p$
+
+Noise absorbed by **random variable(s)**: $\gamma \sim N\left(0, \sigma^2_{\gamma}\right)$
+
+Residual noise: $\epsilon \sim N\left(0, \sigma^2\right)$
+
+$$
+    Y_i = \beta_0 + \beta_1 X_i + \gamma_i + \epsilon_i
+$$
+
+Here $\sigma^2_{\gamma}$ is the **variance** attributed to the random effect, and $\sigma^2$ is the **residual** variance.
+
+This particular model known as a **random intercepts** model.
+
+## What does it do?
+
+\bcols
+\bcol{0.48}
+
+**Fixed intercepts**
+
+\ecol
+\bcol{0.48}
+
+**Random intercepts**
+
+\ecol
+\ecols
+
+\includegraphics[width = 0.9\textwidth]{images/compint.png}
 
 ## Analyse it properly---part II
 
@@ -278,28 +324,26 @@ library(car)
 Anova(bac_lmer, test = "F")
 ```
 
-## Restricted Maximum Likelihood (REML)
+## Aside: Restricted Maximum Likelihood
 
-Mixed models fitted using **REML**.
+Mixed models fitted using **Restricted Maximum Likelihood (REML)**.
 
-Only possible thanks to powerful computers (fits models iteratively).
-
-Separates the influences of random and fixed effects, meanwhile retaining the nested structure of the dataset.
+Only possible thanks to powerful computers (fits models iteratively). Separates the influences of random and fixed effects, meanwhile retaining the nested structure of the dataset.
 
 Caveats: 
 
 1. Need good understanding of data structure. 
 2. Need to be careful during model simplification. 
 
-## Simplifying REML model
+## Aside: Simplifying REML models
 
-Be very careful! Standard partitioning of deviance no longer applies.
+Be very careful! Standard partitioning of deviance no longer applies. In **balanced, nested** designs, F-tests are OK. For **unbalanced** or **non-nested** designs we have to be more careful.
 
-Use `update` but with `REML = F` argument. 
+In these latter cases we need to refit the model using **unrestricted maximum likelihood (ML)**. This produces a **biased** approximation, but usually a good one.
 
-This converts to **unrestricted maximum likelihood** (so it's a **biased** approximation, but usually a good one).
+We can do this using `update()` but with a `REML = F` argument. 
 
-Switch back to REML fit to perform inference. See **Section 4.2.1.1** of the notes for more details.
+After model simplification, switch back to REML fit to perform inference. See **Section 4.2.1.1** of the notes for more details.
 
 ## Your turn
 
@@ -307,19 +351,25 @@ Have a go at **Section 4.2** of the workshop notes.
 
 ## Nested errors
 
-The previous example was fairly simple. Certain study designs will end up with replicates **nested** with other variables / blocks.
-
-In this case the residuals are **not independent** once again, but the error structure is more complex to model
-
 \bcols
 \bcol{0.48}
 
-**Example**: drunken behaviour on campus
+The previous example was fairly simple. Certain study designs will end up with replicates **nested** with other variables / blocks.
+\gap
+
+In this case the residuals are **not independent** once again, but the error structure is more complex to model.
 
 \ecol
 \bcol{0.48}
 
+\bc
+
+**Example**: drunken behaviour on campus
+\gap
+
 \includegraphics[width=\textwidth]{images/withnail.png}
+
+\ec
 
 \ecol
 \ecols
@@ -345,7 +395,7 @@ To prove his innocence he conducted an experiment.
 \ecol
 \ecols
 
-## Blood Samples
+## Samples
 
 \bc
 
@@ -369,7 +419,7 @@ for(i in 1:length(levels(drunk$student))) mtext(levels(drunk$student)[i], 1, lin
 legend(1, 0.12, col = cols[1:2], pch = rep(16, 2), legend = paste("Freshener:", levels(drunk$freshener)), bg = "white")
 ```
 
-## Analysis of Variance
+## The wrong way!
 
 ```{r drunk, echo = -1, message = F}
 drunk <- read_csv("./data/blood_alcohol.csv")
@@ -388,10 +438,11 @@ anova(drunk_lm, test = "F")
 ## Correct (traditional) analysis
 
 **Derived variable analysis**: 
-    * Cope with **pseudoreplication** by **averaging** them out.
-    * Gives one average per student.
-    * Analyse this smaller dataset.
-    * **Note**: loses information on **within-student variation**. Could be important if complicated nested experimental design.
+
+* Cope with **pseudoreplication** by **averaging** them out.
+* Gives one average per student.
+* Analyse this smaller dataset.
+* **Note**: loses information on **within-student variation**. Could be important if complicated nested experimental design.
 
 ## Derived variables in R
 
@@ -425,20 +476,29 @@ In balanced designs this is OK, but it may not be possible to generate derived v
 
 ## Mixed effects model
 
-We ideally want to build a model that **accounts** for the variation due to the **pseudoreplicates**, but models the effect we're interested in: here the effect of **breath freshener** on **alcohol content**.
+We ideally want a general purpose way to build a model that **accounts** for the variation due to the **pseudoreplicates**, but models the effect we're interested in: here the effect of **breath freshener** on **alcohol content**.
 
-This can be done with a **mixed model**.
+Again, this can be done with a **mixed model**.
 
 ## Mixed model
 
+\bcols
+\bcol{0.6}
+
 ```{r}
-head(drunk)
+drunk
 ```
-What is
-\gap[-1]
-* the **response**;
-* the **fixed** effect(s);
-* the **random** effect(s);
+
+\ecol
+\bcol{0.4}
+What is:
+
+* The **response**?
+* The **fixed** effect(s)?
+* The **random** effect(s)?
+
+\ecol
+\ecols
 
 ## Mixed model
 
@@ -449,7 +509,7 @@ drunk_lmer <- lmer(alcohol ~ freshener + (1 | student / sample), data = drunk)
 Anova(drunk_lmer, test = "F")
 ```
 
-The F-test here gives the same result as the **derived variable** analysis, since the data are **balanced**.
+The F-test here gives the same result as the **derived variable** analysis, since the data are **balanced** and **nested**.
 
 ## Aside: did Dave drink alcohol?
 
@@ -515,56 +575,67 @@ Statistical tests must occur at the level of the **experimental unit**.
 * Study of **variance** at nested scales.
 * Common in population genetics.
 
+## Getting more complicated
+
 **Longitudinal studies:**
 
 * Multiple observations of experimental units
 
 Make sure you know what the experimental unit is.
 
-## Mixed models
+## Example: split-plot design
 
-Contain mixture of **fixed** and **random effects** among explanatory variables.
+This experiment involves the yield of cereals in a factorial experiment with:
 
-Random effects can have many 'levels'.
+* 4 blocks (fields), within which 
+* half of each block was irrigated, and half not. 
+* Each half-block wa split into 3 split-plots, and seeds were sown at different densities in each split-plot. * Each sowing density plot was split into 3 small split-split plots and different fertilisers applied by hand (N alone, P alone and N + P together).
 
-Split-plot analyses waste valuable degrees of freedom on levels of random effects.
+## Example: split-plot design
 
-We need a modelling technique that estimates fixed effects and just absorbs random effects without wasting df.
+\bc
 
-## A mixed-effects model
+\includegraphics[width = 0.8\textwidth]{images/splitBlock.png}
 
-Response variable $Y$.
+\ec
 
-Regression parameters for **fixed** explanatory variables: $\beta_p$
+## Example: split-plot design
 
-Noise absorbed by **random variable(s)**: $\gamma \sim N\left(0, \sigma^2_{\gamma}\right)$
+\bc
 
-Residual noise: $\epsilon \sim N\left(0, \sigma^2\right)$
+\includegraphics[width = 0.8\textwidth]{images/splitBlockIrr.png}
 
-$$
-    Y_i = \beta_0 + \beta_1 X_i + \gamma_i + \epsilon_i
-$$
+\ec
 
-Here $\sigma^2_{\gamma}$ is the **variance** attributed to the random effect, and $\sigma^2$ is the **residual** variance.
+## Example: split-plot design
 
-This particular model known as a **random intercepts** model.
+\bc
 
-## What does it do?
+\includegraphics[width = 0.8\textwidth]{images/splitBlockIrrDens.png}
 
-\bcols
-\bcol{0.48}
+\ec
 
-**Fixed intercepts**
+## Example: split-plot design
 
-\ecol
-\bcol{0.48}
+\bc
 
-**Random intercepts**
+\includegraphics[width = 0.5\textwidth]{images/splitBlockIrrDensFert.png}
 
-\ecol
-\ecols
+\ec
 
-\includegraphics[width = 0.9\textwidth]{images/compint.png}
+## Example: split-plot design
+
+\gap[-1]
+
+\bc
+
+\includegraphics[width = 0.7\textwidth]{images/splitFull.png}
+
+\ec
+
+## Your turn
+
+Have a go at **Section 4.4** in the workshop notes.
 
 ## Distance to Kenyan herbivores
 
@@ -591,19 +662,17 @@ Non-independent data: `Group.Name` a **random effect**.
 
 **Caution**: this could be mediated by group size.
 
-Data not independent because contributed by 8 observer groups.
-
-Observer group does not feature in the hypotheses, they...
+Data not independent because contributed by 8 observer groups. Obs. group does not feature in the hypotheses, they:
 \gap[-1]
 
-* are sampled from a wider population of MSc students...
-* would not help us predict distances for a new set of observer groups...
-* would waste 7df in a traditional analysis...
+* are sampled from a wider population of MSc students;
+* would not help us predict distances for a new set of observer groups;
+* would waste 7 d.f. in a traditional analysis;
 * hence makes an 'ideal' random effect.
 
 ## Data structure
 \gap[-1]
-```{r hg, echo = F}
+```{r hg, echo = F, size = "tiny"}
 hg <- read.csv("./data/HG threespecies.csv", header = T)
 hg <- hg[sample(1:nrow(hg), nrow(hg), T), ]
 as_tibble(hg)
@@ -617,75 +686,30 @@ as_tibble(hg)
 
 ## Fitting a mixed effects model
 
-```{r hg1, results = "hide", warning = F, message = F, size = "tiny"}
-hg.lmer <- lmer(log(Distance) ~ Species + (1 | Group.Name), data = hg)
+Here data are **unbalanced**.
+
+```{r}
+hg %>% group_by(Group.Name, Species) %>% count()
 ```
 
-Here the term `(1 | Group)` defines the **random intercept**.
+Hence must be careful with model simplification.
 
-## Output
+## Your turn
 
-```{r hg2}
-summary(hg.lmer)
-```
+Have a go at **Section 4.5** in the notes.
 
-## Confidence intervals
+## Model checking
 
-Notice that `lme4` does not produce p-values for the coefficients by default.
+You should really check model assumptions as for general LMs/GLMs.
 
-We can obtain CIs in the usual way (or by using bootstrapping):
-
-```{r conf}
-confint(hg.lmer)
-```
-
-## Restricted Maximum Likelihood (REML)
-
-Models fitted using **REML**.
-
-Only possible thanks to powerful computers (fits models iteratively).
-
-Separates the influences of random and fixed effects, meanwhile retaining the nested structure of the dataset.
-
-Caveats: 
-
-1. Need good understanding of data structure. 
-2. Need to be careful during model simplification. 
-
-## Simplifying REML model
-
-Be very careful! Standard partitioning of deviance no longer applies.
-
-Use `update` but with `method = "ML"` 
-
-This converts to **unrestricted maximum likelihood** (so it's a **biased** approximation, but usually a good one).
-
-**Note**: current version of `lme4` does this conversion automatically.
-
-## Example
-
-Na\"{i}ve GLM suggests `Log(Distance)` determined by interaction between `Species` and `Number`:
-
-```{r hgglm}
-hg.lm <- lm(log(Distance) ~ Species * Number, data = hg)
-anova(hg.lm)
-```
-
-## Random intercepts model
-
-```{r hgglmer}
-hg.lmer <- lmer(log(Distance) ~ Species * Number + (1 | Group.Name), data = hg)
-hg1.lmer <- update(hg.lmer, ~ . - Species:Number)
-anova(hg.lmer, hg1.lmer)
-```
-
-Notice default test here is **chi-squared**. You are conducting **likelihood ratio tests**.
+Trickier to do, but some exampes in **Section 4.6** of the workshop notes.
 
 ## Non-normal response
 
 But my data isn't normal...
 
-Package `lme4` also includes command `glmer`:
+Package `lme4` also includes function `glmer()`:
+
 * which allows use of `family = ""`
 
 So can try non-normal error structures...
@@ -695,14 +719,13 @@ So can try non-normal error structures...
 ## Fitting GLMMs
 
 ```{r glmer}
-hg.glmer <- glmer(Number ~ Species * log(Distance) 
+hg_glmer <- glmer(Number ~ Species * log(Distance) 
                 + (1 | Group.Name), data = hg, family = poisson, 
                     control = glmerControl(optimizer = "bobyqa"))
-hg1.glmer <- update(hg.glmer, ~ . - Species:log(Distance))
-anova(hg.glmer, hg1.glmer)
+drop1(hg_glmer, test = "Chisq")
 ```
 
-Optimiser chosen to solve a convergence issue with the default choice: solution found from [Ben Bolker at stackoverflow](http://stackoverflow.com/questions/21344555/convergence-error-for-development-version-of-lme4)
+**Note**: uses adaptive Gauss-Hermite quadrature approximation of the likelihood to fit the model, not REML.
 
 ## GLMMs
 
@@ -716,4 +739,8 @@ Congratulations, you have become **Generalised Linear Mixed Modellers**.
 
 ## The dangers of too much R coding
 
+\bc
+
 \includegraphics[width = 0.5\textwidth]{images/blobfish.png}
+
+\ec
