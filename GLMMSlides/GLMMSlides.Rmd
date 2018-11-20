@@ -87,6 +87,149 @@ But this is often untrue.
 
 \gap
 
+**Example**: bacterial loads
+
+\ecol
+\bcol{0.48}
+
+\includegraphics[width=0.8\textwidth]{images/EscherichiaColi_NIAID.jpg}
+\small
+
+**Source**: [Wikipedia](https://en.wikipedia.org/wiki/Bacteria)
+
+\ecol
+\ecols
+
+## Blocked experiment: bacterial growth
+
+Bacteria grown in four different media (fixed **treatment** has ***four*** levels).
+
+Only have small growth cabinets:
+
+* Room for four growth jars per cabinet.
+* Use five cabinets (**blocks**).
+* One **replicate** of **experiment** per cabinet.
+
+Measure ***bacterial growth rate***.
+
+## Blocked experimental design
+
+Recognise natural structuring among experimental units.
+
+Source of error (e.g. cabinet, top/bottom of field, make of car, student identity).
+
+**Absorb** this error by replicating experiment within blocks.
+
+**Partition** the residual deviance.
+
+## Blocked experiment: bacterial growth
+
+\bc
+
+\includegraphics[width = 0.7\textwidth]{images/bacCabinets.pdf}
+
+\ec
+
+## Why use blocks?
+
+Here **treatment** (media) is of interest, but multiple treatments within each block.
+
+We know growth rates will differ between cabinets.
+
+Assume that **relative** growth rates will be similar between treatments in each cabinet.
+
+Use **cabinet** as a **block** to **absorb** experimental noise.
+
+## Analyse it badly
+
+Ignore non-independent residuals (i.e. ignore cabinet effects)
+
+```{r bac, echo = -c(1:3)}
+bac <- read.csv("./data/baccabinets.csv", header = T)
+bac$media <- factor(bac$media)
+bac$cabinet <- factor(bac$cabinet)
+bac_lm <- lm(growth ~ media, data = bac)
+anova(bac_lm)
+```
+
+## Analyse it properly---part I
+
+Put `cabinet` in as a fixed effect.
+
+```{r bacaov}
+bac_lm <- lm(growth ~ media + cabinet, data = bac)
+anova(update(bac_lm, ~ . - media), bac_lm)
+```
+
+It does not make sense to drop `cabinet` here. Why not?
+
+## Aside: the `update()` function
+\small
+R provides a neat function to help update parts of a model, without having to re-write the full code.
+
+For example, to drop the `media` term from `bac_lm`, we can write^[to permanently update, we would need to save over the original object e.g. `bac_lm <- update(bac_lm, ...)`]
+```{r, eval = F}
+update(bac_lm, ~ . - media)
+```
+\gap[-1]
+The `~ .` notation means *"everything on the right-hand side of the original formula"*, then the `- media` notation says to remove `media`.
+
+We can also use this in other ways (see the workshop examples).
+\gap
+
+## Mixed effects model
+
+We ideally want to build a model that **accounts** for the variation due to the **block**, but models the effect we're interested in: here the effect of **media** on **bacterial growth**.
+
+This can be done with a **mixed model**.
+
+A **mixed model** is so-called because it contains a mixture of **fixed** and **random** effects.
+
+## Fixed effects
+
+* Treatments are **fixed** by the experimenter, guided by **hypotheses** e.g. test of whether treatment levels **differ** or whether there is a **trend**.
+* We **care** about the **identity** of each level of a fixed effect^[traditional view, but in some cases we can use REs [differently](http://www.stat.columbia.edu/~gelman/research/published/multiple2f.pdf)].
+* Given a new experimental unit, we could predict its response.
+
+## Random effects
+
+* Are sampled from a **population** of possible levels.
+* We don't **care** about the **identity** of each level of a random effect^[traditional view, but in some cases we can use REs [differently](http://www.stat.columbia.edu/~gelman/research/published/multiple2f.pdf)].
+* Wouldn't help us predict new values of response variable.
+* Instead we **predict** how much variance is absorbed by random effects.
+* Observations influenced by random effects are **not independent**.
+
+## Analyse it properly---part II
+
+Since we do not care about the impact of `cabinet` *per se*, we could also include this as a **random effect**, using `lmer()`:
+```{r, message = F, warning = F, echo = -c(1, 3)}
+library(lme4)
+bac_lmer <- lmer(growth ~ media + (1 | cabinet), data = bac)
+bac_lmer
+```
+\gap[-1]
+
+## Analyse it properly---part II
+
+Since these data are **balanced**, and the error structure is Gaussian, we are safe to ask for an F-test here to assess what happens when `media` is dropped from the model^[we need to use the `Anova()` function in the `car` package to do this, in the workshop we will see other approaches]
+```{r, message = F, warning = F, echo = -1}
+library(car)
+Anova(bac_lmer, test = "F")
+```
+
+## Your turn
+
+Have a go at **Section 4.2** of the workshop notes.
+
+## Nested errors
+
+The previous example was fairly simple. Certain study designs will end up with replicates **nested** with other variables / blocks.
+
+In this case the residuals are **not independent** once again, but the error structure is more complex to model
+
+\bcols
+\bcol{0.48}
+
 **Example**: drunken behaviour on campus
 
 \ecol
@@ -260,85 +403,6 @@ However, does not answer the specific question:
 
 Beware of **proxy** measurements (and [prosecutor's fallacy](https://en.wikipedia.org/wiki/Prosecutor%27s_fallacy)).
 
-## Blocked experimental design
-
-Recognise natural structuring among experimental units.
-
-Source of error (e.g. top/bottom of field, make of car, student identity).
-
-**Absorb** this error by replicating experiment within blocks.
-
-**Partition** the residual deviance.
-
-## Blocked experiment: bacterial growth
-
-Bacteria grown in four different media (fixed **TREATMENT** has ***four*** levels).
-
-Only have small growth cabinets:
-
-* Room for four growth jars per cabinet.
-* Use five cabinets (**BLOCK**).
-* One **REPLICATE** of **experiment** per cabinet.
-
-Measure ***bacterial growth rate***.
-
-## Blocked experiment: bacterial growth
-
-\includegraphics[width = 0.5\textwidth]{images/blockdesign.png}
-
-## Why use blocks?
-
-Here **TREATMENT** is of interest, but multiple treatments within each block.
-
-We know growth rates will differ between cabinets.
-
-Assume that **relative** growth rates will be similar between treatments in each cabinet.
-
-Use **cabinet** as a **block** to **absorb** experimental noise.
-
-## Analyse it badly
-
-Ignore non-independent residuals (i.e. ignore cabinet effects)
-
-```{r bac, echo = -c(1:3)}
-bac <- read.csv("./data/baccabinets.csv", header = T)
-bac$media <- factor(bac$media)
-bac$cabinet <- factor(bac$cabinet)
-bac.lm <- lm(growth ~ media, data = bac)
-anova(bac.lm)
-```
-
-## Analyse it badly
-
-Pretend cabinet is a **fixed effect**.
-
-Test **full** model (cabinet, media and interaction):
-
-```{r bacfull}
-bac.lm <- lm(growth ~ cabinet * media, data = bac)
-anova(bac.lm)
-```
-
-Model summary is a bunch of `NA`s and simplification doesn't work. Why?
-
-## Analyse it properly
-
-Full model is **saturated** (no residual df).
-
-Assume **no interaction** between `cabinet` and `media`.
-
-Test effect of `media` against deviance explained by `cabinet:media`.
-
-In general, test **main** effect against its **interaction with block**.
-
-## Analyse it properly
-
-Using `aov`:
-
-```{r bacaov}
-bac.aov <- aov(growth ~ media + Error(cabinet/media), data = bac)
-summary(bac.aov)
-```
 
 ## Think about your hypothesis
 
