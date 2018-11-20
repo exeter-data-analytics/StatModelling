@@ -11,7 +11,7 @@ header-includes:
 
 ```{r, include = F}
 library(knitr)
-knitr::opts_chunk$set(cache = F, echo = T, fig.align = "center", fig.width = 5, fig.height = 5, resize.width = "0.9\\textwidth", resize.height = "0.9\\textwidth")
+knitr::opts_chunk$set(cache = F, echo = T, fig.align = "center", fig.width = 5, fig.height = 5, resize.width = "0.9\\textwidth", resize.height = "0.9\\textwidth", size = "scriptsize")
 def.chunk.hook  <- knitr::knit_hooks$get("chunk")
 knitr::knit_hooks$set(chunk = function(x, options) {
   x <- def.chunk.hook(x, options)
@@ -34,6 +34,7 @@ contcol <- "red"
 library(pander)
 library(RColorBrewer)
 library(knitr)
+library(tidyverse)
 
 set.seed(10)
 
@@ -84,12 +85,14 @@ Tests of statistical significance require that each experimental unit has the sa
 
 But this is often untrue.
 
+\gap
+
 **Example**: drunken behaviour on campus
 
 \ecol
 \bcol{0.48}
 
-\includegraphics[width=0.5\textwidth]{images/withnail.png}
+\includegraphics[width=\textwidth]{images/withnail.png}
 
 \ecol
 \ecols
@@ -99,30 +102,34 @@ But this is often untrue.
 \bcols
 \bcol{0.48}
 
-Dave got arrested for being disorderly.
+Dave got arrested for being disorderly.\newline
 
-He failed a breathaliser test.
+He failed a breathaliser test.\newline
 
-To avoid the fine, he claimed he had used breath freshener.
+To avoid the fine, he claimed he had used breath freshener.\newline
 
 To prove his innocence he conducted an experiment.
 
 \ecol
 \bcol{0.48}
 
-<!-- \includegraphics[width = 0.5\textwidth]{images/vyvyan.gif} -->
-VYVYAN
+\includegraphics[width = \textwidth]{images/vyvyan-0.png}
 
 \ecol
 \ecols
 
 ## Blood Samples
 
-\includegraphics[width = 0.5\textwidth]{images/drunkdesign.png}
+\bc
+
+\includegraphics[width = 0.8\textwidth]{images/drunkdesign.png}
+
+\ec
 
 ## Results
+\gap[-3]
 
-```{r drunkres, echo = F, fig.width = 8}
+```{r drunkres, echo = F, fig.width = 8, fig.height = 8, resize.width = "0.7\\textwidth", resize.height = "0.7\\textwidth"}
 drunk <- read.csv("./data/blood_alcohol.csv", header = T)
 stripchart(alcohol ~ sample * student, data = drunk, subset = (freshener == "no"), vertical = T, 
            pch = 16, method = "jitter", jitter = 0.2,
@@ -137,17 +144,17 @@ legend(1, 0.12, col = cols[1:2], pch = rep(16, 2), legend = paste("Freshener:", 
 
 ## Analysis of Variance
 
-```{r drunk, echo = -1}
-drunk <- read.csv("./data/blood_alcohol.csv", header = T)
-drunk.lm <- lm(alcohol ~ freshener, data = drunk)
-anova(drunk.lm)
+```{r drunk, echo = -1, message = F}
+drunk <- read_csv("./data/blood_alcohol.csv")
+drunk_lm <- lm(alcohol ~ freshener, data = drunk)
+anova(drunk_lm, test = "F")
 ```
 
 ## What's wrong?
 
 * Multiple samples per student.
 * Multiple estimates per sample.
-* **Clue**: residual df (`r anova(drunk.lm)$Df[2]`) is much bigger than the number of ***experimental units*** (students: `r length(levels(drunk$student))` here).
+* **Clue**: residual df (`r anova(drunk_lm)$Df[2]`) is much bigger than the number of ***experimental units*** (students: `r length(unique(drunk$student))` here).
 * Samples within students are **PSEUDOREPLICATES**.
 * Residuals are **not independent**.
 
@@ -161,32 +168,89 @@ anova(drunk.lm)
 
 ## Derived variables in R
 
-```{r derived}
-alc <- aggregate(alcohol ~ student + freshener, data = drunk, mean)
+```{r}
+alc <- drunk %>%
+    group_by(student, freshener) %>%
+    summarise(alcohol = mean(alcohol)) %>%
+    ungroup()
 alc
-alc.lm <- lm(alcohol ~ freshener, data = alc)
-anova(alc.lm)
 ```
 
-## Correct (traditional) analyses
+## Derived variables in R
 
-2. **Nested analysis**:
-    * Uses all data.
-    * **Partitions** the residual deviance.
-    * Only works with `aov` command in R (which also allows **blocking** and **split-plot** experimental designs).
-
-## Nested designs in R
-
-`Error` section tells R how residuals should be structured:  
-i.e. multiple samples **within** students.
-
-Here only **freshener** effect is of interest.
-
-```{r drunkaov}
-drunk.aov <- aov(alcohol ~ freshener 
-                    + Error(student/sample), data = drunk)
-summary(drunk.aov)
+```{r}
+alc_lm <- lm(alcohol ~ freshener, data = alc)
+drop1(alc_lm, test = "F")
 ```
+
+## Derived variables in R
+
+This is a statistically valid analysis, however:
+
+* it ignores the uncertainties around the pseudo-replicates;
+* the interpretation of the response variable is actually the mean of a bunch of measurements, not the measurements themselves. 
+
+So it's giving the correct result for a different model, and ultimately not the model we want.
+
+It's also not always possible to average across individuals in this way.
+
+## Mixed effects model
+
+We ideally want to build a model that **accounts** for the variation due to the **peudoreplicates**, but models the effect we're interested in: here the effect of **breath freshener** on **alcohol content**.
+
+This can be done with a **mixed model**.
+
+A **mixed model** is so-called because it contains a mixture of **fixed** and **random** effects.
+
+## Fixed effects
+
+Treatments are **fixed** by the experimenter, guided by **hypotheses**.
+
+e.g. test of whether treatment levels **differ** or whether there is a **trend**.
+
+We **care** about the **identity** of each level of a fixed effect^[traditional view, but in some cases we can use REs [differently](http://www.stat.columbia.edu/~gelman/research/published/multiple2f.pdf)].
+
+Given a new experimental unit, we could predict its response.
+
+## Random effects
+
+Are sampled from a **population** of possible levels.
+
+We don't **care** about the **identity** of each level of a random effect^[traditional view, but in some cases we can use REs [differently](http://www.stat.columbia.edu/~gelman/research/published/multiple2f.pdf)].
+
+Wouldn't help us predict new values of response variable.
+
+Instead we **predict** how much variance is absorbed by random effects.
+
+Observations influenced by random effects are **not independent**.
+\gap
+
+## Mixed model
+
+```{r}
+head(drunk)
+```
+\gap[-1]
+What is
+
+* the **response**;
+* the **fixed** effect(s);
+* the **random** effect(s);
+
+## Mixed model
+
+Here we have **samples** *nested* within **students**.
+
+`freshener` is our **fixed** effect.
+
+```{r, echo = F, message = F}
+library(lme4)
+library(car)
+drunk_lmer <- lmer(alcohol ~ freshener + (1 | student / sample), data = drunk)
+Anova(drunk_lmer, test = "F")
+```
+
+The F-test here gives the same result as the **derived variable** analysis, since the data are **balanced**.
 
 ## Aside: did Dave drink alcohol?
 
@@ -194,9 +258,9 @@ Suggests negligible difference between blood alcohol content between treatments,
 
 However, does not answer the specific question:
 
-> What is the probability of testing positive given that you've used breath freshener relative to drinking alcohol?
+> What is the probability of testing positive given that you've used breath freshener relative to drinking alcohol^[can be tackled using Bayesian methods]?
 
-Beware of **proxy** measurements.
+Beware of **proxy** measurements (and [prosecutor's fallacy](https://en.wikipedia.org/wiki/Prosecutor%27s_fallacy)).
 
 ## Blocked experimental design
 
