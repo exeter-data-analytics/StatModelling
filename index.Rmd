@@ -51,6 +51,7 @@ I highly recommend the following books:
 * [Data Analysis Using Regression and Multilevel/Hierarchical Models](http://www.stat.columbia.edu/~gelman/arm/)
 * [An Introduction to Statistical Learning](http://www-bcf.usc.edu/~gareth/ISL/)
 * [Mixed Effects Models and Extensions in Ecology with R](https://www.springer.com/gb/book/9780387874579)
+* [Extending the Linear Model with R](https://www.amazon.co.uk/Extending-Linear-Model-Generalized-Nonparametric/dp/158488424X)
 
 ## Data files {-}
 
