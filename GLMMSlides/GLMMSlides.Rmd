@@ -21,7 +21,7 @@ knitr::knit_hooks$set(chunk = function(x, options) {
 
 ## Recap: (General) Linear Models
 
-```{r setup, echo = F}
+```{r setup, echo = F, message = F, warning = F}
 ## read in arguments from command line
 args <- commandArgs(trailingOnly = T)
 
@@ -190,9 +190,7 @@ This is a statistically valid analysis, however:
 * it ignores the uncertainties around the pseudo-replicates;
 * the interpretation of the response variable is actually the mean of a bunch of measurements, not the measurements themselves. 
 
-So it's giving the correct result for a different model, and ultimately not the model we want.
-
-It's also not always possible to average across individuals in this way.
+In balanced designs this is OK, but it may not be possible to generate derived variables for some studies (how do you average a categorical response for example)?
 
 ## Mixed effects model
 
