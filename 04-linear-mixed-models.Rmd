@@ -20,6 +20,8 @@ This practical will focus on how to analyse data when the experimental design (o
 
 ***Health Warning: some of these mixed-effects modelling packages are quickly evolving, and future updates might play some havoc with the coding, and outputs from, the scripts written here. You will need to keep your eye on the forums in the future if this happens. As always, let me or your demonstrators know if you encounter difficulties.***
 
+If this workshop has whetted your appetite, then a range of nice examples can be found at [Julian Faraway's](http://www.maths.bath.ac.uk/~jjf23/) site: [http://www.maths.bath.ac.uk/~jjf23/mixchange/index.html](http://www.maths.bath.ac.uk/~jjf23/mixchange/index.html). These examples are discussed in his book: [Extending the Linear Model with R](https://www.amazon.co.uk/Extending-Linear-Model-Generalized-Nonparametric/dp/158488424X).
+
 ## A note on variable selection and model simplification
 
 By design we have been a bit wary in focusing on the eponymous null hypothesis significance testing (NHST) ideas (and associated idolisation of p-values). We have done this because we want to emphasise that a statistical model is more than just a p-value, and also that a p-value on its own (without some measure of effect size) is meaningless. We appreciate that this might fly in the face of the way that you might have seen statistical models presented in courses or papers, and this section is our attempt to explain to you some of the controversies surrounding these approaches.
@@ -243,6 +245,35 @@ This approach uses the profile likelihood to calculate CIs. There is an option t
 
 ```
 
+```{task}
+The `abrasion` data in the `faraway` package contains data on an experiment where four materials were fed into a wear testing machine and the amount of wear recorded. Four samples could be processed at the same time and the position of these samples may be important, but we really care about assessing wear rates between different materials. Multiple runs were performed. You can load the package and data as follows:
+    
+``{r, eval = F}
+library(faraway)
+data(abrasion)
+``
+
+Take a look at the data and the help file for abrasion (i.e. `?abrasion`). Fit an appropriate linear mixed model to these data and assess whether there is any statistical evidence for differences in wear rates between the different materials, with material `B` wearing the fastest, followed by `D`, `C` and `A`.
+
+Note that we could derive confidence intervals for these effects, or for predictions / plotting etc. if we liked. There are many other options available [here](http://www.maths.bath.ac.uk/~jjf23/mixchange/crossed.html).
+```
+
+```{solution}
+
+``{r}
+## load data
+library(faraway)
+data(abrasion)
+
+## fit model
+abrasion_lmer <- lmer(wear ~ material + (1 | position) + (1 | run), data = abrasion)
+drop1(update(abrasion_lmer, REML = F), test = "Chisq")
+summary(abrasion_lmer)
+``
+
+This suggests that there are highly statistically significant differences in wear between *at least some* of the materials.
+```
+
 ## Non-independent data: pseudoreplication, nested variance and derived variable analysis
 
 We take an example from Sokal & Rohlf (1981). The experiment involved a simple one-way anova with 3 treatments given to 6 rats. The analysis was complicated by the fact that three preparations were taken from the liver of each rat, and two readings of glycogen content were taken from each preparation. This generated 6 pseudoreplicates per rat to give a total of 36 readings in all. A schematic is given in Figure \@ref(fig:rats).
@@ -323,13 +354,15 @@ ratsNew_lm <- lm(Glycogen ~ Treatment, data = ratsNew)
 drop1(ratsNew_lm, test = "F")
 ```
 
-This is a statistically valid analysis, but it ignores the uncertainties around the pseudo-replicates, and the interpretation of the response variable is actually the mean of a bunch of measurements, not the measurements themselves. So it's giving the correct result for a different model, and ultimately not the model we want.
+This is a statistically valid analysis, but it ignores the uncertainties around the pseudo-replicates, and the interpretation of the response variable is actually the mean of a bunch of measurements, not the measurements themselves. In balanced designs this is OK, but it may not be possible to generate derived variables for some studies (how do you average a categorical response for example)?
 
 ### Mixed model approach {#secmixed}
 
 #### Nested and crossed random effects
 
-We have to be careful to get the model formula correct. Notice that in the `rats` data the `Rat` column is coded as a `1` or a `2`. This means that we could use the formula:
+The bacterial loads example we saw earlier is an example of a **crossed** random effect i.e. the `cabinet` level `1` corresponds to the **same** cabinet for each of the `media` levels. In the `rats` data set this is no longer so, and we have to be careful to get the model formula correct. **This section is subtle but important!**
+
+Notice that in the `rats` data the `Rat` column is coded as a `1` or a `2`. This means that we could use the formula:
 
 ```{r, eval = F}
 rats_lmer <- lmer(Glycogen ~ Treatment + (1 | Rat), data = rats)
@@ -388,6 +421,114 @@ drop1(update(rats_lmer, REML = F), test = "Chisq")
 ```
 
 > **Note**: the syntax `Rats / Liver` means that the `Liver` levels are **nested** within the `Rat` levels. In this case we do not have to recode `Liver` to be unique, since the nesting ensures that `lmer()` knows that `Liver = 1` inside `Rat = 1` is different from `Liver = 1` inside `Rat = 2`.
+
+```{task}
+The data for the alcohol example in the slides can be found in the ["drunk.rds"](https://exeter-data-analytics.github.io/StatModelling/_data/drunk.rds) file. Read this data set into R and:
+    
+1. Conduct a derived variable analysis, to test for the impact of `freshener` use on the model fit using a likelihood ratio test.
+2. Produce 97% confidence intervals for the `freshener` effect.
+3. Fit a mixed model using `lmer()`, taking care to get the nesting of the random effects correct.
+4. Use a likelihood ratio test to assess the impact of `freshener` on the model fit.
+5. Produce an estimate of the `freshener` effect with 97% profile confidence intervals.
+6. How do these estimates compare?
+    
+```
+
+```{solution, multCode = T}
+
+1. 
+
+``{r, eval = F}
+drunk <- readRDS("drunk.rds")
+alc <- drunk %>%
+   group_by(student, freshener) %>%
+   summarise(alcohol = mean(alcohol)) %>%
+   ungroup()
+alc_lm <- lm(alcohol ~ freshener, data = alc)
+drop1(alc_lm, test = "Chisq")
+``
+
+``{r, echo = F}
+drunk <- readRDS("_data/drunk.rds")
+alc <- drunk %>%
+   group_by(student, freshener) %>%
+   summarise(alcohol = mean(alcohol)) %>%
+   ungroup()
+alc_lm <- lm(alcohol ~ freshener, data = alc)
+drop1(alc_lm, test = "Chisq")
+``
+   
+2. 
+
+``{r}
+confint(alc_lm, level = 0.97)[2, ]
+``
+    
+3. 
+
+``{r}
+drunk_lmer <- lmer(alcohol ~ freshener + (1 | student / sample), data = drunk)
+``
+    
+4. 
+
+``{r}
+drop1(update(drunk_lmer, REML = F), test = "Chisq")
+``
+    
+5. 
+
+``{r}
+confint(drunk_lmer, level = 0.97)[5, ]
+``
+
+6. The profile likelihood based CI from the mixed model is slightly narrower than the exact CI generated from the derived variable analysis, but both are marginal in terms of their statistical significance (and give the same LRT statistic here).
+
+####
+
+1. 
+
+``{r, eval = F}
+drunk <- readRDS("drunk.rds")
+alc <- aggregate(alcohol ~ student + freshener, data = drunk, mean)
+alc_lm <- lm(alcohol ~ freshener, data = alc)
+drop1(alc_lm, test = "Chisq")
+``
+
+``{r, echo = F}
+drunk <- readRDS("_data/drunk.rds")
+alc <- aggregate(alcohol ~ student + freshener, data = drunk, mean)
+alc_lm <- lm(alcohol ~ freshener, data = alc)
+drop1(alc_lm, test = "Chisq")
+``
+   
+2. 
+
+``{r}
+confint(alc_lm, level = 0.97)[2, ]
+``
+    
+3. 
+
+``{r}
+drunk_lmer <- lmer(alcohol ~ freshener + (1 | student / sample), data = drunk)
+``
+    
+4. 
+
+``{r}
+drop1(update(drunk_lmer, REML = F), test = "Chisq")
+``
+    
+5. 
+
+``{r}
+confint(drunk_lmer, level = 0.97)[5, ]
+``
+
+6. The profile likelihood based CI from the mixed model is slightly narrower than the exact CI generated from the derived variable analysis, but both are marginal in terms of their statistical significance (and give the same LRT statistic here).
+
+```
 
 ## Non-independent data: Split-plot analyses
 
