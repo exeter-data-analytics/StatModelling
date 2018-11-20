@@ -215,7 +215,7 @@ We may have to switch between these two approaches depending on what we want to 
 drop1(update(bac_lmer, REML = F), test = "Chisq")
 ```
     
-We have used a **likelihood ratio test** to assess whether the removal of `media` corresponds to a statistically significantly inferior model fit, which in this case it does at both the 5% and 1% levels. Hence we should leave `media` in the model. Once we have the final model, we can look at a sumamry of the model fit:
+We have used a **likelihood ratio test** to assess whether the removal of `media` corresponds to a statistically significantly inferior model fit, which in this case it does at both the 5% and 1% levels. Hence we should leave `media` in the model. Once we have the final model, we can look at a summary of the model fit:
 
 ```{r}
 summary(bac_lmer)
