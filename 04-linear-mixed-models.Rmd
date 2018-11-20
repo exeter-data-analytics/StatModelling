@@ -48,7 +48,11 @@ This is not to say that null hypothesis significance testing (hereafter NHST) is
     
 Many of these problems go away when a study is appropriately **powered**, with careful experimental design. In this case the sample size is large enough to have high power for the comparison of interest, and the study is often set up in such a way as to make the comparison of interest meaningful. Note that these kinds of study were what NHST were derived to model.
 
-That being said, there are times when NHST can be useful, particularly if you have a complex system (perhaps with large numbers of explanatory variables), and you wish to produce a more parsimonious model (perhaps because it is easier to interpret). Traditionally, if the response variable is Gaussian (normal), then you may have come across two frequently used approaches:
+That being said, there are times when NHST can be useful, particularly if you have a complex system (perhaps with large numbers of explanatory variables), and you wish to produce a more parsimonious model (perhaps because it is easier to interpret). 
+
+### Common NHST approaches to model simplification
+
+Traditionally, if the response variable is Gaussian (normal), then you may have come across two frequently used approaches:
 
 * F-tests: based on comparing the residual mean squared error with the regression mean squared error, or
 * Likelihood ratio tests (LRT): based on comparing the model deviance between two models.
