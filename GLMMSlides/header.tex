@@ -52,6 +52,13 @@
 \setlength{\emergencystretch}{0em}
 \setlength{\parskip}{\baselineskip}
 
+% reset itemize spacing
+\newlength{\wideitemsep}
+\setlength{\wideitemsep}{\itemsep}
+\addtolength{\wideitemsep}{0.5em}
+\let\olditem\item
+\renewcommand{\item}{\setlength{\itemsep}{\wideitemsep}\olditem}
+
 % set new commands for columns
 \newcommand{\bcols}{\begin{columns}}
 \newcommand{\ecols}{\end{columns}}
