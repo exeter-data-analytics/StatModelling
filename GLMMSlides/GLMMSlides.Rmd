@@ -19,6 +19,36 @@ knitr::knit_hooks$set(chunk = function(x, options) {
 })
 ```
 
+## Structure of the workshop
+
+Full (and more comprehensive notes) are provided at:
+
+\bc
+
+[https://exeter-data-analytics.github.io/StatModelling/](https://exeter-data-analytics.github.io/StatModelling/)
+
+\ec
+
+You are encouraged to go through these in more detail outside of the workshop.
+
+Today we will discuss the main concepts, and work through some (although not all) of the examples in **Section 4** of the notes.
+
+I would encourage you to work from the HTML here, but a PDF is available as a link in the HTML notes.
+
+## RStudio server
+
+CLES have kindly offered the use of their RStudio server in case anyone needs it:
+
+\bc
+
+[https://rstudio04.cles.ex.ac.uk](https://rstudio04.cles.ex.ac.uk)
+
+\ec
+
+**Please note that this server is only for use for this workshop, unless you otherwise have permission to use it .**
+
+You will need to log-in using your University log-in details.
+
 ## Recap: (General) Linear Models
 
 ```{r setup, echo = F, message = F, warning = F}
@@ -301,7 +331,7 @@ anova(drunk_lm, test = "F")
 * Samples within students are **PSEUDOREPLICATES**.
 * Residuals are **not independent**.
 
-## Correct (traditional) Analyses
+## Correct (traditional) analysis
 
 1. **Derived variable analysis**: 
     * Cope with **pseudoreplication** by **averaging** them out.
@@ -310,6 +340,8 @@ anova(drunk_lm, test = "F")
     * **Note**: loses information on **within-student variation**. Could be important if complicated nested experimental design.
 
 ## Derived variables in R
+
+I'm using `tidyverse` here, but base R versions are in the workshop notes.
 
 ```{r}
 alc <- drunk %>%
@@ -321,9 +353,11 @@ alc
 
 ## Derived variables in R
 
+Because I'm only dropping a single variable, I'm safe to use the `anova()` function.
+
 ```{r}
 alc_lm <- lm(alcohol ~ freshener, data = alc)
-drop1(alc_lm, test = "F")
+anova(alc_lm, test = "F")
 ```
 
 ## Derived variables in R
@@ -341,31 +375,6 @@ We ideally want to build a model that **accounts** for the variation due to the 
 
 This can be done with a **mixed model**.
 
-A **mixed model** is so-called because it contains a mixture of **fixed** and **random** effects.
-
-## Fixed effects
-
-Treatments are **fixed** by the experimenter, guided by **hypotheses**.
-
-e.g. test of whether treatment levels **differ** or whether there is a **trend**.
-
-We **care** about the **identity** of each level of a fixed effect^[traditional view, but in some cases we can use REs [differently](http://www.stat.columbia.edu/~gelman/research/published/multiple2f.pdf)].
-
-Given a new experimental unit, we could predict its response.
-
-## Random effects
-
-Are sampled from a **population** of possible levels.
-
-We don't **care** about the **identity** of each level of a random effect^[traditional view, but in some cases we can use REs [differently](http://www.stat.columbia.edu/~gelman/research/published/multiple2f.pdf)].
-
-Wouldn't help us predict new values of response variable.
-
-Instead we **predict** how much variance is absorbed by random effects.
-
-Observations influenced by random effects are **not independent**.
-\gap
-
 ## Mixed model
 
 ```{r}
@@ -380,13 +389,9 @@ What is
 
 ## Mixed model
 
-Here we have **samples** *nested* within **students**.
-
-`freshener` is our **fixed** effect.
+Here we have **samples** *nested* within **students**, with `freshener` as our **fixed** effect.
 
 ```{r, echo = F, message = F}
-library(lme4)
-library(car)
 drunk_lmer <- lmer(alcohol ~ freshener + (1 | student / sample), data = drunk)
 Anova(drunk_lmer, test = "F")
 ```
@@ -399,14 +404,18 @@ Suggests negligible difference between blood alcohol content between treatments,
 
 However, does not answer the specific question:
 
-> What is the probability of testing positive given that you've used breath freshener relative to drinking alcohol^[can be tackled using Bayesian methods]?
+> What is the probability of testing positive given that you've used breath freshener, relative to drinking alcohol^[can be tackled using Bayesian methods]?
 
 Beware of **proxy** measurements (and [prosecutor's fallacy](https://en.wikipedia.org/wiki/Prosecutor%27s_fallacy)).
 
+## Your turn
+
+Have a go at **Section 4.3** in the workshop notes.
 
 ## Think about your hypothesis
 
 Tight link between hypothesis, experimental design and analysis.
+\gap
 
 \bcols
 \bcol{0.48}
@@ -418,7 +427,7 @@ Hypothesis defines the experimental unit:
 \ecol
 \bcol{0.48}
 
-\includegraphics[width = 0.5\textwidth]{images/savannahfire.png}
+\includegraphics[width = 0.8\textwidth]{images/savannahfire.png}
 
 \ecol
 \ecols
@@ -458,32 +467,6 @@ Statistical tests must occur at the level of the **experimental unit**.
 * Multiple observations of experimental units
 
 Make sure you know what the experimental unit is.
-
-Need to distinguish **FIXED** and **RANDOM** effects.
-
-## Fixed effects
-
-Treatments are **FIXED** by the experimenter, guided by **HYPOTHESES**.
-
-Test of whether treatment levels **DIFFER** or whether there is a **TREND**.
-
-We **CARE** about the **IDENTITY** of each level of a fixed effect
-^[traditional view, but in some cases we can use REs [differently](http://www.stat.columbia.edu/~gelman/research/published/multiple2f.pdf)].
-
-Given a new experimental unit, we could predict its response$^{\ast}$.
-
-## Random effects
-
-Are sampled from a **POPULATION** of possible levels.
-
-We don't **CARE** about the **IDENTITY** of each level of a random effect
-^[traditional view, but in some cases we can use REs [differently](http://www.stat.columbia.edu/~gelman/research/published/multiple2f.pdf)].
-
-Wouldn't help us predict new values of response variable$^\ast$.
-
-Instead we **PREDICT** how much variance is absorbed by random effects.
-
-Observations influenced by random effects are **NOT INDEPENDENT**.
 
 ## Mixed models
 
@@ -528,25 +511,23 @@ This particular model known as a **random intercepts** model.
 \ecol
 \ecols
 
-\includegraphics[width = 0.5\textwidth]{images/compint.png}
+\includegraphics[width = 0.9\textwidth]{images/compint.png}
 
 ## Distance to Kenyan herbivores
 
 \bcols
 \bcol{0.48}
 
-`Distance ~ Species`
+`Distance ~ Species`\newline
 
-Big survey (lots of data) but data is clustered among several observer groups.
+Big survey (lots of data) but data is clustered among several observer groups.\newline
 
-Non-independent data.
-
-`Group.Name` a **random effect**.
+Non-independent data: `Group.Name` a **random effect**.
  
 \ecol
 \bcol{0.48}
 
-\includegraphics[width = 0.5\textwidth]{images/kenya.png}
+\includegraphics[width = 0.8\textwidth]{images/kenya.png}
 
 \ecol
 \ecols
@@ -560,6 +541,7 @@ Non-independent data.
 Data not independent because contributed by 8 observer groups.
 
 Observer group does not feature in the hypotheses, they...
+\gap[-1]
 
 * are sampled from a wider population of MSc students...
 * would not help us predict distances for a new set of observer groups...
@@ -567,26 +549,22 @@ Observer group does not feature in the hypotheses, they...
 * hence makes an 'ideal' random effect.
 
 ## Data structure
-
+\gap[-1]
 ```{r hg, echo = F}
 hg <- read.csv("./data/HG threespecies.csv", header = T)
 hg <- hg[sample(1:nrow(hg), nrow(hg), T), ]
-print(hg[1:10, ], row.names = F)
+as_tibble(hg)
 ```
+\gap[-1]
 
-**Note**: each observer group contributes data.
-
-Could we make a **derived variable** per observer group?
+**Note**: each observer group contributes data. Could we make a **derived variable** per observer group?
 
 * What is 'average species'? 
 * What would happen to the precious variation in group size?
 
 ## Fitting a mixed effects model
 
-Load `lme4` package:
-
-```{r hg1, results = "hide", warning = F, message = F}
-library(lme4)
+```{r hg1, results = "hide", warning = F, message = F, size = "tiny"}
 hg.lmer <- lmer(log(Distance) ~ Species + (1 | Group.Name), data = hg)
 ```
 
