@@ -95,7 +95,7 @@ For **mixed models** things get trickier again, and there is much debate about o
 
 A useful quote from the [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html) is:
 
-> *"For special cases that correspond to classical experimental designs (i.e. balanced designs that are nested, split-plot, randomized block, etc.) ... we can show that the null distributions of particular ratios of sums of squares follow an F distribution with known numerator and denominator degrees of freedom (and hence the sampling distributions of particular contrasts are t-distributed with known df). In more complicated situations (unbalanced, GLMMs, crossed random effects, models with temporal or spatial correlation, etc.) it is not in general clear that the null distribution of the computed ratio of sums of squares is really an F distribution, for any choice of denominator degrees of freedom."*
+> "For special cases that correspond to classical experimental designs (i.e. balanced designs that are nested, split-plot, randomized block, etc.) ... we can show that the null distributions of particular ratios of sums of squares follow an F distribution with known numerator and denominator degrees of freedom (and hence the sampling distributions of particular contrasts are t-distributed with known df). In more complicated situations (unbalanced, GLMMs, crossed random effects, models with temporal or spatial correlation, etc.) it is not in general clear that the null distribution of the computed ratio of sums of squares is really an F distribution, for any choice of denominator degrees of freedom."
 
 The developers of `lme4` recommend (from **worst** to **best**)^[see [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html)]:
 
@@ -204,7 +204,7 @@ $$
 where $\epsilon_i \sim N(0, \sigma^2)$, the $x_{i*}$ are dummy **binary** variables corresponding to each level of `media`. For example:
 $$
     x_{i1} = \left\{ \begin{array}{ll}
-    1 & \mbox{if measurement $i$ has `media` = 2}\\
+    1 & \mbox{if measurement $i$ has media = 2}\\
     0 & \mbox{otherwise},
     \end{array}
     \right.
@@ -215,25 +215,30 @@ and similarly for $x_{i2}$ and $x_{i3}$. Here $\gamma_{C_i}$ is the random effec
 
 To fit these models we use an approach called **maximum likelihood** (**ML**). ML is a very general technique with desirable *asymptotic* properties. However, ML estimators can be **biased**, particularly for small sample sizes. In mixed models an alternative approach, known as **restricted maximum likelihood** (**REML**), can be used, which produces better estimates of the model coefficients, particularly for small sample sizes. However, the REML likelihood function is different to the ML likelihood function, and only makes sense for mixed models (since it's designed to estimate the variance components). 
 
-We may have to switch between these two approaches depending on what we want to do. In general, if you want to compare nested models that only differ in the random effects, then you can use either REML or ML. However, if you want to compare models that differ in their fixed effects, then you need to use ML. Hence, if we are performing variable selection or model simplification, then we may have to switch to ML when comparing models, but then refit the model using REML in order to produce estimates of the coefficients.
+We may have to switch between these two approaches depending on what we want to do. In general, if you want to compare nested models that only differ in the random effects, then you can use either REML or ML. However, if you want to compare models that differ in their fixed effects, then for **balanced, nested** designs we can usually derive suitable tests based on REML fits. For **unbalanced** or **non-nested** designs you will need to use ML. Hence, if we are performing variable selection or model simplification, then we *may* have to switch to ML when comparing models, but then refit the model using REML in order to produce estimates of the coefficients.
 
 > **NOTE:** for various reasons the authors of `lme4` do not provide p-values as standard from a call to `summary()` or `anova()`. We can perform a **likelihood ratio test** for the impact of dropping `media` from the fitted model. The simplest way to do this is to use the `drop1()` function:
 > 
-> In order to use likelihood ratio tests for assessing the impact of dropping **fixed** effects, we must refit the model using ML (rather than REML). Here we will do this *in situ*, using the `update()` function and setting the argument `REML = F`. This does not change the original `bac_lmer` model object
+> Since this is a **balanced design**, then we can use either REML or ML to generate appropriate likelihood ratio tests for assessing the impact of dropping **fixed** effects. In an **unbalanced** design, then we would need to refit the model using ML. The easiest way to do this is *in situ*, using the `update()` function and setting the argument `REML = F`. This does not change the original `bac_lmer` model object.
+> 
+> Trying both approaches here should give the same result.
 
 ```{r, warning = F, message = F}
+drop1(bac_lmer, test = "Chisq")
 drop1(update(bac_lmer, REML = F), test = "Chisq")
 ```
     
-We have used a **likelihood ratio test** to assess whether the removal of `media` corresponds to a statistically significantly inferior model fit, which in this case it does at both the 5% and 1% levels. Hence we should leave `media` in the model. Once we have the final model, we can look at a summary of the model fit:
+We have used a **likelihood ratio test**^[you could also use an F-test using the `Anova()` function in the `car` package in this particular case] to assess whether the removal of `media` corresponds to a statistically significantly inferior model fit, which in this case it does at both the 5% and 1% levels. Hence we should leave `media` in the model. Once we have the final model, we can look at a summary of the model fit:
 
 ```{r}
 summary(bac_lmer)
 ```
 
-**Note** that this summary has been produced from the model fit using REML, even though the LRT was conducted using the model fitted using ML---this is because we updated the model *in situ* within `drop1()`. The 'intercept' of the `lmer` model is the mean growth rate in `media1` for an **average** cabinet. `lmer` output also gives you information criteria about the model, tells you the standard deviation of the random effects, correlations between levels of fixed effects, and so on. 
+**Note** that this summary has been produced from the model fit using REML, even though the last LRT was conducted using the model fitted using ML---this is because we updated the model *in situ* within `drop1()`.
 
-> **Note**: we use a likelihood ratio test (LRT) here, rather than an F-test. The F-test would be OK in this particular case, with Gaussian error structure and fully balanced design. However, LRTs are more general, and thus for consistency I will use these (or AIC) throughout where required.
+The 'intercept' of the `lmer` model is the mean growth rate in `media1` for an **average** cabinet. `lmer` output also gives you information criteria about the model, tells you the standard deviation of the random effects, correlations between levels of fixed effects, and so on. 
+
+> **Note**: we use a likelihood ratio test (LRT) here, rather than an F-test. The F-test would be OK in this particular case, with Gaussian error structure and fully balanced, nested design. However, LRTs are more general, and thus for consistency I will tend to use these (or AIC) throughout where required.
 
 We can derive confidence intervals using `confint()`, and also produce predictions from the model using `predict()`.
 
@@ -261,12 +266,12 @@ library(faraway)
 data(abrasion)
 ``
 
-Take a look at the data and the help file for abrasion (i.e. `?abrasion`). Fit an appropriate linear mixed model to these data and assess whether there is any statistical evidence for differences in wear rates between the different materials, with material `B` wearing the fastest, followed by `D`, `C` and `A`.
-
-Note that we could derive confidence intervals for these effects, or for predictions / plotting etc. if we liked. There are many other options available [here](http://www.maths.bath.ac.uk/~jjf23/mixchange/crossed.html).
+Take a look at the data and the help file for abrasion (i.e. `?abrasion`). Fit an appropriate linear mixed model to these data and assess whether there is any statistical evidence for differences in wear rates between the different materials.
 ```
 
 ```{solution}
+
+Note that this is a **crossed** design, so we cannot use F-tests. Instead we must use LRTs and we need to refit the model using ML when assessing the impact of dropping `media` from the model.
 
 ``{r}
 ## load data
@@ -279,7 +284,9 @@ drop1(update(abrasion_lmer, REML = F), test = "Chisq")
 summary(abrasion_lmer)
 ``
 
-This suggests that there are highly statistically significant differences in wear between *at least some* of the materials.
+This suggests that there are highly statistically significant differences in wear between *at least some* of the materials, with material `B` wearing the fastest, followed by `D`, `C` and `A`.
+
+Note that we could derive confidence intervals for these effects, or for predictions / plotting etc. if we liked. There are many other options available [here](http://www.maths.bath.ac.uk/~jjf23/mixchange/crossed.html).
 ```
 
 ## Non-independent data: pseudoreplication, nested variance and derived variable analysis
@@ -436,7 +443,7 @@ The data for the alcohol example in the slides can be found in the ["drunk.rds"]
 1. Conduct a derived variable analysis, to test for the impact of `freshener` use on the model fit using a likelihood ratio test.
 2. Produce 97% confidence intervals for the `freshener` effect.
 3. Fit a mixed model using `lmer()`, taking care to get the nesting of the random effects correct.
-4. Use a likelihood ratio test to assess the impact of `freshener` on the model fit.
+4. Use a likelihood ratio test to assess the impact of `freshener` on the model fit. Does it matter whether you use REML or ML here, and why?
 5. Produce an estimate of the `freshener` effect with 97% profile confidence intervals.
 6. How do these estimates compare?
     
@@ -482,7 +489,10 @@ drunk_lmer <- lmer(alcohol ~ freshener + (1 | student / sample), data = drunk)
 
 ``{r}
 drop1(update(drunk_lmer, REML = F), test = "Chisq")
+drop1(drunk_lmer, test = "Chisq")
 ``
+
+Doesn't matter whether you use REML or ML here, since data are balanced and nested.
     
 5. 
 
@@ -526,7 +536,10 @@ drunk_lmer <- lmer(alcohol ~ freshener + (1 | student / sample), data = drunk)
 
 ``{r}
 drop1(update(drunk_lmer, REML = F), test = "Chisq")
+drop1(drunk_lmer, test = "Chisq")
 ``
+
+Doesn't matter whether you use REML or ML here, since data are balanced and nested.
     
 5. 
 
