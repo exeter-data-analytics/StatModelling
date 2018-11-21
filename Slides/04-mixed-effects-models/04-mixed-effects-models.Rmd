@@ -635,6 +635,18 @@ This experiment involves the yield of cereals in a factorial experiment with:
 
 \ec
 
+## Split-plot design
+
+`block` is the only **random effect** but our data are **nested**. 
+
+**Fixed effects** are `irrigation`, `density` and `fertilizer`. 
+
+Idea is to **nest** correctly^[this actually throws an error in this case---see workshop notes for full solution]
+
+```{r, eval = F}
+(1 | block / irrigation / density / fertilizer)
+```
+
 ## Your turn
 
 Have a go at **Section 4.4** in the workshop notes.
@@ -737,12 +749,20 @@ Can use `lme4` for:
 * and for crossed and nested random effects structures,
 * model checks remain important...
 
-Congratulations, you have become **Generalised Linear Mixed Modellers**.
+## Ultimately, go Bayesian!
+
+Many of the challenges associated with **mixed effects** models go away if you move your inference into a **Bayesian** framework. 
+
+Of course other challenges arise in their place, mainly in terms of variable selection, however, in general I would recommend using a Bayesian framework for complex models with hierarchical structures, particularly spatio-temporal modelling. 
+
+These approaches are beyond the scope of this course, but we are hoping to run a Bayesian Modelling workshop next year, so keep your ears to the ground!
 
 ## The dangers of too much R coding
 
+Congratulations, you have become **Generalised Linear Mixed Modellers**.
+
 \bc
 
-\includegraphics[width = 0.5\textwidth]{images/blobfish.png}
+\includegraphics[width = 0.4\textwidth]{images/blobfish.png}
 
 \ec
