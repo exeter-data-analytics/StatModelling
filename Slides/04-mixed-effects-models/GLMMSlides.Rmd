@@ -101,6 +101,7 @@ Both of these cases are exact tests for linear regression with Gaussian errors (
 
 ## Aside: NHST
 \small
+\gap[-1]
 For mixed models things get trickier again, and there is no consensus. A useful quote from the [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html) is:
 
 > "For special cases that correspond to classical experimental designs (i.e. balanced designs that are nested, split-plot, randomized block, etc.) ... we can show that the null distributions of particular ratios of sums of squares follow an F distribution with known numerator and denominator degrees of freedom (and hence the sampling distributions of particular contrasts are t-distributed with known df). In more complicated situations (unbalanced, GLMMs, crossed random effects, models with temporal or spatial correlation, etc.) it is not in general clear that the null distribution of the computed ratio of sums of squares is really an F distribution, for any choice of denominator degrees of freedom."
@@ -260,7 +261,7 @@ A **mixed model** is so-called because it contains a mixture of **fixed** and **
 ## Fixed effects
 
 * Treatments are **fixed** by the experimenter, guided by **hypotheses** e.g. test of whether treatment levels **differ** or whether there is a **trend**.
-* We **care** about the **identity** of each level of a fixed effect^[traditional view, but in some cases we can use REs [differently](http://www.stat.columbia.edu/~gelman/research/published/multiple2f.pdf)].
+* We **care** about the **identity** of each level of a fixed effect.
 * Given a new experimental unit, we could predict its response.
 
 ## Random effects
@@ -274,13 +275,13 @@ A **mixed model** is so-called because it contains a mixture of **fixed** and **
 \gap
 
 ## A mixed-effects model
-
+\small
+\gap[-1]
 Response variable $Y$. Regression parameters for **fixed** explanatory variables: $\beta_p$
 
 Noise absorbed by **random variable(s)**: $\gamma \sim N\left(0, \sigma^2_{\gamma}\right)$
 
 Residual noise: $\epsilon \sim N\left(0, \sigma^2\right)$
-
 $$
     Y_i = \beta_0 + \beta_1 X_i + \gamma_i + \epsilon_i
 $$
@@ -587,9 +588,10 @@ Make sure you know what the experimental unit is.
 
 This experiment involves the yield of cereals in a factorial experiment with:
 
-* 4 blocks (fields), within which 
-* half of each block was irrigated, and half not. 
-* Each half-block wa split into 3 split-plots, and seeds were sown at different densities in each split-plot. * Each sowing density plot was split into 3 small split-split plots and different fertilisers applied by hand (N alone, P alone and N + P together).
+* 4 **blocks** (fields). 
+* Half of each block was **irrigated**, and half not. 
+* Each half-block was split into 3 split-plots, and seeds were sown at different **densities** in each split-plot. 
+* Each sowing density plot was split into 3 small split-split plots and different **fertilisers** applied by hand (N alone, P alone and N + P together).
 
 ## Example: split-plot design
 
