@@ -27,13 +27,15 @@ else
     compileall="0"
 fi
 
-R -e "rmarkdown::render('GLMMSlides.Rmd')"
+rmdfile="04-mixed-effects-models"
+
+R -e "rmarkdown::render('$rmdfile.Rmd')"
 
 if [ $compileall == "1" ]; then
-    pdfannotextractor GLMMSlides.pdf
-    compile="\def\filename{GLMMSlides.pdf} \input{handout.tex}"
+    pdfannotextractor $rmdfile.pdf
+    compile="\def\filename{$rmdfile.pdf} \input{handout.tex}"
     pdflatex $compile
-    mv handout.pdf GLMMHandout.pdf
-    rm *.pax *.aux *.log
+    mv handout.pdf $rmdfile-handout.pdf
+    rm $rmdfile.pax handout.aux handout.log
 fi
 
