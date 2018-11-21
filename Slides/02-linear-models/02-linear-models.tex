@@ -8,7 +8,11 @@
 % Preamble
 %=============================================================================%
 % Libraries
-\documentclass[pdf]{beamer}
+\ifdefined\handoutmode
+    \documentclass[pdf,handout]{beamer}
+\else
+    \documentclass[pdf]{beamer}
+\fi
 \usepackage[export]{adjustbox}
 \usepackage{framed}
 \usepackage{color}
@@ -115,10 +119,10 @@ A \textbf{model} is a human construct/abstraction that tries to approximate the 
 \begin{frame}{Illustrative example}
 
 \begin{figure}
-\includegraphics<1>[width=.65\textwidth]{example1.pdf}
-\includegraphics<2>[width=.65\textwidth]{example2.pdf}
-\includegraphics<3>[width=.65\textwidth]{example3.pdf}
-\includegraphics<4>[width=.65\textwidth]{example4.pdf}
+\includegraphics<1|handout:1>[width=.65\textwidth]{example1.pdf}
+\includegraphics<2|handout:2>[width=.65\textwidth]{example2.pdf}
+\includegraphics<3|handout:3>[width=.65\textwidth]{example3.pdf}
+\includegraphics<4|handout:4>[width=.65\textwidth]{example4.pdf}
 \end{figure}
 
 \end{frame}
@@ -240,8 +244,8 @@ plot(fit)
 \begin{frame}{Confidence vs prediction intervals}
 
 \begin{figure}
-\includegraphics<1>[width=.6\textwidth, height=0.6\textwidth]{confInt.pdf}
-\includegraphics<2>[width=.6\textwidth, height=0.6\textwidth]{predInt.pdf}
+\includegraphics<1|handout:1>[width=.6\textwidth, height=0.6\textwidth]{confInt.pdf}
+\includegraphics<2|handout:2>[width=.6\textwidth, height=0.6\textwidth]{predInt.pdf}
 \end{figure}
 
 \end{frame}
@@ -258,8 +262,8 @@ y_i & = \beta_0 + \beta_1x_{1i} + \ldots + \beta_px_{pi} + \epsilon_i \\
 $$
 
 \begin{figure}
-\includegraphics<1>[width=.5\textwidth]{multiple1.pdf}
-\includegraphics<2>[width=.5\textwidth]{multiple2.pdf}
+\includegraphics<1|handout:1>[width=.5\textwidth]{multiple1.pdf}
+\includegraphics<2|handout:2>[width=.5\textwidth]{multiple2.pdf}
 \end{figure}
 
 \end{frame}
@@ -269,7 +273,7 @@ $$
 \begin{frame}{Categorical variables}
 
 \begin{figure}
-\includegraphics<2->[width=.6\textwidth]{categorical.pdf}
+\includegraphics<2-|handout:1->[width=.6\textwidth]{categorical.pdf}
 \end{figure}
 
 \end{frame}
