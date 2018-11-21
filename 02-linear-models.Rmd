@@ -5,6 +5,10 @@ IMG <- "_img" # image path
 library(tidyverse)
 ```
 
+Slides can be downloaded from:
+
+* [LMs in R](https://exeter-data-analytics.github.io/StatModelling/02-linear-models-handout.pdf)
+
 ## Simple linear regression
 
 In many scientific applications we are interested in exploring the relationship
