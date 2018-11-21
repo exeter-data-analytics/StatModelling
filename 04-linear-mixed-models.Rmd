@@ -17,7 +17,7 @@ My thanks in particular to [Dave Hodgson](http://biosciences.exeter.ac.uk/staff/
 
 Slides can be downloaded from:
 
-* [(G)LMMs in R](https://exeter-data-analytics.github.io/StatModelling/GLMMHandout.pdf)
+* [(G)LMMs in R](https://exeter-data-analytics.github.io/StatModelling/04-mixed-effects-models-handout.pdf)
 
 Firstly, install if necessary (using `install.packages()`; uncomment the code below if required) and load the `lme4` package:
 
@@ -79,6 +79,8 @@ ff <- readRDS("fruitfly.rds")
 ```{r, echo=FALSE, eval=TRUE}
 ff <- readRDS("_data/fruitfly.rds")
 ```
+
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
 
 ```{r}
 ff_lm <- lm(longevity ~ type, data = ff)
@@ -182,6 +184,8 @@ summary(lm(growth ~ media * cabinet, data = bac))
 We are faced with all these `NA`s because the model is **saturated**: there is no replication so we cannot calculate the residual deviance/variance. This also means that there are no degrees-of-freedom remaining in the model to calculate the residual sum-of-squares. We have twenty observations and twenty parameters to estimate. This is analogous to fitting a straight line through *two* data points; we get a perfect fit, and thus overfits.
 ```
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
 ### Mixed model approach
 
 Let's re-do this analysis using a **mixed model**. If you haven't already, you will need to load the `lme4` package:
@@ -248,6 +252,8 @@ summary(bac_lmer)
 **Note** that this summary has been produced from the model fit using REML, even though the last LRT was conducted using the model fitted using ML---this is because we updated the model *in situ* within `drop1()`.
 
 The 'intercept' of the `lmer` model is the mean growth rate in `media1` for an **average** cabinet. `lmer` output also gives you information criteria about the model, tells you the standard deviation of the random effects, correlations between levels of fixed effects, and so on. 
+
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
 
 > **Note**: we use a likelihood ratio test (LRT) here, rather than an F-test. The F-test would be OK in this particular case, with Gaussian error structure and fully balanced, nested design. However, LRTs are more general, and thus for consistency I will tend to use these (or AIC) throughout where required.
 
@@ -340,7 +346,11 @@ Here is what not to do (try it anyway)!
 rats_lm <- lm(Glycogen ~ Treatment * Rat * Liver, data = rats)
 ```
 
-The model has been specified as if it were a full factorial with no nesting and no pseudoreplication. Note that the structure of the data allows this mistake to be made. It is a very common problem with data frames that include pseudoreplication. An ANOVA table gives:
+The model has been specified as if it were a full factorial with no nesting and no pseudoreplication. Note that the structure of the data allows this mistake to be made. It is a very common problem with data frames that include pseudoreplication. 
+
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
+An ANOVA table gives:
 
 ```{r}
 anova(rats_lm, test = "F")
@@ -587,6 +597,8 @@ This experiment involves the yield of cereals in a factorial experiment with 3 t
 include_graphics("_img/splitPlot.png")
 ```
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
 The data look like:
 
 ```{r splityield0, echo = F}
@@ -633,32 +645,28 @@ split_lmer <- lmer(yield ~ irrigation * density * fertilizer +
                        (1 | block / irrigation / density / fertilizer), data = splityield)
 ```
 
-However, if you run this, you will notice that the function returns an error. This is because there are no replicates within the final nesting (i.e. the table above on has a single replicate in each cell). To overcome this we need to remove the final nesting. Unfortunately, this leads to a rather more horrible formula. 
+However, if you run this, you will notice that the function returns an error. This is because there are no replicates within the final nesting (i.e. the table above on has a single replicate in each cell). To overcome this we need to remove the final nesting. Hence we can run:
 
-Another way of writing the command above is:
-
-```{r, eval = F, tidy = F}
-split_lmer <- lmer(yield ~ irrigation * density * fertilizer + (1 | block) + 
-                       (1 | block:irrigation) + (1 | block:irrigation:density) + 
-                       (1 | block:irrigation:density:fertilizer), data = splityield)
+```{r, error = TRUE, tidy = F}
+split_lmer <- lmer(yield ~ irrigation * density * fertilizer + 
+                       (1 | block / irrigation / density), data = splityield)
 ```
 
-Pretty grim eh? However, in this case we note that the final nested random effect only has one replicate per group, so we simply remove this term. Leaving:
-
-```{r, tidy = F}
-split_lmer <- lmer(yield ~ irrigation * density * fertilizer + (1 | block) + 
-       (1 | block:irrigation) + (1 | block:irrigation:density), 
-       data = splityield)
-```
-
-`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+> **Aside:** Another way of writing `(1 | block / irrigation / density / fertilizer)` is:
+> 
+> `(1 | block) + (1 | block:irrigation) + (1 | block:irrigation:density) + (1 | block:irrigation:density:fertilizer)`.
+> 
+> Pretty grim eh? However, in this case we note that the final nested random effect only has one replicate per group, so we could simply remove this term. Leaving:
+> 
+> `(1 | block) + (1 | block:irrigation) + (1 | block:irrigation:density)`.
+> 
+> This is equivalent to `(1 | block / irrigation / density)`
 
 We can now perform model simplification (remembering to refit the model using ML in each case):
 
 ```{r}
 drop1(update(split_lmer, REML = F), test = "Chisq")
 ```
-
 
 We can see that the three-way interaction term is not statistically significant, so we can drop it from the model and then test dropping the two-way interaction effects.
 
@@ -671,12 +679,21 @@ We are thus safe to remove the `density:fertilizer` interaction term:
 
 ```{r, tidy = F}
 split_lmer <- update(split_lmer, ~ . - density:fertilizer)
+```
+
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
+```{r}
 drop1(update(split_lmer, REML = F), test = "Chisq")
 ```
 
 We thus have a simplified final model. If you really want to know all the coefficients, type `summary(split.lmer)`, but here we will try to understand the interaction terms graphically.
 
-A useful way to understand these is to use the `interaction.plot()` function. The variables are listed in a non-obvious order: first the factor to go on the $x$-axis, then the factor to go as different lines on the plot, then the response variable. There are 3 plots to look at so we make a $2 \times 2$ plotting area: 
+A useful way to understand these is to use the `interaction.plot()` function. The variables are listed in a non-obvious order: first the factor to go on the $x$-axis, then the factor to go as different lines on the plot, then the response variable. 
+
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
+There are 3 plots to look at so we make a $2 \times 2$ plotting area: 
  
 ```{r, fig.width = 10, fig.height = 10, fig.show = "hold"}
 par(mfrow = c(2, 2))
@@ -687,8 +704,6 @@ par(mfrow = c(1, 1))
 ```
 
 The really pronounced interaction is that between irrigation and density, with a reversal of the high to low density difference on the irrigated and control plots. Overall, the 3-way interaction was not statistically significant, nor was the 2-way interaction between density and fertilizer. The 2-way interaction between irrigation and fertilizer, however, was highly statistically significant. 
-
-`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
 
 Another way to visualise the model outputs would be to generate a plot of the predicted yield (plus confidence intervals), for each combination of explanatory factors. I have created a `data.frame` with these predictions using bootstrapping. The code to replicate this can be found [here](#parboot), but is a bit time consuming to run, so I have included the predictions as a file called ["split_pred.rds"](https://exeter-data-analytics.github.io/StatModelling/_data/split_pred.rds).
 
@@ -714,6 +729,8 @@ In `ggplot2` we can use the `geom_pointrange()` function, a `colour` aesthetic a
 
 ####
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\small", "")`
+
 To plot the CIs in base R, we can proceed as follows:
 
 1. Set the figure layout to have two figures side-by-side.
@@ -732,6 +749,8 @@ To plot the CIs in base R, we can proceed as follows:
 Phew! (Now check out the `tidyverse` solution and tell me it's not worth the effort to learn `ggplot2`!)
 
 ```
+
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
 
 ```{multCode}
 
@@ -864,6 +883,8 @@ geom_line(data = newdata)
 
 ####
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\small", "")`
+
 Generate 'fake' data in order to plot fitted lines:
 
 ``{r, size = "scriptsize"}
@@ -884,31 +905,25 @@ Now plot the fitted lines against the observed data points:
 
 ``{r, size = "scriptsize"}
 plot(Distance ~ Number, data = hg, type = "n")
-points(Distance ~ Number, 
-       data = hg, 
+points(Distance ~ Number, data = hg, 
        subset = (Species == "thomsons gazelle"), 
        pch = 16)
-points(Distance ~ Number, 
-       data = hg, 
+points(Distance ~ Number, data = hg, 
        subset = (Species == "warthog"), 
        pch = 16,
        col = "red")
-points(Distance ~ Number, 
-       data = hg, 
+points(Distance ~ Number, data = hg, 
        subset = (Species == "zebra"), 
        pch = 16,
        col = "blue")
-lines(Distance ~ Number, 
-      data = newdata, 
+lines(Distance ~ Number, data = newdata, 
       subset = (newdata$Species == "thomsons gazelle"), 
       lwd = 2)
-lines(Distance ~ Number, 
-      data = newdata,
+lines(Distance ~ Number, data = newdata,
       subset = (newdata$Species == "warthog"), 
       lwd = 2, 
       col = "red")
-lines(Distance ~ Number, 
-      data = newdata,
+lines(Distance ~ Number, data = newdata,
       subset = (newdata$Species == "zebra"), 
       lwd = 2, 
       col = "blue")
@@ -919,6 +934,8 @@ legend(15, 1000,
 ``
 
 ```
+
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
 
 This na&iuml;ve analysis is fundamentally flawed because the distance estimations are not independent of each other. Several estimates come from each of 8 student groups, and it's easy to imagine (or remember) that observers vary dramatically in the bias of their distance estimates (and indeed in their estimates of group size, possibly even species identity). It's entirely possible that a group of observers who estimate "short" distances also encountered strangely large groups of zebras: such a correlation between `Group.Name` and `Distance` could drive the observed relationship for zebras. 
 
