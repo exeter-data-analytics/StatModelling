@@ -2,6 +2,15 @@
 
 ```{r, include = F, purl = F, cache = F}
 opts_chunk$set(titles = c(ifelse(opts_knit$get("rmarkdown.pandoc.to") != "latex", "<tt>tidyverse</tt>", "\\texttt{tidyverse}"), "Base R"))
+def.chunk.hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) {
+  x <- def.chunk.hook(x, options)
+  if(opts_knit$get("rmarkdown.pandoc.to") == "latex") {
+      return(ifelse(options$size != "normalsize", paste0("\\", options$size,"\n\n", x, "\n\n \\normalsize"), x))
+  } else {
+      return(x)
+  }
+})
 ```
 
 My thanks in particular to [Dave Hodgson](http://biosciences.exeter.ac.uk/staff/index.php?web_id=david_hodgson), who's fantastic Master's course offered up the prototype for this workshop.
@@ -110,19 +119,17 @@ In this workshop we will introduce some common scenarios in which mixed models c
 
 ## Non-independent data: Randomised Complete Block Design
 
-> Often you will find it impossible to allocate treatments to experimental units at random because they are structured in time or in space. This means that units are not independent of each other, hence their residuals will not be independent, and we have violated an important assumption of generalised linear modelling (and, indeed, of analysis of variance). However the recognition of natural structuring in our population of experimental units can be **very** useful. If the experimental design can be stratified so that all units that share a common 'trait' (e.g. share a corner of a field, or share a single incubator) can represent one or more full replicate of the proposed experiment, then we should use this natural structuring to absorb some of our enemy: noise (also called residual deviance).
+Often you will find it impossible to allocate treatments to experimental units at random because they are structured in time or in space. This means that units are not independent of each other, hence their residuals will not be independent, and we have violated an important assumption of generalised linear modelling (and, indeed, of analysis of variance). However the recognition of natural structuring in our population of experimental units can be **very** useful. If the experimental design can be stratified so that all units that share a common 'trait' (e.g. share a corner of a field, or share a single incubator) can represent one or more full replicate of the proposed experiment, then we should use this natural structuring to absorb some of our enemy: noise (also called residual deviance).
 
 An extreme case of using error-absorbers is the Randomised Complete Block Experimental Design. So-called because it includes blocks, each block contains a single replicate of the experiment, and experimental units **within** blocks are allocated to treatment combinations **at random**. The concept is best explained using an example.
 
-A microbiologist wishes to know which of four growth media is best for rearing large populations of anthrax, quickly. However, this poorly funded scientist does not own a large enough incubator in which to grow lots of replicate populations. Instead he requests space in five different incubators owned by other, better-funded researchers. Each incubator just has space for four bottles of medium. Our scientist allocates each growth medium to one bottle per incubator **at random**, inoculates with anthrax then monitors population growth rate.
-
-A schematic is given in Figure \@ref(fig:bacCabinets).
+A microbiologist wishes to know which of four growth media is best for rearing large populations of anthrax, quickly. However, this poorly funded scientist does not own a large enough incubator in which to grow lots of replicate populations. Instead he requests space in five different incubators owned by other, better-funded researchers. Each incubator just has space for four bottles of medium. Our scientist allocates each growth medium to one bottle per incubator **at random**, inoculates with anthrax then monitors population growth rate. A schematic is given in Figure \@ref(fig:bacCabinets).
 
 ```{r, bacCabinets, fig.cap = "Schematic for bacterial growth example", echo = F, out.width = "80%", out.height = "80%"}
 include_graphics("_img/bacCabinets.png")
 ```
 
-The data are available in the 'bacCabinets.rds' file.  These data are available in the ["bacCabinets.rds"](https://exeter-data-analytics.github.io/StatModelling/_data/bacCabinets.rds) file. Read in this dataset and familiarise yourself with its structure. 
+These data are available in the ["bacCabinets.rds"](https://exeter-data-analytics.github.io/StatModelling/_data/bacCabinets.rds) file. Read in this dataset and familiarise yourself with its structure. 
 
 ```{r, echo = F}
 bac <- readRDS("_data/bacCabinets.rds")
@@ -217,7 +224,7 @@ To fit these models we use an approach called **maximum likelihood** (**ML**). M
 
 We may have to switch between these two approaches depending on what we want to do. In general, if you want to compare nested models that only differ in the random effects, then you can use either REML or ML. However, if you want to compare models that differ in their fixed effects, then for **balanced, nested** designs we can usually derive suitable tests based on REML fits. For **unbalanced** or **non-nested** designs you will need to use ML. Hence, if we are performing variable selection or model simplification, then we *may* have to switch to ML when comparing models, but then refit the model using REML in order to produce estimates of the coefficients.
 
-> **NOTE:** for various reasons the authors of `lme4` do not provide p-values as standard from a call to `summary()` or `anova()`. We can perform a **likelihood ratio test** for the impact of dropping `media` from the fitted model. The simplest way to do this is to use the `drop1()` function:
+> **Note:** for various reasons the authors of `lme4` do not provide p-values as standard from a call to `summary()` or `anova()`. We can perform a **likelihood ratio test** for the impact of dropping `media` from the fitted model. The simplest way to do this is to use the `drop1()` function:
 > 
 > Since this is a **balanced design**, then we can use either REML or ML to generate appropriate likelihood ratio tests for assessing the impact of dropping **fixed** effects. In an **unbalanced** design, then we would need to refit the model using ML. The easiest way to do this is *in situ*, using the `update()` function and setting the argument `REML = F`. This does not change the original `bac_lmer` model object.
 > 
@@ -259,7 +266,7 @@ This approach uses the profile likelihood to calculate CIs. There is an option t
 ```
 
 ```{task}
-The `abrasion` data in the `faraway` package contains data on an experiment where four materials were fed into a wear testing machine and the amount of wear recorded. Four samples could be processed at the same time and the position of these samples may be important, but we really care about assessing wear rates between different materials. Multiple runs were performed. You can load the package and data as follows:
+The `abrasion` data in the `faraway` package contains information on an experiment where four materials were fed into a wear testing machine and the amount of wear recorded. Four samples could be processed at the same time and the position of these samples may be important, but we really care about assessing wear rates between different materials. Multiple runs were performed. You can load the package and data as follows:
     
 ``{r, eval = F}
 library(faraway)
@@ -287,6 +294,7 @@ summary(abrasion_lmer)
 This suggests that there are highly statistically significant differences in wear between *at least some* of the materials, with material `B` wearing the fastest, followed by `D`, `C` and `A`.
 
 Note that we could derive confidence intervals for these effects, or for predictions / plotting etc. if we liked. There are many other options available [here](http://www.maths.bath.ac.uk/~jjf23/mixchange/crossed.html).
+
 ```
 
 ## Non-independent data: pseudoreplication, nested variance and derived variable analysis
@@ -310,13 +318,13 @@ If all we want to test is whether the experimental treatments have affected the 
  
 The new concept here is that there are multiple random effects that are **nested**.  These data are available in the ["rats.rds"](https://exeter-data-analytics.github.io/StatModelling/_data/rats.rds) file. First, read in the data:
 
-```{r, echo = F}
-rats <- readRDS("_data/rats.rds")
+```{r, eval = F}
+rats <- readRDS("rats.rds")
 summary(rats)
 ```
 
-```{r, eval = F}
-rats <- readRDS("rats.rds")
+```{r, echo = F}
+rats <- readRDS("_data/rats.rds")
 summary(rats)
 ```
 
@@ -356,7 +364,8 @@ ratsNew
 ####
 
 ``{r}
-ratsNew <- aggregate(Glycogen ~ Rat + Treatment, data = rats, mean)
+ratsNew <- aggregate(Glycogen ~ Rat + 
+    Treatment, data = rats, mean)
 ratsNew
 ``
 
@@ -411,8 +420,10 @@ rats_orig <- rats
 
 ``{r}
 rats <- rats %>%
-    unite(Rat, Treatment, Rat, sep = "_", remove = F) %>%
-    mutate(Rat = factor(as.numeric(factor(Rat))))
+    unite(Rat, Treatment, Rat, 
+          sep = "_", remove = F) %>%
+    mutate(Rat = factor(
+        as.numeric(factor(Rat))))
 ``
 
 ####
@@ -422,8 +433,10 @@ rats <- rats_orig
 ``
 
 ``{r}
-rats$Rat <- paste(rats$Treatment, "_", rats$Rat)
-rats$Rat <- factor(as.numeric(factor(rats$Rat)))
+rats$Rat <- paste(rats$Treatment, 
+    "_", rats$Rat)
+rats$Rat <- factor(
+    as.numeric(factor(rats$Rat)))
 ``
 
 ```
@@ -453,17 +466,18 @@ The data for the alcohol example in the slides can be found in the ["drunk.rds"]
 
 1. 
 
-``{r, eval = F}
+``{r, eval = F, size = "small"}
 drunk <- readRDS("drunk.rds")
 alc <- drunk %>%
-   group_by(student, freshener) %>%
-   summarise(alcohol = mean(alcohol)) %>%
-   ungroup()
-alc_lm <- lm(alcohol ~ freshener, data = alc)
+    group_by(student, freshener) %>%
+    summarise(alcohol = mean(alcohol)) %>%
+    ungroup()
+alc_lm <- lm(alcohol ~ freshener, 
+    data = alc)
 drop1(alc_lm, test = "Chisq")
 ``
 
-``{r, echo = F}
+``{r, echo = F, size = "scriptsize"}
 drunk <- readRDS("_data/drunk.rds")
 alc <- drunk %>%
    group_by(student, freshener) %>%
@@ -472,23 +486,25 @@ alc <- drunk %>%
 alc_lm <- lm(alcohol ~ freshener, data = alc)
 drop1(alc_lm, test = "Chisq")
 ``
-   
+
 2. 
 
-``{r}
+``{r, size = "small"}
 confint(alc_lm, level = 0.97)[2, ]
 ``
     
 3. 
 
-``{r}
-drunk_lmer <- lmer(alcohol ~ freshener + (1 | student / sample), data = drunk)
+``{r, size = "small"}
+drunk_lmer <- lmer(alcohol ~ freshener + 
+    (1 | student / sample), data = drunk)
 ``
     
 4. 
 
-``{r}
-drop1(update(drunk_lmer, REML = F), test = "Chisq")
+``{r, size = "scriptsize"}
+drop1(update(drunk_lmer, REML = F), 
+    test = "Chisq")
 drop1(drunk_lmer, test = "Chisq")
 ``
 
@@ -496,7 +512,7 @@ Doesn't matter whether you use REML or ML here, since data are balanced and nest
     
 5. 
 
-``{r}
+``{r, size = "small"}
 confint(drunk_lmer, level = 0.97)[5, ]
 ``
 
@@ -506,36 +522,42 @@ confint(drunk_lmer, level = 0.97)[5, ]
 
 1. 
 
-``{r, eval = F}
+``{r, eval = F, size = "small"}
 drunk <- readRDS("drunk.rds")
-alc <- aggregate(alcohol ~ student + freshener, data = drunk, mean)
-alc_lm <- lm(alcohol ~ freshener, data = alc)
+alc <- aggregate(alcohol ~ student + 
+    freshener, data = drunk, mean)
+alc_lm <- lm(alcohol ~ freshener, 
+    data = alc)
 drop1(alc_lm, test = "Chisq")
 ``
 
-``{r, echo = F}
+``{r, echo = F, size = "scriptsize"}
 drunk <- readRDS("_data/drunk.rds")
-alc <- aggregate(alcohol ~ student + freshener, data = drunk, mean)
-alc_lm <- lm(alcohol ~ freshener, data = alc)
+alc <- aggregate(alcohol ~ student + 
+    freshener, data = drunk, mean)
+alc_lm <- lm(alcohol ~ freshener, 
+    data = alc)
 drop1(alc_lm, test = "Chisq")
 ``
    
 2. 
 
-``{r}
+``{r, size = "small"}
 confint(alc_lm, level = 0.97)[2, ]
 ``
     
 3. 
 
-``{r}
-drunk_lmer <- lmer(alcohol ~ freshener + (1 | student / sample), data = drunk)
+``{r, size = "small"}
+drunk_lmer <- lmer(alcohol ~ freshener + 
+    (1 | student / sample), data = drunk)
 ``
     
 4. 
 
-``{r}
-drop1(update(drunk_lmer, REML = F), test = "Chisq")
+``{r, size = "scriptsize"}
+drop1(update(drunk_lmer, REML = F), 
+    test = "Chisq")
 drop1(drunk_lmer, test = "Chisq")
 ``
 
@@ -543,7 +565,7 @@ Doesn't matter whether you use REML or ML here, since data are balanced and nest
     
 5. 
 
-``{r}
+``{r, size = "small"}
 confint(drunk_lmer, level = 0.97)[5, ]
 ``
 
@@ -625,11 +647,15 @@ split_lmer <- lmer(yield ~ irrigation * density * fertilizer + (1 | block) +
        data = splityield)
 ```
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
 We can now perform model simplification (remembering to refit the model using ML in each case):
 
 ```{r}
 drop1(update(split_lmer, REML = F), test = "Chisq")
 ```
+
+
 We can see that the three-way interaction term is not statistically significant, so we can drop it from the model and then test dropping the two-way interaction effects.
 
 ```{r, tidy = F}
@@ -658,6 +684,8 @@ par(mfrow = c(1, 1))
 
 The really pronounced interaction is that between irrigation and density, with a reversal of the high to low density difference on the irrigated and control plots. Overall, the 3-way interaction was not statistically significant, nor was the 2-way interaction between density and fertilizer. The 2-way interaction between irrigation and fertilizer, however, was highly statistically significant. 
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
 Another way to visualise the model outputs would be to generate a plot of the predicted yield (plus confidence intervals), for each combination of explanatory factors. I have created a `data.frame` with these predictions using bootstrapping. The code to replicate this can be found [here](#parboot), but is a bit time consuming to run, so I have included the predictions as a file called ["split_pred.rds"](https://exeter-data-analytics.github.io/StatModelling/_data/split_pred.rds).
 
 First, read in the predictions:
@@ -674,19 +702,11 @@ newdata <- readRDS("_data/split_pred.rds")
 
 Now to plot these predictions (note, once again these ease of `ggplot2` compared to base R graphics):
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
 ```{multCode}
 
 In `ggplot2` we can use the `geom_pointrange()` function, a `colour` aesthetic and a `facet_wrap()`.
-
-``{r, fig.width = 10, fig.height = 5}
-## plot confidence intervals
-ggplot(newdata, 
-    aes(x = fertilizer, colour = density)) + 
-    geom_pointrange(aes(y = yield, ymin = lci, ymax = uci), 
-        position = position_dodge(width = 0.5)) +
-    facet_wrap(~ irrigation) +
-    labs(title = "CIs based on fixed-effects uncertainty ONLY")
-``
 
 ####
 
@@ -707,7 +727,25 @@ To plot the CIs in base R, we can proceed as follows:
     
 Phew! (Now check out the `tidyverse` solution and tell me it's not worth the effort to learn `ggplot2`!)
 
-``{r, fig.width = 10, fig.height = 5}
+```
+
+```{multCode}
+
+``{r, fig.width = 10, fig.height = 5, size = "small"}
+## plot confidence intervals
+ggplot(newdata, 
+    aes(x = fertilizer, colour = density)) + 
+geom_pointrange(
+    aes(y = yield, ymin = lci, ymax = uci), 
+    position = position_dodge(width = 0.5)) +
+facet_wrap(~ irrigation) +
+labs(title = "CIs based on fixed-effects 
+     uncertainty ONLY")
+``
+
+####
+
+``{r, fig.width = 10, fig.height = 5, size = "scriptsize"}
 
 ## set plot layout
 par(mfrow = c(1, 2))
@@ -728,24 +766,28 @@ for(m in levels(newdata$irrigation)) {
     
     ## plot yield against fertiliser stratified by density
     for(i in 1:length(levels(newdata$density))) {
-        temp1 <- temp[temp$density == levels(newdata$density)[i], ]
+        temp1 <- temp[
+            temp$density == levels(newdata$density)[i], ]
         temp1 <- temp1[order(temp1$fertilizer), ]
         for(j in 1:nrow(temp1)){
-            points(j - 0.2 * (2 - i), temp1$yield[j], col = i, pch = 16)
-            arrows(j - 0.2 * (2 - i), temp1$lci[j], j - 0.2 * (2 - i), temp1$uci[j], 
-                length = 0.1, col = i, angle = 90, code = 3)
+            points(j - 0.2 * (2 - i), temp1$yield[j], 
+                col = i, pch = 16)
+            arrows(j - 0.2 * (2 - i), temp1$lci[j], 
+                j - 0.2 * (2 - i), temp1$uci[j], 
+                length = 0.1, col = i, 
+                angle = 90, code = 3)
         }
     }
     
     ## add custom x-axis
-    axis(side = 1, at = 1:3, labels = levels(newdata$fertilizer))
+    axis(side = 1, at = 1:3, 
+         labels = levels(newdata$fertilizer))
     
     ## add legend
-    legend(0.1, diff(par("usr")[3:4]) * 0.95 + par("usr")[3], 
+    legend(0.1, 
+        diff(par("usr")[3:4]) * 0.95 + par("usr")[3], 
         legend = levels(newdata$density),
-        col = 1:3,
-        lty = 1,
-        pch = 16)
+        col = 1:3, lty = 1, pch = 16)
 }
 
 ## reset plot layout
@@ -773,7 +815,7 @@ hg <- readRDS("_data/hg.rds")
 hg <- readRDS("hg.rds")
 ```
 
-```{r}
+```{r, size = "small"}
 hg$ldist <- log(hg$Distance)
 hg_lm <- lm(ldist ~ Species * Number, data = hg)
 drop1(hg_lm, test = "F")
@@ -781,7 +823,7 @@ drop1(hg_lm, test = "F")
 
 This suggests a statistically significant interaction between `Species` and `Number` ($F_{2, 456} = 5.78$, $p = 0.003$).
 
-```{r sumhg}
+```{r sumhg, size = "small"}
 summary(hg_lm)
 ```
 
@@ -793,7 +835,8 @@ Generate 'fake' data in order to plot fitted lines:
 
 ``{r}
 newdata <- expand.grid(
-        Number = seq(min(hg$Number), max(hg$Number), length = 100),
+        Number = seq(min(hg$Number), 
+            max(hg$Number), length = 100),
         Species = levels(hg$Species)
     )
 ``
@@ -802,37 +845,40 @@ Now get the predicted values for the fake data, and back-transform log-distance 
 
 ``{r}
 newdata <- newdata %>%
-    mutate(Distance = exp(predict(hg_lm, newdata)))
+    mutate(Distance = 
+        exp(predict(hg_lm, newdata)))
 ``
 
 Now plot the fitted lines against the observed data points:
 
 ``{r}
-ggplot(hg, aes(x = Number, y = Distance, col = Species)) +
-    geom_point() + 
-    geom_line(data = newdata)
+ggplot(hg, aes(x = Number, y = Distance, 
+    col = Species)) +
+geom_point() + 
+geom_line(data = newdata)
 ``
 
 ####
 
 Generate 'fake' data in order to plot fitted lines:
 
-``{r}
+``{r, size = "scriptsize"}
 newdata <- expand.grid(
-    Number = seq(min(hg$Number), max(hg$Number), length = 100),
+    Number = seq(min(hg$Number), max(hg$Number), 
+        length = 100),
     Species = levels(hg$Species)
 )
 ``
 
 Now get the predicted values for the fake data, and back-transform log-distance to real distances, using the `exp` command:
 
-``{r}
+``{r, size = "scriptsize"}
 newdata$Distance <- exp(predict(hg_lm, newdata))
 ``
 
 Now plot the fitted lines against the observed data points:
 
-``{r}
+``{r, size = "scriptsize"}
 plot(Distance ~ Number, data = hg, type = "n")
 points(Distance ~ Number, 
        data = hg, 
@@ -903,7 +949,7 @@ As usual, likelihood ratio tests in this context have a chi-squared distribution
 
 Since we have an **unbalanced** design here, we can continue model simplification by dropping each of the main effect terms from the current model and seeing which has the largest impact on model fit (in this case the model simplification will be different depending on the ***order*** in which variables are added/removed from the model). 
 
-```{r}
+```{r, size = "small"}
 ## set baseline model from previous round
 hg_lmer <- update(hg_lmer, ~ . - Species:Number)
 
@@ -933,7 +979,11 @@ This suggests there is a clear effect of `Species` identity on `log(Distance)` (
 
 Now we'd like to see our model summary (notice that R has automatically kept the REML fit; since we only converted the model objects to use ML during the model comparison exercise):
 
-```{r}
+```{r, eval = F}
+summary(hg_lmer)
+```
+
+```{r, echo = F, size = "scriptsize"}
 summary(hg_lmer)
 ```
 
@@ -960,14 +1010,19 @@ hg_cis$Species <- levels(hg$Species)
 hg_cis
 ```
 
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
 ```{multCode}
 
 In `ggplot2` we can use the `geom_pointrange()` function.
 
-``{r}
+``{r, size = "small"}
 ggplot(hg_cis, aes(x = Species)) +
-    geom_pointrange(aes(y = mean, ymin = lci, ymax = uci)) +
-    xlab("Species") + ylab("Distance from road (m)")
+    geom_pointrange(
+        aes(y = mean, ymin = lci, 
+        ymax = uci)) +
+    xlab("Species") + 
+    ylab("Distance from road (m)")
 ``
 
 ####
@@ -980,14 +1035,21 @@ To plot the CIs in base R, we can proceed as follows:
 4. Add a new $x$-axis and set appropriate labels for the points.
 5. Add confidence intervals using the `arrows()` function. Notice that Ive used a `for` loop to allow me to plot the three CIs in one line of code as in the earlier example. You could do this explicitly in three lines of code if you prefer.
 
-``{r}
+``{r, size = "small"}
 ylims <- c(0, max(hg_cis[, -ncol(hg_cis)]))
 xlims <- c(0.5, 3.5)
-plot(1:nrow(hg_cis), hg_cis$mean, xlab = "Species", ylab = "Distance from road (m)", 
-     xaxt = "n", pch = 16, ylim = ylims, xlim = xlims)
+plot(1:nrow(hg_cis), hg_cis$mean, 
+     xlab = "Species", 
+     ylab = "Distance from road (m)", 
+     xaxt = "n", pch = 16, ylim = ylims, 
+     xlim = xlims)
 axis(1, 1:nrow(hg_cis), hg_cis$Species)
 for(i in 1:nrow(hg_cis)) {
-    arrows(i, hg_cis$lci[i], i, hg_cis$uci[i], code = 3, angle = 90, length = 0.1)
+    arrows(i, hg_cis$lci[i], 
+           i, hg_cis$uci[i], 
+           code = 3, 
+           angle = 90, 
+           length = 0.1)
 }
 ``
 
@@ -1013,7 +1075,7 @@ plot(resid(hg_lmer) ~ fitted(hg_lmer))
 
 It can often be useful to check the distribution of residuals in each of the groups (e.g. blocks) to check assumptions 1 and 2. We can do this by plotting the residuals against the fitted values, separately for each level of the random effect, using the precious `coplot` function:
 
-```{r, fig.height = 10}
+```{r, fig.height = 8}
 coplot(resid(hg_lmer) ~ fitted(hg_lmer) | hg$Group.Name)
 ```
 
@@ -1033,7 +1095,15 @@ Obviously given your expertise with non-normal data and error structures, by now
 
 As an example, suppose our hypotheses change. Now we believe that the group sizes vary among species and with distance from the road. Using `Number` as a response variable is unlikely to have normal residuals (I'm confident). If this was a GLM, we would start by trying `family = poisson`, because the data are counts (close to zero). Miraculously, that's all we have to do in `glmer()` as well.
 
-```{r glmer}
+```{r, eval = F}
+hometime <- glmer(Number ~ Species * ldist + (1 | Group.Name), 
+    data = hg, family = poisson)
+summary(hometime)
+```
+
+`r ifelse(opts_knit$get("rmarkdown.pandoc.to") == "latex", "\\newpage", "")`
+
+```{r, echo = F}
 hometime <- glmer(Number ~ Species * ldist + (1 | Group.Name), 
     data = hg, family = poisson)
 summary(hometime)
