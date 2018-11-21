@@ -8,4 +8,6 @@ _bookdown_files
 _gh-pages_commit.sh
 
 ## ignore compiled slides
+Slides/02-linear-models/02-linear-models*.pdf
+Slides/03-generalised-linear-models/03-generalised-linear-models*.pdf
 Slides/04-mixed-effects-models/GLMM*.pdf
