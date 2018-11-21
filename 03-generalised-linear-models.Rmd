@@ -6,6 +6,10 @@ library(tidyverse)
 library(arm) # invlogit
 ```
 
+Slides can be downloaded from:
+
+* [GLMs in R](https://exeter-data-analytics.github.io/StatModelling/03-generalised-linear-models-handout.pdf)
+
 ## Motivation
 
 In the previous workshop we have seen that linear models are a powerful modelling tool. 
