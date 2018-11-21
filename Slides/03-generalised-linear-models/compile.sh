@@ -42,5 +42,5 @@ fi
 pdflatex $texfile.tex
 rm $texfile.aux $texfile.log $texfile.nav 
 rm $texfile.out $texfile.snm $texfile.toc 
-rm $texfile.vrb texput.log
+rm $texfile.vrb
 
