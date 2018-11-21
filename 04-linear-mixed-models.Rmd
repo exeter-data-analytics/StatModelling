@@ -1016,7 +1016,8 @@ The simplest way to generate confidence intervals for each of the three paramete
 
 ```{r}
 hg_cis <- matrix(NA, length(levels(hg$Species)), 3)
-for(i in 1:length(levels(hg$Species))){
+hg_spec <- levels(hg$Species)
+for(i in 1:length(hg_spec)){
     hg$Species <- relevel(hg$Species, ref = levels(hg$Species)[i])
     hg_lmer <- update(hg_lmer, data = hg)
     hg_cis[i, ] <- c(
@@ -1027,7 +1028,7 @@ for(i in 1:length(levels(hg$Species))){
 hg_cis <- exp(hg_cis)
 hg_cis <- as.data.frame(hg_cis)
 colnames(hg_cis) <- c("mean", "lci", "uci")
-hg_cis$Species <- levels(hg$Species)
+hg_cis$Species <- hg_spec
 hg_cis
 ```
 
