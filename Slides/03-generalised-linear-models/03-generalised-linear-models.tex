@@ -8,7 +8,11 @@
 % Preamble
 %=============================================================================%
 % Libraries
-\documentclass[pdf]{beamer}
+\ifdefined\handoutmode
+    \documentclass[pdf,handout]{beamer}
+\else
+    \documentclass[pdf]{beamer}
+\fi
 \usepackage[export]{adjustbox}
 \usepackage{framed}
 \usepackage{color}
