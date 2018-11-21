@@ -15,7 +15,11 @@ knitr::knit_hooks$set(chunk = function(x, options) {
 
 My thanks in particular to [Dave Hodgson](http://biosciences.exeter.ac.uk/staff/index.php?web_id=david_hodgson), who's fantastic Master's course offered up the prototype for this workshop.
 
-Firstly, install if necessary (using `install.packages()`; uncomment the code below if required) and load the `lme4` package [@lme4]:
+Slides can be downloaded from:
+
+* [(G)LMMs in R](https://exeter-data-analytics.github.io/StatModelling/GLMMHandout.pdf)
+
+Firstly, install if necessary (using `install.packages()`; uncomment the code below if required) and load the `lme4` package:
 
 ```{r, message = F, warning = F}
 ## load libraries

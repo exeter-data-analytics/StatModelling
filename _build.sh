@@ -8,3 +8,4 @@ Rscript -e "bookdown::render_book('index.Rmd', 'bookdown::gitbook')"
 cp .nojekyll _site/ 
 cp -r _data _site/
 cp -r dataFiles.zip _site/
+cp GLMMSlides/GLMMHandout.pdf _site/
