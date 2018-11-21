@@ -8,4 +8,4 @@ _bookdown_files
 _gh-pages_commit.sh
 
 ## ignore compiled slides
-GLMMSlides/*.pdf
+Slides/04-mixed-effects-models/GLMM*.pdf
