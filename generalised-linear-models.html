@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Statistical modelling in R</title>
+  <meta name="description" content="Statistical modelling in R">
+  <meta name="generator" content="bookdown 0.7 and GitBook 2.6.7">
+
+  <meta property="og:title" content="Statistical modelling in R" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Statistical modelling in R" />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Statistical modelling in R" />
+  
+  <meta name="twitter:description" content="Statistical modelling in R" />
+  
+
+<meta name="author" content="JJ Valletta and TJ McKinley">
+
+
+<meta name="date" content="2018-11-22">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="linear-models.html">
+<link rel="next" href="mixed-effects-models.html">
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+<script language="javascript"> 
+    function toggle(id) {
+        var ele = document.getElementById("toggleText" + id);
+        var text = document.getElementById("displayText" + id);
+        var buttonText = text.innerHTML.replace("Show ", "");
+        buttonText = buttonText.replace("Hide ", "");
+        if(ele.style.display == "block") {
+            ele.style.display = "none";
+            text.innerHTML = "Show " + buttonText;
+        } else {
+            ele.style.display = "block";
+            text.innerHTML = "Hide " + buttonText;
+        }
+    } 
+</script>
+
+<script language="javascript">
+    function openCode(evt, codeName, id) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent" + id);
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks" + id);
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(codeName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+</script>
+
+<script language="javascript">
+    function hide(id){
+        document.getElementById(id).style.display = "none";
+    }
+</script>
+</script>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+<link rel="stylesheet" href="_style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a><ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#prerequisites"><i class="fa fa-check"></i>Prerequisites</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#learning-outcomes"><i class="fa fa-check"></i>Learning outcomes</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#recommended-reading"><i class="fa fa-check"></i>Recommended reading</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#data-files"><i class="fa fa-check"></i>Data files</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#acknowledgements"><i class="fa fa-check"></i>Acknowledgements</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="introduction.html"><a href="introduction.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1.1" data-path="introduction.html"><a href="introduction.html#motivation"><i class="fa fa-check"></i><b>1.1</b> Motivation</a></li>
+<li class="chapter" data-level="1.2" data-path="introduction.html"><a href="introduction.html#what-is-a-model"><i class="fa fa-check"></i><b>1.2</b> What is a model?</a></li>
+<li class="chapter" data-level="1.3" data-path="introduction.html"><a href="introduction.html#what-is-a-statistical-stochastic-model"><i class="fa fa-check"></i><b>1.3</b> What is a statistical (stochastic) model?</a></li>
+<li class="chapter" data-level="1.4" data-path="introduction.html"><a href="introduction.html#illustrative-example"><i class="fa fa-check"></i><b>1.4</b> Illustrative example</a></li>
+<li class="chapter" data-level="1.5" data-path="introduction.html"><a href="introduction.html#summary"><i class="fa fa-check"></i><b>1.5</b> Summary</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="linear-models.html"><a href="linear-models.html"><i class="fa fa-check"></i><b>2</b> Linear models</a><ul>
+<li class="chapter" data-level="2.1" data-path="linear-models.html"><a href="linear-models.html#simple-linear-regression"><i class="fa fa-check"></i><b>2.1</b> Simple linear regression</a></li>
+<li class="chapter" data-level="2.2" data-path="linear-models.html"><a href="linear-models.html#doing-it-in-r"><i class="fa fa-check"></i><b>2.2</b> Doing it in R</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="linear-models.html"><a href="linear-models.html#using-data-frames"><i class="fa fa-check"></i><b>2.2.1</b> Using data frames</a></li>
+<li class="chapter" data-level="2.2.2" data-path="linear-models.html"><a href="linear-models.html#extended-summary"><i class="fa fa-check"></i><b>2.2.2</b> Extended summary</a></li>
+</ul></li>
+<li class="chapter" data-level="2.3" data-path="linear-models.html"><a href="linear-models.html#model-checking"><i class="fa fa-check"></i><b>2.3</b> Model checking</a><ul>
+<li class="chapter" data-level="2.3.1" data-path="linear-models.html"><a href="linear-models.html#residuals-vs-fitted-values"><i class="fa fa-check"></i><b>2.3.1</b> Residuals vs fitted values</a></li>
+<li class="chapter" data-level="2.3.2" data-path="linear-models.html"><a href="linear-models.html#residuals-vs-fitted-values-scale-location"><i class="fa fa-check"></i><b>2.3.2</b> Residuals vs fitted values (scale-location)</a></li>
+<li class="chapter" data-level="2.3.3" data-path="linear-models.html"><a href="linear-models.html#residuals-vs.leverage"><i class="fa fa-check"></i><b>2.3.3</b> Residuals vs. leverage</a></li>
+<li class="chapter" data-level="2.3.4" data-path="linear-models.html"><a href="linear-models.html#qq-plots"><i class="fa fa-check"></i><b>2.3.4</b> QQ plots</a></li>
+</ul></li>
+<li class="chapter" data-level="2.4" data-path="linear-models.html"><a href="linear-models.html#sec:practical1"><i class="fa fa-check"></i><b>2.4</b> Practical 1</a></li>
+<li class="chapter" data-level="2.5" data-path="linear-models.html"><a href="linear-models.html#sec:prediction"><i class="fa fa-check"></i><b>2.5</b> Prediction</a></li>
+<li class="chapter" data-level="2.6" data-path="linear-models.html"><a href="linear-models.html#multiple-linear-regression"><i class="fa fa-check"></i><b>2.6</b> Multiple linear regression</a></li>
+<li class="chapter" data-level="2.7" data-path="linear-models.html"><a href="linear-models.html#practical-2"><i class="fa fa-check"></i><b>2.7</b> Practical 2</a></li>
+<li class="chapter" data-level="2.8" data-path="linear-models.html"><a href="linear-models.html#sec:categorical"><i class="fa fa-check"></i><b>2.8</b> Categorical explanatory variables</a></li>
+<li class="chapter" data-level="2.9" data-path="linear-models.html"><a href="linear-models.html#practical-3"><i class="fa fa-check"></i><b>2.9</b> Practical 3</a></li>
+<li class="chapter" data-level="2.10" data-path="linear-models.html"><a href="linear-models.html#practical-issues"><i class="fa fa-check"></i><b>2.10</b> Practical issues</a></li>
+<li class="chapter" data-level="2.11" data-path="linear-models.html"><a href="linear-models.html#summary-1"><i class="fa fa-check"></i><b>2.11</b> Summary</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html"><i class="fa fa-check"></i><b>3</b> Generalised linear models</a><ul>
+<li class="chapter" data-level="3.1" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#motivation-1"><i class="fa fa-check"></i><b>3.1</b> Motivation</a></li>
+<li class="chapter" data-level="3.2" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#generalised-linear-models-glms"><i class="fa fa-check"></i><b>3.2</b> Generalised Linear Models (GLMs)</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#link-functions"><i class="fa fa-check"></i><b>3.2.1</b> Link functions</a></li>
+<li class="chapter" data-level="3.2.2" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#workflow"><i class="fa fa-check"></i><b>3.2.2</b> Workflow</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#poisson-regression-for-count-data"><i class="fa fa-check"></i><b>3.3</b> Poisson regression (for count data)</a></li>
+<li class="chapter" data-level="3.4" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#example-cuckoos"><i class="fa fa-check"></i><b>3.4</b> Example: Cuckoos</a></li>
+<li class="chapter" data-level="3.5" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#practical-4---species-richness"><i class="fa fa-check"></i><b>3.5</b> Practical 4 - Species richness</a></li>
+<li class="chapter" data-level="3.6" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#logistic-regression-for-binary-data"><i class="fa fa-check"></i><b>3.6</b> Logistic regression (for binary data)</a></li>
+<li class="chapter" data-level="3.7" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#example-1992-us-election-survey"><i class="fa fa-check"></i><b>3.7</b> Example: 1992 US election survey</a><ul>
+<li class="chapter" data-level="3.7.1" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#the-divide-by-four-rule"><i class="fa fa-check"></i><b>3.7.1</b> The ‘divide-by-four’ rule</a></li>
+<li class="chapter" data-level="3.7.2" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#odds-ratios"><i class="fa fa-check"></i><b>3.7.2</b> Odds ratios</a></li>
+<li class="chapter" data-level="3.7.3" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#model-diagnostics"><i class="fa fa-check"></i><b>3.7.3</b> Model diagnostics</a></li>
+</ul></li>
+<li class="chapter" data-level="3.8" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#practical-5---wine"><i class="fa fa-check"></i><b>3.8</b> Practical 5 - Wine</a></li>
+<li class="chapter" data-level="3.9" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#summary-2"><i class="fa fa-check"></i><b>3.9</b> Summary</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html"><i class="fa fa-check"></i><b>4</b> Mixed effects models</a><ul>
+<li class="chapter" data-level="4.1" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#a-note-on-variable-selection-and-model-simplification"><i class="fa fa-check"></i><b>4.1</b> A note on variable selection and model simplification</a><ul>
+<li class="chapter" data-level="4.1.1" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#common-nhst-approaches-to-model-simplification"><i class="fa fa-check"></i><b>4.1.1</b> Common NHST approaches to model simplification</a></li>
+</ul></li>
+<li class="chapter" data-level="4.2" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#non-independent-data-randomised-complete-block-design"><i class="fa fa-check"></i><b>4.2</b> Non-independent data: Randomised Complete Block Design</a><ul>
+<li class="chapter" data-level="4.2.1" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#mixed-model-approach"><i class="fa fa-check"></i><b>4.2.1</b> Mixed model approach</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#non-independent-data-pseudoreplication-nested-variance-and-derived-variable-analysis"><i class="fa fa-check"></i><b>4.3</b> Non-independent data: pseudoreplication, nested variance and derived variable analysis</a><ul>
+<li class="chapter" data-level="4.3.1" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#the-wrong-analysis"><i class="fa fa-check"></i><b>4.3.1</b> The Wrong Analysis</a></li>
+<li class="chapter" data-level="4.3.2" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#derived-variables-avoid-pseudoreplication"><i class="fa fa-check"></i><b>4.3.2</b> Derived variables avoid pseudoreplication</a></li>
+<li class="chapter" data-level="4.3.3" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#secmixed"><i class="fa fa-check"></i><b>4.3.3</b> Mixed model approach</a></li>
+</ul></li>
+<li class="chapter" data-level="4.4" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#non-independent-data-split-plot-analyses"><i class="fa fa-check"></i><b>4.4</b> Non-independent data: Split-plot analyses</a><ul>
+<li class="chapter" data-level="4.4.1" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#analysing-split-plot-designs-using-lmer"><i class="fa fa-check"></i><b>4.4.1</b> Analysing split-plot designs using <code>lmer</code></a></li>
+</ul></li>
+<li class="chapter" data-level="4.5" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#non-independent-data-absorbing-the-influence-of-random-effects"><i class="fa fa-check"></i><b>4.5</b> Non-independent data: Absorbing the influence of random effects</a></li>
+<li class="chapter" data-level="4.6" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#model-checking-with-mixed-models"><i class="fa fa-check"></i><b>4.6</b> Model checking with mixed models</a></li>
+<li class="chapter" data-level="4.7" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#why-arent-glms-much-good-at-modelling-non-independent-data"><i class="fa fa-check"></i><b>4.7</b> Why aren’t GLMs much good at modelling non-independent data?</a></li>
+<li class="chapter" data-level="4.8" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#generalised-linear-mixed-modelling-glmm"><i class="fa fa-check"></i><b>4.8</b> Generalised Linear Mixed Modelling (GLMM)</a></li>
+<li class="chapter" data-level="4.9" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#parboot"><i class="fa fa-check"></i><b>4.9</b> Parametric bootstrapping</a></li>
+<li class="chapter" data-level="4.10" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#secbayes"><i class="fa fa-check"></i><b>4.10</b> Bayesian modelling</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Statistical modelling in R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="generalised-linear-models" class="section level1">
+<h1><span class="header-section-number">3</span> Generalised linear models</h1>
+<p>Slides can be downloaded from:</p>
+<ul>
+<li><a href="https://exeter-data-analytics.github.io/StatModelling/03-generalised-linear-models-handout.pdf">GLMs in R</a></li>
+</ul>
+<div id="motivation-1" class="section level2">
+<h2><span class="header-section-number">3.1</span> Motivation</h2>
+<p>In the previous workshop we have seen that linear models are a powerful modelling tool. However, we have to satisfy the following assumptions:</p>
+<ol style="list-style-type: decimal">
+<li>A <strong>linear</strong> mean function is relevant.</li>
+<li>Variances are equal across all predicted values of the response (<strong>homoscedatic</strong>)</li>
+<li>Errors are <strong>normally</strong> distributed.</li>
+<li>Samples collected at <strong>random</strong>.</li>
+<li>Errors are <strong>independent</strong>.</li>
+</ol>
+<p>If assumptions 1–3 are violated we can <em>transform</em> our response variable to try and fix this (power transforms, Tukey’s ladder-of-powers, Box-Cox transformation, Tukey and Mosteller’s bulging rule). However, in a lot of other cases this is either not possible (e.g binary output) or we want to explicitly model the underlying distribution (e.g count data). Instead, we can use <em>Generalised</em> Linear Models (GLMs) that let us change the <em>error structure</em> of our data. By error structure we mean the assumption placed on the <em>residuals</em>. In the previous simple linear regression case we assumed them to be normal (i.e <span class="math inline">\(\epsilon_i \sim \mathcal{N}(0,\sigma^2)\)</span>)</p>
+</div>
+<div id="generalised-linear-models-glms" class="section level2">
+<h2><span class="header-section-number">3.2</span> Generalised Linear Models (GLMs)</h2>
+<p><strong>Generalised Linear Models</strong> (GLMs) have:</p>
+<ol style="list-style-type: decimal">
+<li>A linear mean (of your making).</li>
+<li>A <strong>link function</strong> (like an ‘internal’ transformation).</li>
+<li>An <strong>error structure</strong>.</li>
+</ol>
+<div id="link-functions" class="section level3">
+<h3><span class="header-section-number">3.2.1</span> Link functions</h3>
+<p>A <strong>link</strong> function <em>links</em> your <strong><em>mean</em></strong> function to the scale of the <strong>observed data</strong> e.g.</p>
+<ul>
+<li><strong>Response</strong> variable <span class="math inline">\(Y\)</span> and explanatory variable(s) <span class="math inline">\(X\)</span>.</li>
+<li>The <strong>regression</strong> parameters are denoted using <span class="math inline">\(\beta_p\)</span> as before.</li>
+<li><strong>Linear</strong> function: <span class="math inline">\(\beta_0 + \beta_1 X\)</span>.</li>
+<li><span class="math inline">\(E(Y) = g^{-1}\left(\beta_0 + \beta_1 X\right)\)</span>.</li>
+</ul>
+<p>Here <span class="math inline">\(E(Y)\)</span> denotes the <strong>expected value</strong> (i.e. mean of <span class="math inline">\(Y\)</span>).</p>
+<p>The function <span class="math inline">\(g(\cdot)\)</span> is known as the <strong>link function</strong>, and <span class="math inline">\(g^{-1}(\cdot)\)</span> denotes the <strong>inverse</strong> of <span class="math inline">\(g(\cdot)\)</span>.</p>
+<p>The simple linear regression model we have used so far is a special cases of a GLM:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">lm</span>(height <span class="op">~</span><span class="st"> </span>weight)</code></pre></div>
+<p>is equivalent to</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">glm</span>(height <span class="op">~</span><span class="st"> </span>weight, <span class="dt">family=</span><span class="kw">gaussian</span>(<span class="dt">link=</span>identity))</code></pre></div>
+<p>Compared to <a href="https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/lm"><code>lm()</code></a>, the <a href="https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/glm"><code>glm()</code></a> function takes an additional argument called <a href="https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/family"><code>family</code></a>, which specifies the error structure <strong>and</strong> link function.</p>
+<p>The default <strong>link function</strong> for the normal (Gaussian) distribution is the <strong>identity</strong>, i.e. for mean <span class="math inline">\(\mu\)</span> we have:</p>
+<p><span class="math display">\[
+\mu = \beta_0 + \beta_1 X
+\]</span></p>
+<p>Defaults are usually good choices (shown in bold below):</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Family</th>
+<th align="center">Link</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><code>gaussian</code></td>
+<td align="center"><strong><code>identity</code></strong></td>
+</tr>
+<tr class="even">
+<td align="center"><code>binomial</code></td>
+<td align="center"><strong><code>logit</code></strong>, <code>probit</code> or <code>cloglog</code></td>
+</tr>
+<tr class="odd">
+<td align="center"><code>poisson</code></td>
+<td align="center"><strong><code>log</code></strong>, <code>identity</code> or <code>sqrt</code></td>
+</tr>
+<tr class="even">
+<td align="center"><code>Gamma</code></td>
+<td align="center"><strong><code>inverse</code></strong>, <code>identity</code> or <code>log</code></td>
+</tr>
+<tr class="odd">
+<td align="center"><code>inverse.gaussian</code></td>
+<td align="center"><strong><code>1/mu^2</code></strong></td>
+</tr>
+<tr class="even">
+<td align="center"><code>quasi</code></td>
+<td align="center">user-defined</td>
+</tr>
+<tr class="odd">
+<td align="center"><code>quasibinomial</code></td>
+<td align="center"><strong><code>logit</code></strong></td>
+</tr>
+<tr class="even">
+<td align="center"><code>quasipoisson</code></td>
+<td align="center"><strong><code>log</code></strong></td>
+</tr>
+</tbody>
+</table>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+Using the fruitfly data introduced in <a href="linear-models.html#sec:practical1">Practical 1</a>, fit a linear model with lifespan as response variable and thorax length and type of companion as explanatory variables using both the <code>lm</code> and <code>glm</code> functions and compare their summaries.
+</div>
+</div>
+<button id="displayTextunnamed-chunk-78" onclick="javascript:toggle('unnamed-chunk-78');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-78" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ff &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;fruitfly.rds&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(longevity <span class="op">~</span><span class="st"> </span>type <span class="op">+</span><span class="st"> </span>thorax, ff)
+<span class="kw">summary</span>(fit_lm)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = longevity ~ type + thorax, data = ff)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -27.330  -6.803  -2.531   7.143  29.415 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)      -56.521     11.149  -5.069 1.45e-06 ***
+## typeInseminated    3.450      2.759   1.250    0.214    
+## typeVirgin       -13.349      2.756  -4.845 3.80e-06 ***
+## thorax           143.638     13.064  10.995  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 11.21 on 121 degrees of freedom
+## Multiple R-squared:  0.6024, Adjusted R-squared:  0.5925 
+## F-statistic:  61.1 on 3 and 121 DF,  p-value: &lt; 2.2e-16</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_glm &lt;-<span class="st"> </span><span class="kw">glm</span>(longevity <span class="op">~</span><span class="st"> </span>type <span class="op">+</span><span class="st"> </span>thorax, ff, <span class="dt">family=</span>gaussian)
+<span class="kw">summary</span>(fit_glm)</code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = longevity ~ type + thorax, family = gaussian, data = ff)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -27.330   -6.803   -2.531    7.143   29.415  
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)      -56.521     11.149  -5.069 1.45e-06 ***
+## typeInseminated    3.450      2.759   1.250    0.214    
+## typeVirgin       -13.349      2.756  -4.845 3.80e-06 ***
+## thorax           143.638     13.064  10.995  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 125.7095)
+## 
+##     Null deviance: 38253  on 124  degrees of freedom
+## Residual deviance: 15211  on 121  degrees of freedom
+## AIC: 964.92
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<p>The model fits are exactly the same</p>
+</div>
+</div>
+</div>
+</div>
+<div id="workflow" class="section level3">
+<h3><span class="header-section-number">3.2.2</span> Workflow</h3>
+<ul>
+<li>Exploratory data analysis</li>
+<li>Choose suitable error term</li>
+<li>Choose suitable mean function (and link function)</li>
+<li>Fit model
+<ul>
+<li>Residual checks and model fit diagnostics</li>
+<li>Revise model (transformations etc.)</li>
+</ul></li>
+<li>Model simplification if required</li>
+<li>Check final model</li>
+</ul>
+</div>
+</div>
+<div id="poisson-regression-for-count-data" class="section level2">
+<h2><span class="header-section-number">3.3</span> Poisson regression (for count data)</h2>
+<p>Count data are ubiquitous in the life sciences (e.g number of parasites per microlitre of blood, number of species in a particular area). These type of data are <strong>discrete</strong> and <strong>non-negative</strong>. In such cases assuming our response variable to be normally distributed is not typically sensible. The Poisson distribution lets us model count data explicitly.</p>
+<p>Recall the simple linear regression case (i.e a GLM with a Gaussian error structure and identity link). For the sake of clarity let’s consider a single explanatory variable and omit the index <span class="math inline">\(i\)</span> which runs from 1 to <span class="math inline">\(n\)</span> (the total number of observations/data points):</p>
+<p><span class="math display">\[
+\begin{aligned}
+Y &amp; = \beta_0 + \beta_1X + \epsilon \\
+\epsilon &amp; \sim \mathcal{N}(0, \sigma^2)
+\end{aligned}
+\]</span> Which can be re-written as:</p>
+<p><span class="math display">\[
+\begin{aligned}
+Y &amp; \sim \mathcal{N}(\mu, \sigma^2) \\
+\mu &amp; = \beta_0 + \beta_1X
+\end{aligned}
+\]</span> The mean function is <strong>unconstrained</strong>, i.e the value of <span class="math inline">\(\beta_0 + \beta_1X\)</span> can range from <span class="math inline">\(-\infty\)</span> to <span class="math inline">\(+\infty\)</span>. If we want to model count data we therefore want to <strong>constrain</strong> this mean to be positive. Mathematically we can do this by taking the <strong>logarithm</strong> of the mean (it is by no coincidence that log transforms are very popular to normalise response variables). We then assume our count data to be Poisson distributed (a discrete, non-negative distribution), to obtain our Poisson regression model (to be consistent with the statistics literature we will rename <span class="math inline">\(\mu\)</span> to <span class="math inline">\(\lambda\)</span>):</p>
+<p><span class="math display">\[
+\begin{aligned}
+Y &amp; \sim \mathcal{Pois}(\lambda) \\
+\log{\lambda} &amp; = \beta_0 + \beta_1X
+\end{aligned}
+\]</span> <strong>Note</strong>: we are still fitting straight lines (hyperplanes in higher dimensions) through our data! The only difference is that it is linear for the log transformed observations.</p>
+<p>Where’s the variance parameter in this case (i.e anagolous to <span class="math inline">\(\sigma^2\)</span>)? The <strong>Poisson</strong> distribution has the following characteristics:</p>
+<ul>
+<li><strong>Discrete</strong> variable, defined on the range <span class="math inline">\(0, 1, \dots, \infty\)</span>.</li>
+<li>A single <strong><em>rate</em></strong> parameter <span class="math inline">\(\lambda\)</span>, where <span class="math inline">\(\lambda &gt; 0\)</span>.</li>
+<li><strong>Mean</strong> = <span class="math inline">\(\lambda\)</span><br />
+</li>
+<li><strong>Variance</strong> = <span class="math inline">\(\lambda\)</span></li>
+</ul>
+<p><img src="_main_files/figure-html/unnamed-chunk-79-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>So for the Poisson regression case we assume that the mean and variance are the same. Hence, as the mean <em>increases</em>, the variance <em>increases</em> also (<strong>heteroscedascity</strong>). This may or may not be a sensible assumption so watch out!<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
+<p>Recall the link function and the rules of logarithms (if <span class="math inline">\(\log{\lambda} = k\)</span>, then <span class="math inline">\(\lambda = e^k\)</span>):</p>
+<p><span class="math display">\[
+\begin{aligned}
+\log{\lambda} &amp; = \beta_0 + \beta_1X \\
+\lambda &amp; = e^{\beta_0 + \beta_1X }
+\end{aligned}
+\]</span> Thus we are effectively modelling the observed counts (on the original scale) using an exponential mean function.</p>
+<p><img src="_main_files/figure-html/unnamed-chunk-80-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="example-cuckoos" class="section level2">
+<h2><span class="header-section-number">3.4</span> Example: Cuckoos</h2>
+<p><img src="_img/03-cuckoo.png" width="75%" style="display: block; margin: auto;" /></p>
+<p>In a study by <a href="http://www.nature.com/nature/journal/v397/n6721/abs/397667a0.html">Kilner <em>et al.</em> (1999)</a>, the authors studied the begging rate of nestlings in relation to total mass of the brood of <strong>reed warbler chicks</strong> and <strong>cuckoo chicks</strong>. The question of interest is:</p>
+<blockquote>
+<p>How does nestling mass affect begging rates between the different species?</p>
+</blockquote>
+<p>Download the data file from <a href="https://exeter-data-analytics.github.io/StatModelling/_data/cuckoo.csv">here</a> and save it to your working directory.<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cuckoo &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;cuckoo.csv&quot;</span>, <span class="dt">header=</span>T)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(cuckoo)</code></pre></div>
+<pre><code>##        Mass Beg Species
+## 1  9.637522   0  Cuckoo
+## 2 10.229151   0  Cuckoo
+## 3 13.103706   0  Cuckoo
+## 4 15.217391   0  Cuckoo
+## 5 16.231884   0  Cuckoo
+## 6 20.120773   0  Cuckoo</code></pre>
+<p>The data columns are:</p>
+<ul>
+<li><strong>Mass</strong>: nestling mass of chick in grams</li>
+<li><strong>Beg</strong>: begging calls per 6 secs</li>
+<li><strong>Species</strong>: Warbler or Cuckoo</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(cuckoo, <span class="kw">aes</span>(<span class="dt">x=</span>Mass, <span class="dt">y=</span>Beg, <span class="dt">colour=</span>Species)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-85-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>There seem to be a relationship between mass and begging calls and it could be different between species. It is tempting to fit a linear model to this data. In fact, this is what the authors of the original paper did; <strong>reed warbler chicks</strong> (solid circles, dashed fitted line) and <strong>cuckoo chick</strong> (open circles, solid fitted line):</p>
+<p><img src="_img/03-cuckooanalysis.png" width="75%" style="display: block; margin: auto;" /></p>
+<p>This model is inadequate. It is predicting <strong>negative</strong> begging calls <em>within</em> the range of the observed data, which clearly does not make any sense.</p>
+<p>Let us display the model diagnostics plots for this linear model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Fit model
+## We add an interaction term here, we will talk about this later on
+fit &lt;-<span class="st"> </span><span class="kw">lm</span>(Beg <span class="op">~</span><span class="st"> </span>Mass<span class="op">*</span>Species, <span class="dt">data=</span>cuckoo) </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))
+<span class="kw">plot</span>(fit, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">col=</span><span class="st">&#39;darkgrey&#39;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-88-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>The residuals plot depicts a “funnelling” effect, highlighting that the model assumptions are violated. We should therefore try a different model structure.</p>
+<p>The response variable in this case is a classic <strong>count data</strong>: <strong>discrete</strong> and bounded below by zero (i.e we cannot have negative counts). We will therefore try a <strong>Poisson model</strong> using a <strong>log</strong> link function for the mean:</p>
+<p><span class="math display">\[
+    \log{\lambda} = \beta_0 + \beta_1 M_i + \beta_2 S_i + \beta_3 M_i S_i
+\]</span></p>
+<p>where <span class="math inline">\(M_i\)</span> is nestling mass and <span class="math inline">\(S_i\)</span> a <strong>dummy</strong> variable (refer to <a href="linear-models.html#sec:categorical">Categorical explanatory variables</a>):</p>
+<p><span class="math display">\[
+S_i = \left\{\begin{array}{ll}
+        1 &amp; \mbox{if $i$ is warbler},\\
+        0 &amp; \mbox{otherwise}.
+        \end{array}
+        \right.
+\]</span></p>
+<p>The term <span class="math inline">\(M_iS_i\)</span> is an <strong>interaction</strong> term. Think of this as an additional explanatory variable in our model. Effectively it lets us have <strong>different</strong> slopes for different species (without an interaction term we assume that both species have the same slope for the relationship between begging rate and mass, and only the intercept differ).</p>
+<p>The mean regression lines for the two species look like this:</p>
+<ul>
+<li><strong>Cuckoo</strong> (<span class="math inline">\(S_i=0\)</span>)</li>
+</ul>
+<p><span class="math display">\[
+\begin{aligned}
+    \log{\lambda} &amp; = \beta_0 + \beta_1 M_i + (\beta_2 \times 0)  + (\beta_3 \times M_i \times 0)\\
+    \log{\lambda} &amp; = \beta_0 + \beta_1 M_i
+\end{aligned}
+\]</span></p>
+<ul>
+<li><p><strong>Intercept</strong> = <span class="math inline">\(\beta_0\)</span>, <strong>Gradient</strong> = <span class="math inline">\(\beta_1\)</span></p></li>
+<li><p><strong>Warbler</strong> (<span class="math inline">\(S_i=1\)</span>)</p></li>
+</ul>
+<p><span class="math display">\[
+\begin{aligned}
+    \log{\lambda} &amp; = \beta_0 + \beta_1 M_i + (\beta_2 \times 1)  + (\beta_3 \times M_i \times 1)\\
+    \log{\lambda} &amp; = \beta_0 + \beta_1 M_i + \beta_2 + \beta_3M_i\\
+    \log{\lambda} &amp; = (\beta_0+\beta_2) + (\beta_1+\beta_3) M_i
+\end{aligned}
+\]</span></p>
+<ul>
+<li><strong>Intercept</strong> = <span class="math inline">\(\beta_0 + \beta_2\)</span>, <strong>Gradient</strong> = <span class="math inline">\(\beta_1 + \beta_3\)</span></li>
+</ul>
+<p>To specify an interaction term in R we use the <a href="https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/formula"><code>*</code></a> operator.</p>
+<ul>
+<li>Model with <strong>no</strong> interaction term: <span class="math inline">\(\log{\lambda} = \beta_0 + \beta_1 M_i + \beta_2 S_i\)</span></li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">glm</span>(Beg <span class="op">~</span><span class="st"> </span>Mass <span class="op">+</span><span class="st"> </span>Species, <span class="dt">data=</span>cuckoo, <span class="dt">family=</span><span class="kw">poisson</span>(<span class="dt">link=</span>log))</code></pre></div>
+<ul>
+<li>Model <strong>with</strong> interaction term: <span class="math inline">\(\log{\lambda} = \beta_0 + \beta_1 M_i + \beta_2 S_i + \beta_3 M_i S_i\)</span></li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">glm</span>(Beg <span class="op">~</span><span class="st"> </span>Mass<span class="op">*</span>Species, <span class="dt">data=</span>cuckoo, <span class="dt">family=</span><span class="kw">poisson</span>(<span class="dt">link=</span>log))</code></pre></div>
+<p>Fit the model with the interaction term in R:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">glm</span>(Beg <span class="op">~</span><span class="st"> </span>Mass<span class="op">*</span>Species, <span class="dt">data=</span>cuckoo, <span class="dt">family=</span><span class="kw">poisson</span>(<span class="dt">link=</span>log))
+<span class="kw">summary</span>(fit)</code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = Beg ~ Mass * Species, family = poisson(link = log), 
+##     data = cuckoo)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -7.4570  -3.0504  -0.0006   1.9389   5.2139  
+## 
+## Coefficients:
+##                      Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)          1.589861   0.104531  15.209  &lt; 2e-16 ***
+## Mass                 0.054736   0.002298  23.820  &lt; 2e-16 ***
+## SpeciesWarbler      -0.535546   0.161304  -3.320 0.000900 ***
+## Mass:SpeciesWarbler  0.015822   0.004662   3.394 0.000689 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 1730.04  on 57  degrees of freedom
+## Residual deviance:  562.08  on 54  degrees of freedom
+## AIC: 784.81
+## 
+## Number of Fisher Scoring iterations: 5</code></pre>
+<p>For the sake of clarity here is the mapping of the <span class="math inline">\(\beta_p\)</span> regression coefficients used above and those returned by R.</p>
+<ul>
+<li><code>(Intercept)</code> = <span class="math inline">\(\beta_0\)</span> (intercept for the <strong>reference/baseline</strong> species, <strong>cuckoo</strong> in this case)</li>
+<li><code>Mass</code> = <span class="math inline">\(\beta_1\)</span> (slope for the baseline species)</li>
+<li><code>SpeciesWarbler</code> = <span class="math inline">\(\beta_2\)</span> (the increase/decrease in intercept relative to the baseline species)</li>
+<li><code>Mass:SpeciesWarbler</code> = <span class="math inline">\(\beta_3\)</span> (the increase/decrease in slope relative to the baseline species)</li>
+</ul>
+<p>Plot the mean regression line for each species:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">newdata &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">Mass=</span><span class="kw">seq</span>(<span class="kw">min</span>(cuckoo<span class="op">$</span>Mass), <span class="kw">max</span>(cuckoo<span class="op">$</span>Mass), <span class="dt">length.out=</span><span class="dv">200</span>),
+                       <span class="dt">Species=</span><span class="kw">levels</span>(cuckoo<span class="op">$</span>Species))
+newdata &lt;-<span class="st"> </span><span class="kw">cbind</span>(newdata, <span class="dt">Beg=</span><span class="kw">predict</span>(fit, newdata, <span class="dt">type=</span><span class="st">&#39;response&#39;</span>))
+
+
+<span class="kw">ggplot</span>(<span class="dt">mapping=</span><span class="kw">aes</span>(<span class="dt">x=</span>Mass, <span class="dt">y=</span>Beg, <span class="dt">colour=</span>Species)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">data=</span>cuckoo) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="dt">data=</span>newdata)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-92-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>We get an exponential curve in the scale of the original data, which is the <strong>same</strong> as a straight line in the log-scaled version of the data.</p>
+</div>
+<div id="practical-4---species-richness" class="section level2">
+<h2><span class="header-section-number">3.5</span> Practical 4 - Species richness</h2>
+<p>A long-term agricultural experiment had 90 grassland plots, each 25m x 25m, differing in biomass, soil pH and species richness (the count of species in the whole plot). It is well known that species richness declines with increasing biomass, but the question addressed here is whether the slope of that relationship differs with soil pH (i.e there’s an interaction effect). The plots were classified according to a 3-level factor as high, medium or low pH with 30 plots in each level.</p>
+<p>The response variable is the <strong>count</strong> of species (<code>Species</code>), so a GLM with Poisson errors is a sensible choice. The continuous explanatory variable is long-term average biomass measured in June (<code>Biomass</code>), and the categorical explanatory variable is soil pH (<code>pH</code>).</p>
+<p>Download the data from <a href="https://exeter-data-analytics.github.io/StatModelling/_data/species.csv">here</a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;species.csv&quot;</span>, <span class="dt">header=</span>T)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(df)</code></pre></div>
+<pre><code>##     pH   Biomass Species
+## 1 high 0.4692972      30
+## 2 high 1.7308704      39
+## 3 high 2.0897785      44
+## 4 high 3.9257871      35
+## 5 high 4.3667927      25
+## 6 high 5.4819747      29</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x=</span>Biomass, <span class="dt">y=</span>Species, <span class="dt">colour=</span>pH)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-96-1.png" width="480" style="display: block; margin: auto;" /></p>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+<ol style="list-style-type: decimal">
+<li>Fit a simple linear regression model (i.e assuming residuals to be normally distributed) with <code>Species</code> as response variable and <code>Biomass</code> and <code>pH</code> as explanatory variables. Assume a <strong>different</strong> slope for each <code>pH</code> level. Display a summary of the fit.</li>
+<li>Plot the mean regression lines for all three <code>pH</code> levels (low, medium, high)</li>
+<li>As <code>Biomass</code> tends to increase what is the expected number of species found in the grassland for the different pH levels? Is this biologically plausible?</li>
+<li>Repeat 1–3 this time fitting a <strong>Poisson</strong> regression model.
+</div>
+</div></li>
+</ol>
+<button id="displayTextunnamed-chunk-98" onclick="javascript:toggle('unnamed-chunk-98');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-98" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Simple linear regression model
+
+## Model fit
+fit &lt;-<span class="st"> </span><span class="kw">lm</span>(Species <span class="op">~</span><span class="st"> </span>Biomass<span class="op">*</span>pH, <span class="dt">data=</span>df)
+<span class="kw">summary</span>(fit)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = Species ~ Biomass * pH, data = df)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -9.290 -2.554 -0.124  2.208 15.677 
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)    40.60407    1.36701  29.703  &lt; 2e-16 ***
+## Biomass        -2.80045    0.23856 -11.739  &lt; 2e-16 ***
+## pHlow         -22.75667    1.83564 -12.397  &lt; 2e-16 ***
+## pHmid         -11.57307    1.86926  -6.191  2.1e-08 ***
+## Biomass:pHlow  -0.02733    0.51248  -0.053    0.958    
+## Biomass:pHmid   0.23535    0.38579   0.610    0.543    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 3.818 on 84 degrees of freedom
+## Multiple R-squared:  0.8531, Adjusted R-squared:  0.8444 
+## F-statistic: 97.58 on 5 and 84 DF,  p-value: &lt; 2.2e-16</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Plot mean regression lines
+newdata &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">Biomass=</span><span class="kw">seq</span>(<span class="kw">min</span>(df<span class="op">$</span>Biomass), <span class="kw">max</span>(df<span class="op">$</span>Biomass), <span class="dt">length.out=</span><span class="dv">200</span>),
+                       <span class="dt">pH=</span><span class="kw">levels</span>(df<span class="op">$</span>pH))
+newdata &lt;-<span class="st"> </span><span class="kw">cbind</span>(newdata, <span class="dt">Species=</span><span class="kw">predict</span>(fit, newdata, <span class="dt">type=</span><span class="st">&#39;response&#39;</span>))
+
+
+<span class="kw">ggplot</span>(<span class="dt">mapping=</span><span class="kw">aes</span>(<span class="dt">x=</span>Biomass, <span class="dt">y=</span>Species, <span class="dt">colour=</span>pH)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">data=</span>df) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="dt">data=</span>newdata)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-214-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>As <code>Biomass</code> increases the expected number of species tends towards a negative number for all three <code>pH</code> levels, which is not biologically plausible.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Poisson regression model
+
+## Model fit
+fit &lt;-<span class="st"> </span><span class="kw">glm</span>(Species <span class="op">~</span><span class="st"> </span>Biomass<span class="op">*</span>pH, <span class="dt">data=</span>df, <span class="dt">family=</span><span class="kw">poisson</span>(<span class="dt">link=</span>log))
+<span class="kw">summary</span>(fit)</code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = Species ~ Biomass * pH, family = poisson(link = log), 
+##     data = df)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.4978  -0.7485  -0.0402   0.5575   3.2297  
+## 
+## Coefficients:
+##               Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)    3.76812    0.06153  61.240  &lt; 2e-16 ***
+## Biomass       -0.10713    0.01249  -8.577  &lt; 2e-16 ***
+## pHlow         -0.81557    0.10284  -7.931 2.18e-15 ***
+## pHmid         -0.33146    0.09217  -3.596 0.000323 ***
+## Biomass:pHlow -0.15503    0.04003  -3.873 0.000108 ***
+## Biomass:pHmid -0.03189    0.02308  -1.382 0.166954    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 452.346  on 89  degrees of freedom
+## Residual deviance:  83.201  on 84  degrees of freedom
+## AIC: 514.39
+## 
+## Number of Fisher Scoring iterations: 4</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Plot mean regression lines
+newdata &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">Biomass=</span><span class="kw">seq</span>(<span class="kw">min</span>(df<span class="op">$</span>Biomass), <span class="kw">max</span>(df<span class="op">$</span>Biomass), <span class="dt">length.out=</span><span class="dv">200</span>),
+                       <span class="dt">pH=</span><span class="kw">levels</span>(df<span class="op">$</span>pH))
+newdata &lt;-<span class="st"> </span><span class="kw">cbind</span>(newdata, <span class="dt">Species=</span><span class="kw">predict</span>(fit, newdata, <span class="dt">type=</span><span class="st">&#39;response&#39;</span>))
+
+
+<span class="kw">ggplot</span>(<span class="dt">mapping=</span><span class="kw">aes</span>(<span class="dt">x=</span>Biomass, <span class="dt">y=</span>Species, <span class="dt">colour=</span>pH)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">data=</span>df) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="dt">data=</span>newdata)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-215-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>As <code>Biomass</code> increases the expected number of species tends towards zero for all three <code>pH</code> levels, which is what we would expect.</p>
+</div>
+</div>
+</div>
+</div>
+<div id="logistic-regression-for-binary-data" class="section level2">
+<h2><span class="header-section-number">3.6</span> Logistic regression (for binary data)</h2>
+<p>So far we have only considered continuous and discrete data as response variables. What if our response is a categorical variable (e.g passing or failing an exam, voting yes or no in a referendum, whether an egg has successfully fledged or been predated)?</p>
+<p>We can model the <strong>probability</strong> <span class="math inline">\(p\)</span> of being in a particular class as a function of other explanatory variables. Here we will focus on variables with two levels (e.g dead/alive). <a href="#fn6" class="footnoteRef" id="fnref6"><sup>6</sup></a>. These type of <strong>binary</strong> data are assumed to follow a <strong>Bernoulli</strong> distribution which has the following characteristics:</p>
+<p><span class="math display">\[
+Y \sim \mathcal{Bern}(p)
+\]</span></p>
+<ul>
+<li><strong>Binary</strong> variable, taking the values 0 or 1 (yes/no, pass/fail).</li>
+<li>A <strong>probability</strong> parameter <span class="math inline">\(p\)</span>, where <span class="math inline">\(0 &lt; p &lt; 1\)</span>.</li>
+<li><strong>Mean</strong> = <span class="math inline">\(p\)</span><br />
+</li>
+<li><strong>Variance</strong> = <span class="math inline">\(p(1 - p)\)</span></li>
+</ul>
+<p><img src="_main_files/figure-html/bernplot-1.png" width="864" style="display: block; margin: auto;" /></p>
+<p>Let us now place the Gaussian (simple linear regression), Poisson and logistic models next to each other:</p>
+<p><span class="math display">\[
+\begin{aligned}
+Y &amp; \sim \mathcal{N}(\mu, \sigma^2) &amp;&amp;&amp; Y  \sim \mathcal{Pois}(\lambda) &amp;&amp;&amp; Y  \sim \mathcal{Bern}(p)\\
+\mu &amp; = \beta_0 + \beta_1X &amp;&amp;&amp; \log{\lambda} = \beta_0 + \beta_1X &amp;&amp;&amp; ?? = \beta_0 + \beta_1X
+\end{aligned}
+\]</span></p>
+<p>Now we need to fill in the <code>??</code> with the appropriate term. Similar to the Poisson regression case, we cannot simply model the probabiliy as <span class="math inline">\(p = \beta_0 + \beta_1X\)</span>, because <span class="math inline">\(p\)</span> <strong>cannot</strong> be negative. <span class="math inline">\(\log{p} = \beta_0 + \beta_1X\)</span> won’t work either, because <span class="math inline">\(p\)</span> cannot be greater than 1. Instead we model the <strong>log odds</strong> <span class="math inline">\(\log\left(\frac{p}{1 - p}\right)\)</span> as a linear function. So our logistic regression model looks like this:</p>
+<p><span class="math display">\[
+\begin{aligned}
+Y  &amp; \sim \mathcal{Bern}(p)\\
+\log\left(\frac{p}{1 - p}\right) &amp;  = \beta_0 + \beta_1 X
+\end{aligned}
+\]</span></p>
+<p>Again, note that we are still “only” fitting straight lines through our data, but this time in the log odds space. As a shorthand notation we write <span class="math inline">\(\log\left(\frac{p}{1 - p}\right) = \text{logit}(p) = \beta_0 + \beta_1 X\)</span>.</p>
+<p><img src="_main_files/figure-html/unnamed-chunk-99-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>We can also re-arrange the above equation so that we get an expression for <span class="math inline">\(p\)</span></p>
+<p><span class="math display">\[
+p = \frac{e^{\beta_0 + \beta_1 X}}{1 + e^{\beta_0 + \beta_1 X}}
+\]</span></p>
+<p><img src="_main_files/figure-html/unnamed-chunk-100-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>Note how <span class="math inline">\(p\)</span> can only vary between 0 and 1.</p>
+<p>To implement the logistic regression model in R, we choose <code>family=binomial(link=logit)</code> (the Bernoulli distribution is a special case of the Binomial distribution when the number of trials is 1).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">glm</span>(response <span class="op">~</span><span class="st"> </span>explanatory, <span class="dt">family=</span><span class="kw">binomial</span>(<span class="dt">link=</span>logit))</code></pre></div>
+</div>
+<div id="example-1992-us-election-survey" class="section level2">
+<h2><span class="header-section-number">3.7</span> Example: 1992 US election survey</h2>
+<p><img width="40%" src="_img/04-BillClinton.png"/> <img width="46%" src="_img/04-GeorgeBushSr.png"/></p>
+<p>Voters were asked if they preferred George Bush (Republican) or Bill Clinton (Democrat) (voters who preferred other candidates were excluded). The respondent’s income was characterised on a 5-point scale (1 - poor to 5 - rich). The question of interest in this case is:</p>
+<blockquote>
+<p>Do voters with higher incomes prefer conservative<a href="#fn7" class="footnoteRef" id="fnref7"><sup>7</sup></a> candidates?</p>
+</blockquote>
+<p>Download the data file from <a href="https://exeter-data-analytics.github.io/StatModelling/_data/US1992.csv">here</a> and save it to your working directory.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">USA &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;US1992.csv&quot;</span>, <span class="dt">header=</span>T)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(USA)</code></pre></div>
+<pre><code>##           Vote Income
+## 1  George Bush      4
+## 2  George Bush      2
+## 3 Bill Clinton      1
+## 4  George Bush      2
+## 5 Bill Clinton      3
+## 6 Bill Clinton      4</code></pre>
+<p>The data columns are:</p>
+<ul>
+<li><strong>Vote</strong>: Whether voter preferred Bill Clinton (Democrat) or George Bush (Republican)</li>
+<li><strong>Income</strong>: 1 - poor to 5 - rich (based on quantiles of earnings in the US)</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(USA, <span class="kw">aes</span>(<span class="dt">x=</span>Income)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_bar</span>(<span class="kw">aes</span>(<span class="dt">fill=</span>Vote))</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-105-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>It does look like people with low income are more likely to prefer Bill Clinton over George Bush. Let us fit a logistic regression model to dig deeper into this. Note that by default R will use the order of the levels to define which one is class “0” (fail) and which one is class “1” (success).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">levels</span>(USA<span class="op">$</span>Vote) <span class="co"># class 0, class 1</span></code></pre></div>
+<pre><code>## [1] &quot;Bill Clinton&quot; &quot;George Bush&quot;</code></pre>
+<p>So in this case <span class="math inline">\(p\)</span> will represent the probability of preferring George Bush. The probability of preferring Bill Clinton is simply <span class="math inline">\(1-p\)</span> because we are only considering two options.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">glm</span>(Vote <span class="op">~</span><span class="st"> </span>Income, <span class="dt">data=</span>USA, <span class="dt">family=</span><span class="kw">binomial</span>(<span class="dt">link=</span>logit))
+<span class="kw">summary</span>(fit)</code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = Vote ~ Income, family = binomial(link = logit), 
+##     data = USA)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.2699  -1.0162  -0.8998   1.2152   1.6199  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  -1.3017     0.1828  -7.122 1.06e-12 ***
+## Income        0.3033     0.0551   5.505 3.69e-08 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1655.0  on 1221  degrees of freedom
+## Residual deviance: 1623.5  on 1220  degrees of freedom
+## AIC: 1627.5
+## 
+## Number of Fisher Scoring iterations: 4</code></pre>
+<p>Recall that we are fitting the model:</p>
+<p><span class="math display">\[
+\begin{aligned}
+Y  &amp; \sim \mathcal{Bern}(p)\\
+\log\left(\frac{p}{1 - p}\right) &amp;  = \beta_0 + \beta_1 X
+\end{aligned}
+\]</span></p>
+<ul>
+<li><code>(Intercept)</code> = <span class="math inline">\(\beta_0\)</span> = -1.3</li>
+<li><code>Income</code> = <span class="math inline">\(\beta_1\)</span> = 0.303</li>
+</ul>
+<p>It is common to interpret variables according to some <strong>central tendency</strong> e.g at the central income category (i.e X=3):</p>
+<p><span class="math display">\[
+\begin{aligned}
+P(\mbox{Republican vote at}~X = 3) &amp;= \mbox{logit}^{-1}\left(-1.3 + 0.3 \times 3\right)\\
+&amp;= \frac{e^{-1.3 + 0.3 \times 3}}{1 + e^{-1.3 + 0.3 \times 3}}\\
+&amp;= 0.4.
+\end{aligned}
+\]</span> We can also check for <span class="math inline">\(X=4\)</span> and <span class="math inline">\(X=5\)</span> (rich)</p>
+<p><span class="math display">\[
+\begin{aligned}
+P(\mbox{Republican vote at}~X = 4) &amp;= \mbox{logit}^{-1}\left(-1.3 + 0.3 \times 4\right)\\
+&amp;= \frac{e^{-1.3 + 0.3 \times 4}}{1 + e^{-1.3 + 0.3 \times 4}}\\
+&amp;= 0.48.
+\end{aligned}
+\]</span></p>
+<p><span class="math display">\[
+\begin{aligned}
+P(\mbox{Republican vote at}~X = 5) &amp;= \mbox{logit}^{-1}\left(-1.3 + 0.3 \times 5\right)\\
+&amp;= \frac{e^{-1.3 + 0.3 \times 5}}{1 + e^{-1.3 + 0.3 \times 5}}\\
+&amp;= 0.55.
+\end{aligned}
+\]</span></p>
+<p>So there is a tendency for voters with higher incomes to prefer Republicans over Democrats.</p>
+<p>An <strong>increase</strong> of 1 unit on the <strong>income scale</strong> results in a positive difference of 0.3 on the <strong>logit</strong> scale in support of Bush.</p>
+<p>A convenient way to express this on the <strong>probability scale</strong> is to consider what effect a 1 unit change has close to the <strong>central value</strong>, e.g. between <span class="math inline">\(X = 3\)</span> and <span class="math inline">\(X = 2\)</span></p>
+<p><span class="math display">\[
+\begin{aligned}
+&amp; \mbox{logit}^{-1}\left(-1.3 + 0.3 \times 3\right) \\
+&amp;~~~~~~~~- \mbox{logit}^{-1}\left(-1.3 + 0.3 \times 2\right) = 0.07.
+\end{aligned}
+\]</span></p>
+<p>Hence an increase in income of 1 unit around this central value results in a 7% increase in the probability of supporting Bush.</p>
+<div id="the-divide-by-four-rule" class="section level3">
+<h3><span class="header-section-number">3.7.1</span> The ‘divide-by-four’ rule</h3>
+<p>A useful <em>rule-of-thumb</em> can be given by the <strong>‘divide-by-four’</strong> rule.</p>
+<p>That is, the <strong>maximum difference</strong> in <span class="math inline">\(P(Y = 1)\)</span> (P(Republican vote) in our example) corresponding to a <strong>unit</strong> difference in <span class="math inline">\(X\)</span> is given by <span class="math inline">\(\beta / 4\)</span>.</p>
+<p>In this example, the <strong>maximum difference</strong> in P(Republican vote) corresponding to a <strong>unit</strong> difference in income is given by <span class="math inline">\(0.3 / 4 = 0.076\)</span> (or a 7.6% change).</p>
+</div>
+<div id="odds-ratios" class="section level3">
+<h3><span class="header-section-number">3.7.2</span> Odds ratios</h3>
+<p>An common interpretation of logistic regression coefficients is in terms of <strong>odds ratios</strong>.</p>
+<p><strong>Odds</strong>:</p>
+<p><span class="math display">\[
+    \frac{P(\mbox{event happens})}{P(\mbox{event does not happen})}
+\]</span></p>
+<p><strong>Probability</strong> of a voter in income category 3 voting Republican is</p>
+<p><span class="math display">\[
+    \begin{aligned}
+    P(\mbox{Republican vote for}~X = 3) &amp;= p_{X = 3}\\
+    &amp;= \mbox{logit}^{-1}\left(-1.3 + 0.3 \times 3\right)\\
+    &amp;= 0.4.
+    \end{aligned}
+\]</span></p>
+<p><strong>Odds</strong>: <span class="math display">\[\frac{p_{X = 3}}{1 - p_{X = 3}}\]</span></p>
+<p>Odds of a voter in income category 3 voting Republican is 0.4 / 0.6 = 0.67.</p>
+<p><strong>Odds ratio</strong>:</p>
+<p><span class="math display">\[
+    \frac{\mbox{odds in one group}}{\mbox{odds in another group}}
+\]</span></p>
+<p>e.g. odds ratio for voters in income category 3 voting Republican compared to voters in income category 2 is:</p>
+<p><span class="math display">\[
+    \frac{\mbox{odds of voting Republican when}~X = 3}{\mbox{odds of voting Republican when}~X = 2} = \frac{\frac{p_{X = 3}}{1 - p_{X = 3}}}{\frac{p_{X = 2}}{1 - p_{X = 2}}}.
+\]</span></p>
+<p>Take <strong>logs</strong>:</p>
+<p><span class="math display">\[
+    \begin{aligned}
+    \log\left(\frac{\frac{p_{X = 3}}{1 - p_{X = 3}}}{\frac{p_{X = 2}}{1 - p_{X = 2}}}\right) &amp;= \log\left(\frac{p_{X = 3}}{1 - p_{X = 3}}\right) - \log\left(\frac{p_{X = 2}}{1 - p_{X = 2}}\right)\\
+    &amp;= \beta_0 + \left(\beta_1 \cdot 3\right) - \beta_0 - \left(\beta_1 \cdot 2\right)\\
+    &amp;= \beta_1 (3 - 2)\\
+    &amp;= \beta_1
+    \end{aligned}
+\]</span></p>
+<p>So <span class="math inline">\(\beta_1\)</span> is the <strong>log-odds ratio</strong> for voting Republican per unit increase in income, and <span class="math inline">\(e^{\beta_1}\)</span> is the <strong>odds ratio</strong>. This measure does <strong>not</strong> rely on the <strong>level</strong> of income</p>
+<p>In this example the <strong>odds ratio</strong> is <span class="math inline">\(e^{0.3}\)</span> = 1.35.</p>
+<blockquote>
+<p>Hence the odds of voting Republican increase by a factor of 1.35 per unit increase in income.</p>
+</blockquote>
+<p><strong>Odds ratios</strong> are a tricky thing to understand, and many people (including me) find them <strong>unintuitive</strong>.</p>
+<p>Are useful in <strong>case-control</strong> studies, where the prevalence of an outcome is unknown.</p>
+</div>
+<div id="model-diagnostics" class="section level3">
+<h3><span class="header-section-number">3.7.3</span> Model diagnostics</h3>
+<p>Once we have fitted a regression model, we can use it to predict the <strong>mean</strong> probability of success for given individual (<strong>fitted values</strong>).</p>
+<p>We can then generate <strong>residual plots</strong> as before:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(fit, <span class="dt">which =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">5</span>))</code></pre></div>
+<p><img src="_main_files/figure-html/modeldiag-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>Alternative <strong>residual plots</strong> are possible to generate using the <code>binnedplot()</code> function in the <code>arm</code> package in R:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">USA<span class="op">$</span>Vote &lt;-<span class="st"> </span><span class="kw">ifelse</span>(USA<span class="op">$</span>Vote <span class="op">%in%</span><span class="st"> &#39;Bill Clinton&#39;</span>, <span class="dv">0</span>, <span class="dv">1</span>) <span class="co"># change to 0/1 for plot purposes</span>
+<span class="kw">library</span>(arm)
+<span class="kw">plot</span>(fit, <span class="dt">which =</span> <span class="dv">1</span>)
+<span class="kw">binnedplot</span>(<span class="kw">predict</span>(fit, <span class="dt">type =</span> <span class="st">&quot;response&quot;</span>), 
+           USA<span class="op">$</span>Vote <span class="op">-</span><span class="st"> </span><span class="kw">predict</span>(fit, <span class="dt">type =</span> <span class="st">&quot;response&quot;</span>))</code></pre></div>
+<p><img src="_main_files/figure-html/modeldiag1-1.png" width="768" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="practical-5---wine" class="section level2">
+<h2><span class="header-section-number">3.8</span> Practical 5 - Wine</h2>
+<p>The analysis determined the quantities of 13 constituents found in each of two types of wine. <a href="#fn8" class="footnoteRef" id="fnref8"><sup>8</sup></a></p>
+<p>Download the data file from <a href="https://exeter-data-analytics.github.io/StatModelling/_data/wine.csv">here</a> and save it to your working directory.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">wine &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;wine.csv&quot;</span>, <span class="dt">header=</span>T)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(wine)</code></pre></div>
+<pre><code>##   WineType Alcohol MalicAcid  Ash AlcalinityAsh Magnesium TotalPhenols
+## 1        A   14.23      1.71 2.43          15.6       127         2.80
+## 2        A   13.20      1.78 2.14          11.2       100         2.65
+## 3        A   13.16      2.36 2.67          18.6       101         2.80
+## 4        A   14.37      1.95 2.50          16.8       113         3.85
+## 5        A   13.24      2.59 2.87          21.0       118         2.80
+## 6        A   14.20      1.76 2.45          15.2       112         3.27
+##   Flavanoids NonflavanoidPhenols Proanthocyanins ColourIntensity  Hue
+## 1       3.06                0.28            2.29            5.64 1.04
+## 2       2.76                0.26            1.28            4.38 1.05
+## 3       3.24                0.30            2.81            5.68 1.03
+## 4       3.49                0.24            2.18            7.80 0.86
+## 5       2.69                0.39            1.82            4.32 1.04
+## 6       3.39                0.34            1.97            6.75 1.05
+##   OD280_OD315 Proline
+## 1        3.92    1065
+## 2        3.40    1050
+## 3        3.17    1185
+## 4        3.45    1480
+## 5        2.93     735
+## 6        2.85    1450</code></pre>
+<p>The data columns are self-explanatory, but for the purpose of this practical we will just focus on <code>Alcohol</code> content and <code>TotalPhenols</code> (a class of chemical compound). The question of interest is:</p>
+<blockquote>
+<p>Can we differentiate between the two types of wine using <code>Alcohol</code> and <code>TotalPhenols</code>?</p>
+</blockquote>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+
+<ol style="list-style-type: decimal">
+<li>Plot a scatterplot of <code>Alcohol</code> vs <code>TotalPhenols</code> and colour data points by <code>WineType</code>
+</div>
+</div></li>
+</ol>
+<button id="displayTextunnamed-chunk-117" onclick="javascript:toggle('unnamed-chunk-117');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-117" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="tab">
+<button class="tablinksunnamed-chunk-117 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-117', 'unnamed-chunk-117');">
+Base R
+</button>
+<button class="tablinksunnamed-chunk-117" onclick="javascript:openCode(event, 'option2unnamed-chunk-117', 'unnamed-chunk-117');">
+<tt>tidyverse</tt>
+</button>
+</div>
+<div id="option1unnamed-chunk-117" class="tabcontentunnamed-chunk-117">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">colA &lt;-<span class="st"> &#39;#377eb8&#39;</span> <span class="co"># colour for Wine Type A</span>
+colB &lt;-<span class="st"> &#39;#4daf4a&#39;</span> <span class="co"># colour for Wine Type B</span>
+<span class="kw">plot</span>(Alcohol <span class="op">~</span><span class="st"> </span>TotalPhenols, <span class="dt">data=</span>wine[wine<span class="op">$</span>WineType <span class="op">%in%</span><span class="st"> &#39;A&#39;</span>, ], 
+     <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">col=</span>colA, <span class="dt">xlim=</span><span class="kw">c</span>(<span class="kw">min</span>(wine<span class="op">$</span>TotalPhenols), <span class="kw">max</span>(wine<span class="op">$</span>TotalPhenols)),
+     <span class="dt">ylim=</span><span class="kw">c</span>(<span class="kw">min</span>(wine<span class="op">$</span>Alcohol), <span class="kw">max</span>(wine<span class="op">$</span>Alcohol)))
+<span class="kw">points</span>(Alcohol <span class="op">~</span><span class="st"> </span>TotalPhenols, <span class="dt">data=</span>wine[wine<span class="op">$</span>WineType <span class="op">%in%</span><span class="st"> &#39;B&#39;</span>, ], 
+       <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">col=</span>colB)
+<span class="kw">legend</span>(<span class="st">&#39;topleft&#39;</span>, <span class="kw">c</span>(<span class="st">&#39;A&#39;</span>, <span class="st">&#39;B&#39;</span>), <span class="dt">fill=</span><span class="kw">c</span>(colA, colB))</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-216-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<div id="option2unnamed-chunk-117" class="tabcontentunnamed-chunk-117">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(wine, <span class="kw">aes</span>(<span class="dt">x=</span>TotalPhenols, <span class="dt">y=</span>Alcohol, <span class="dt">colour=</span>WineType)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-217-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<script> javascript:hide('option2unnamed-chunk-117') </script>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+
+<ol start="2" style="list-style-type: decimal">
+<li>Fit a logistic regression model with <code>WineType</code> as response variable and <code>Alcohol</code> and <code>TotalPhenols</code> as explanatory variables. Display a summary of the fit.
+</div>
+</div></li>
+</ol>
+<button id="displayTextunnamed-chunk-119" onclick="javascript:toggle('unnamed-chunk-119');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-119" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">glm</span>(WineType <span class="op">~</span><span class="st"> </span>Alcohol <span class="op">+</span><span class="st"> </span>TotalPhenols, <span class="dt">data=</span>wine, <span class="dt">family=</span><span class="kw">binomial</span>(<span class="dt">link=</span>logit))
+<span class="kw">summary</span>(fit)</code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = WineType ~ Alcohol + TotalPhenols, family = binomial(link = logit), 
+##     data = wine)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -1.69074  -0.17802   0.03363   0.17346   2.93912  
+## 
+## Coefficients:
+##              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)   64.2693    12.5036   5.140 2.75e-07 ***
+## Alcohol       -4.5603     0.9226  -4.943 7.70e-07 ***
+## TotalPhenols  -1.8202     0.9239  -1.970   0.0488 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 179.109  on 129  degrees of freedom
+## Residual deviance:  48.005  on 127  degrees of freedom
+## AIC: 54.005
+## 
+## Number of Fisher Scoring iterations: 7</code></pre>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+
+<ol start="3" style="list-style-type: decimal">
+<li>What is the probability that a wine with alcohol content of 12.5% and total phenols of 2.5 units, is of <code>WineType</code> B? Hint: Use the <code>invlogit</code> function already available in the <code>arm</code> package (<code>install.packages('arm')</code>)
+</div>
+</div></li>
+</ol>
+<button id="displayTextunnamed-chunk-121" onclick="javascript:toggle('unnamed-chunk-121');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-121" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## extract model parameters
+beta0 &lt;-<span class="st"> </span><span class="kw">round</span>(<span class="kw">coef</span>(fit)[<span class="dv">1</span>], <span class="dv">4</span>) <span class="co"># (Intercept)</span>
+beta1 &lt;-<span class="st"> </span><span class="kw">round</span>(<span class="kw">coef</span>(fit)[<span class="dv">2</span>], <span class="dv">4</span>) <span class="co"># Alcohol</span>
+beta2 &lt;-<span class="st"> </span><span class="kw">round</span>(<span class="kw">coef</span>(fit)[<span class="dv">3</span>], <span class="dv">4</span>) <span class="co"># Total Phenols</span>
+
+## compute log odds and then the probability
+logOdds &lt;-<span class="st"> </span>beta0 <span class="op">+</span><span class="st"> </span>beta1<span class="op">*</span><span class="fl">12.5</span> <span class="op">+</span><span class="st"> </span>beta2<span class="op">*</span><span class="fl">2.5</span>
+p &lt;-<span class="st"> </span><span class="kw">round</span>(<span class="kw">invlogit</span>(logOdds), <span class="dv">2</span>)
+<span class="kw">print</span>(<span class="kw">paste0</span>(<span class="st">&#39;For Alcohol=12.5% and Total Phenols=2.5:   p(WineType=B) = &#39;</span>, p))</code></pre></div>
+<pre><code>## [1] &quot;For Alcohol=12.5% and Total Phenols=2.5:   p(WineType=B) = 0.94&quot;</code></pre>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+
+<ol start="4" style="list-style-type: decimal">
+<li>Plot the mean regression lines on the <strong>probability scale</strong> for <em>varying</em> values of <code>Alcohol</code> but fixed values of <code>TotalPhenols</code> of 1.5, 2.5 and 3.5 (i.e a plot with <code>Alcohol</code> on the x-axis and predicted probability of <code>WineType</code> B on the y-axis for the three cases of <code>TotalPhenols</code>).
+</div>
+</div></li>
+</ol>
+<button id="displayTextunnamed-chunk-123" onclick="javascript:toggle('unnamed-chunk-123');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-123" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="tab">
+<button class="tablinksunnamed-chunk-123 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-123', 'unnamed-chunk-123');">
+Base R
+</button>
+<button class="tablinksunnamed-chunk-123" onclick="javascript:openCode(event, 'option2unnamed-chunk-123', 'unnamed-chunk-123');">
+<tt>tidyverse</tt>
+</button>
+</div>
+<div id="option1unnamed-chunk-123" class="tabcontentunnamed-chunk-123">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cols &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;#377eb8&quot;</span>, <span class="st">&quot;#4daf4a&quot;</span>, <span class="st">&quot;#984ea3&quot;</span>) <span class="co"># colours for the three cases</span>
+phenol &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">1.5</span>, <span class="fl">2.5</span>, <span class="fl">3.5</span>) <span class="co"># phenol levels to plot</span>
+
+## compute mean regression line on the probability scale
+newdata &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">Alcohol=</span><span class="kw">seq</span>(<span class="kw">min</span>(wine<span class="op">$</span>Alcohol), <span class="kw">max</span>(wine<span class="op">$</span>Alcohol), <span class="dt">length.out=</span><span class="dv">100</span>), 
+                       <span class="dt">TotalPhenols=</span>phenol)
+newdata &lt;-<span class="st"> </span><span class="kw">cbind</span>(newdata, <span class="dt">p=</span><span class="kw">predict</span>(fit, newdata, <span class="dt">type=</span><span class="st">&#39;response&#39;</span>))
+
+## plot mean regression line
+i &lt;-<span class="st"> </span><span class="dv">1</span>
+<span class="kw">plot</span>(p <span class="op">~</span><span class="st"> </span>Alcohol, <span class="dt">data=</span>newdata[newdata<span class="op">$</span>TotalPhenols <span class="op">==</span><span class="st"> </span>phenol[i], ], 
+     <span class="dt">col=</span>cols[i], <span class="dt">type=</span><span class="st">&#39;l&#39;</span>, <span class="dt">ylab=</span><span class="st">&#39;p(WineType=B)&#39;</span>, <span class="dt">lwd=</span><span class="dv">3</span>)
+<span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">2</span><span class="op">:</span><span class="dv">3</span>)
+{
+    <span class="kw">lines</span>(p <span class="op">~</span><span class="st"> </span>Alcohol, <span class="dt">data=</span>newdata[newdata<span class="op">$</span>TotalPhenols <span class="op">==</span><span class="st"> </span>phenol[i], ], 
+          <span class="dt">col=</span>cols[i], <span class="dt">lwd=</span><span class="dv">3</span>)
+}
+<span class="kw">legend</span>(<span class="st">&#39;topright&#39;</span>, <span class="kw">c</span>(<span class="st">&#39;1.5&#39;</span>, <span class="st">&#39;2.5&#39;</span>, <span class="st">&#39;3.5&#39;</span>), <span class="dt">fill=</span>cols)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-220-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<div id="option2unnamed-chunk-123" class="tabcontentunnamed-chunk-123">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">phenol &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">1.5</span>, <span class="fl">2.5</span>, <span class="fl">3.5</span>) <span class="co"># phenol levels to plot</span>
+
+## compute mean regression line on the probability scale
+newdata &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">Alcohol=</span><span class="kw">seq</span>(<span class="kw">min</span>(wine<span class="op">$</span>Alcohol), <span class="kw">max</span>(wine<span class="op">$</span>Alcohol), <span class="dt">length.out=</span><span class="dv">100</span>), 
+                       <span class="dt">TotalPhenols=</span>phenol)
+newdata &lt;-<span class="st"> </span><span class="kw">cbind</span>(newdata, <span class="dt">p=</span><span class="kw">predict</span>(fit, newdata, <span class="dt">type=</span><span class="st">&#39;response&#39;</span>))
+newdata<span class="op">$</span>TotalPhenols &lt;-<span class="st"> </span><span class="kw">as.factor</span>(newdata<span class="op">$</span>TotalPhenols)
+
+## plot mean regression line
+<span class="kw">ggplot</span>(<span class="dt">mapping=</span><span class="kw">aes</span>(<span class="dt">x=</span>Alcohol, <span class="dt">y=</span>p, <span class="dt">colour=</span>TotalPhenols)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>(<span class="dt">data=</span>newdata)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-221-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<script> javascript:hide('option2unnamed-chunk-123') </script>
+</div>
+</div>
+</div>
+</div>
+<div id="summary-2" class="section level2">
+<h2><span class="header-section-number">3.9</span> Summary</h2>
+<p><strong>GLMs</strong> are powerful and flexible.</p>
+<p>They can be used to fit a wide variety of data types.</p>
+<p>Model checking becomes trickier.</p>
+<p>Extensions include:</p>
+<ul>
+<li><strong>mixed models</strong>;</li>
+<li><strong>survival models</strong>;</li>
+<li><strong>generalised additive models</strong> (GAMs).</li>
+</ul>
+
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol start="4">
+<li id="fn4"><p>the negative binomial model and others can cope with cases where this assumption is not satisfied<a href="generalised-linear-models.html#fnref4">↩</a></p></li>
+<li id="fn5"><p>this dataset was obtained by digitising the plot that appear in the original paper, hence you will not be able to fully reproduce the results of the original paper, it is only used here for illustrative purposes<a href="generalised-linear-models.html#fnref5">↩</a></p></li>
+<li id="fn6"><p>the multinomial logistic regression model generalises logistic regression to multiclass problems<a href="generalised-linear-models.html#fnref6">↩</a></p></li>
+<li id="fn7"><p>i.e. Republican<a href="generalised-linear-models.html#fnref7">↩</a></p></li>
+<li id="fn8"><p>the full dataset contains three types of wine and is available <a href="https://archive.ics.uci.edu/ml/datasets/wine">here</a><a href="generalised-linear-models.html#fnref8">↩</a></p></li>
+</ol>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="linear-models.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="mixed-effects-models.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": null,
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"download": ["_main.pdf"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "";
+    if (src === "" || src === "true") src = "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

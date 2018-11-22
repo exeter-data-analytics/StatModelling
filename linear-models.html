@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Statistical modelling in R</title>
+  <meta name="description" content="Statistical modelling in R">
+  <meta name="generator" content="bookdown 0.7 and GitBook 2.6.7">
+
+  <meta property="og:title" content="Statistical modelling in R" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Statistical modelling in R" />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Statistical modelling in R" />
+  
+  <meta name="twitter:description" content="Statistical modelling in R" />
+  
+
+<meta name="author" content="JJ Valletta and TJ McKinley">
+
+
+<meta name="date" content="2018-11-22">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="introduction.html">
+<link rel="next" href="generalised-linear-models.html">
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+<script language="javascript"> 
+    function toggle(id) {
+        var ele = document.getElementById("toggleText" + id);
+        var text = document.getElementById("displayText" + id);
+        var buttonText = text.innerHTML.replace("Show ", "");
+        buttonText = buttonText.replace("Hide ", "");
+        if(ele.style.display == "block") {
+            ele.style.display = "none";
+            text.innerHTML = "Show " + buttonText;
+        } else {
+            ele.style.display = "block";
+            text.innerHTML = "Hide " + buttonText;
+        }
+    } 
+</script>
+
+<script language="javascript">
+    function openCode(evt, codeName, id) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent" + id);
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks" + id);
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(codeName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+</script>
+
+<script language="javascript">
+    function hide(id){
+        document.getElementById(id).style.display = "none";
+    }
+</script>
+</script>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+<link rel="stylesheet" href="_style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a><ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#prerequisites"><i class="fa fa-check"></i>Prerequisites</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#learning-outcomes"><i class="fa fa-check"></i>Learning outcomes</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#recommended-reading"><i class="fa fa-check"></i>Recommended reading</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#data-files"><i class="fa fa-check"></i>Data files</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#acknowledgements"><i class="fa fa-check"></i>Acknowledgements</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="introduction.html"><a href="introduction.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1.1" data-path="introduction.html"><a href="introduction.html#motivation"><i class="fa fa-check"></i><b>1.1</b> Motivation</a></li>
+<li class="chapter" data-level="1.2" data-path="introduction.html"><a href="introduction.html#what-is-a-model"><i class="fa fa-check"></i><b>1.2</b> What is a model?</a></li>
+<li class="chapter" data-level="1.3" data-path="introduction.html"><a href="introduction.html#what-is-a-statistical-stochastic-model"><i class="fa fa-check"></i><b>1.3</b> What is a statistical (stochastic) model?</a></li>
+<li class="chapter" data-level="1.4" data-path="introduction.html"><a href="introduction.html#illustrative-example"><i class="fa fa-check"></i><b>1.4</b> Illustrative example</a></li>
+<li class="chapter" data-level="1.5" data-path="introduction.html"><a href="introduction.html#summary"><i class="fa fa-check"></i><b>1.5</b> Summary</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="linear-models.html"><a href="linear-models.html"><i class="fa fa-check"></i><b>2</b> Linear models</a><ul>
+<li class="chapter" data-level="2.1" data-path="linear-models.html"><a href="linear-models.html#simple-linear-regression"><i class="fa fa-check"></i><b>2.1</b> Simple linear regression</a></li>
+<li class="chapter" data-level="2.2" data-path="linear-models.html"><a href="linear-models.html#doing-it-in-r"><i class="fa fa-check"></i><b>2.2</b> Doing it in R</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="linear-models.html"><a href="linear-models.html#using-data-frames"><i class="fa fa-check"></i><b>2.2.1</b> Using data frames</a></li>
+<li class="chapter" data-level="2.2.2" data-path="linear-models.html"><a href="linear-models.html#extended-summary"><i class="fa fa-check"></i><b>2.2.2</b> Extended summary</a></li>
+</ul></li>
+<li class="chapter" data-level="2.3" data-path="linear-models.html"><a href="linear-models.html#model-checking"><i class="fa fa-check"></i><b>2.3</b> Model checking</a><ul>
+<li class="chapter" data-level="2.3.1" data-path="linear-models.html"><a href="linear-models.html#residuals-vs-fitted-values"><i class="fa fa-check"></i><b>2.3.1</b> Residuals vs fitted values</a></li>
+<li class="chapter" data-level="2.3.2" data-path="linear-models.html"><a href="linear-models.html#residuals-vs-fitted-values-scale-location"><i class="fa fa-check"></i><b>2.3.2</b> Residuals vs fitted values (scale-location)</a></li>
+<li class="chapter" data-level="2.3.3" data-path="linear-models.html"><a href="linear-models.html#residuals-vs.leverage"><i class="fa fa-check"></i><b>2.3.3</b> Residuals vs. leverage</a></li>
+<li class="chapter" data-level="2.3.4" data-path="linear-models.html"><a href="linear-models.html#qq-plots"><i class="fa fa-check"></i><b>2.3.4</b> QQ plots</a></li>
+</ul></li>
+<li class="chapter" data-level="2.4" data-path="linear-models.html"><a href="linear-models.html#sec:practical1"><i class="fa fa-check"></i><b>2.4</b> Practical 1</a></li>
+<li class="chapter" data-level="2.5" data-path="linear-models.html"><a href="linear-models.html#sec:prediction"><i class="fa fa-check"></i><b>2.5</b> Prediction</a></li>
+<li class="chapter" data-level="2.6" data-path="linear-models.html"><a href="linear-models.html#multiple-linear-regression"><i class="fa fa-check"></i><b>2.6</b> Multiple linear regression</a></li>
+<li class="chapter" data-level="2.7" data-path="linear-models.html"><a href="linear-models.html#practical-2"><i class="fa fa-check"></i><b>2.7</b> Practical 2</a></li>
+<li class="chapter" data-level="2.8" data-path="linear-models.html"><a href="linear-models.html#sec:categorical"><i class="fa fa-check"></i><b>2.8</b> Categorical explanatory variables</a></li>
+<li class="chapter" data-level="2.9" data-path="linear-models.html"><a href="linear-models.html#practical-3"><i class="fa fa-check"></i><b>2.9</b> Practical 3</a></li>
+<li class="chapter" data-level="2.10" data-path="linear-models.html"><a href="linear-models.html#practical-issues"><i class="fa fa-check"></i><b>2.10</b> Practical issues</a></li>
+<li class="chapter" data-level="2.11" data-path="linear-models.html"><a href="linear-models.html#summary-1"><i class="fa fa-check"></i><b>2.11</b> Summary</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html"><i class="fa fa-check"></i><b>3</b> Generalised linear models</a><ul>
+<li class="chapter" data-level="3.1" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#motivation-1"><i class="fa fa-check"></i><b>3.1</b> Motivation</a></li>
+<li class="chapter" data-level="3.2" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#generalised-linear-models-glms"><i class="fa fa-check"></i><b>3.2</b> Generalised Linear Models (GLMs)</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#link-functions"><i class="fa fa-check"></i><b>3.2.1</b> Link functions</a></li>
+<li class="chapter" data-level="3.2.2" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#workflow"><i class="fa fa-check"></i><b>3.2.2</b> Workflow</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#poisson-regression-for-count-data"><i class="fa fa-check"></i><b>3.3</b> Poisson regression (for count data)</a></li>
+<li class="chapter" data-level="3.4" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#example-cuckoos"><i class="fa fa-check"></i><b>3.4</b> Example: Cuckoos</a></li>
+<li class="chapter" data-level="3.5" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#practical-4---species-richness"><i class="fa fa-check"></i><b>3.5</b> Practical 4 - Species richness</a></li>
+<li class="chapter" data-level="3.6" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#logistic-regression-for-binary-data"><i class="fa fa-check"></i><b>3.6</b> Logistic regression (for binary data)</a></li>
+<li class="chapter" data-level="3.7" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#example-1992-us-election-survey"><i class="fa fa-check"></i><b>3.7</b> Example: 1992 US election survey</a><ul>
+<li class="chapter" data-level="3.7.1" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#the-divide-by-four-rule"><i class="fa fa-check"></i><b>3.7.1</b> The ‘divide-by-four’ rule</a></li>
+<li class="chapter" data-level="3.7.2" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#odds-ratios"><i class="fa fa-check"></i><b>3.7.2</b> Odds ratios</a></li>
+<li class="chapter" data-level="3.7.3" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#model-diagnostics"><i class="fa fa-check"></i><b>3.7.3</b> Model diagnostics</a></li>
+</ul></li>
+<li class="chapter" data-level="3.8" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#practical-5---wine"><i class="fa fa-check"></i><b>3.8</b> Practical 5 - Wine</a></li>
+<li class="chapter" data-level="3.9" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#summary-2"><i class="fa fa-check"></i><b>3.9</b> Summary</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html"><i class="fa fa-check"></i><b>4</b> Mixed effects models</a><ul>
+<li class="chapter" data-level="4.1" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#a-note-on-variable-selection-and-model-simplification"><i class="fa fa-check"></i><b>4.1</b> A note on variable selection and model simplification</a><ul>
+<li class="chapter" data-level="4.1.1" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#common-nhst-approaches-to-model-simplification"><i class="fa fa-check"></i><b>4.1.1</b> Common NHST approaches to model simplification</a></li>
+</ul></li>
+<li class="chapter" data-level="4.2" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#non-independent-data-randomised-complete-block-design"><i class="fa fa-check"></i><b>4.2</b> Non-independent data: Randomised Complete Block Design</a><ul>
+<li class="chapter" data-level="4.2.1" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#mixed-model-approach"><i class="fa fa-check"></i><b>4.2.1</b> Mixed model approach</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#non-independent-data-pseudoreplication-nested-variance-and-derived-variable-analysis"><i class="fa fa-check"></i><b>4.3</b> Non-independent data: pseudoreplication, nested variance and derived variable analysis</a><ul>
+<li class="chapter" data-level="4.3.1" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#the-wrong-analysis"><i class="fa fa-check"></i><b>4.3.1</b> The Wrong Analysis</a></li>
+<li class="chapter" data-level="4.3.2" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#derived-variables-avoid-pseudoreplication"><i class="fa fa-check"></i><b>4.3.2</b> Derived variables avoid pseudoreplication</a></li>
+<li class="chapter" data-level="4.3.3" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#secmixed"><i class="fa fa-check"></i><b>4.3.3</b> Mixed model approach</a></li>
+</ul></li>
+<li class="chapter" data-level="4.4" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#non-independent-data-split-plot-analyses"><i class="fa fa-check"></i><b>4.4</b> Non-independent data: Split-plot analyses</a><ul>
+<li class="chapter" data-level="4.4.1" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#analysing-split-plot-designs-using-lmer"><i class="fa fa-check"></i><b>4.4.1</b> Analysing split-plot designs using <code>lmer</code></a></li>
+</ul></li>
+<li class="chapter" data-level="4.5" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#non-independent-data-absorbing-the-influence-of-random-effects"><i class="fa fa-check"></i><b>4.5</b> Non-independent data: Absorbing the influence of random effects</a></li>
+<li class="chapter" data-level="4.6" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#model-checking-with-mixed-models"><i class="fa fa-check"></i><b>4.6</b> Model checking with mixed models</a></li>
+<li class="chapter" data-level="4.7" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#why-arent-glms-much-good-at-modelling-non-independent-data"><i class="fa fa-check"></i><b>4.7</b> Why aren’t GLMs much good at modelling non-independent data?</a></li>
+<li class="chapter" data-level="4.8" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#generalised-linear-mixed-modelling-glmm"><i class="fa fa-check"></i><b>4.8</b> Generalised Linear Mixed Modelling (GLMM)</a></li>
+<li class="chapter" data-level="4.9" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#parboot"><i class="fa fa-check"></i><b>4.9</b> Parametric bootstrapping</a></li>
+<li class="chapter" data-level="4.10" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#secbayes"><i class="fa fa-check"></i><b>4.10</b> Bayesian modelling</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Statistical modelling in R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="linear-models" class="section level1">
+<h1><span class="header-section-number">2</span> Linear models</h1>
+<p>Slides can be downloaded from:</p>
+<ul>
+<li><a href="https://exeter-data-analytics.github.io/StatModelling/02-linear-models-handout.pdf">LMs in R</a></li>
+</ul>
+<div id="simple-linear-regression" class="section level2">
+<h2><span class="header-section-number">2.1</span> Simple linear regression</h2>
+<p>In many scientific applications we are interested in exploring the relationship between a single <strong>response</strong> variable and multiple <strong>explanatory</strong> variables (predictors). We can do this by fitting a linear model. Linear models <em>per se</em> do not infer <em>causality</em>, i.e defining a variable as response or explanatory is somewhat arbitrary and depends on what the researcher is interested in. <em>Causality</em> can however be inferred through careful experimental design in a well-controlled setting.</p>
+<p>Consider again the case of one response and one explanatory variable. From the previous chapter we know that this boils down to the equation of a line (<span class="math inline">\(y = mx +c\)</span>). Let’s rename the parameters <span class="math inline">\(c\)</span> and <span class="math inline">\(m\)</span> to <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span>, in line with statistical naming convention<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. It is just a change in name:</p>
+<p><span class="math display">\[
+\begin{aligned}
+y = c + mx\\
+y = \beta_0 + \beta_1x
+\end{aligned}
+\]</span></p>
+<p><img src="_main_files/figure-html/unnamed-chunk-11-1.png" width="60%" style="display: block; margin: auto;" /></p>
+<p>Now suppose we measure <span class="math inline">\(n\)</span> independent and identically distributed (i.i.d) normally distributed outcomes <span class="math inline">\(y_1,\ldots,y_n\)</span> (e.g height of people) and we want to model their relationship with some explanatory variable <span class="math inline">\(x\)</span> (e.g weight of people). The linear regression model is defined as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+y_i &amp; = \beta_0 + \beta_1x_i + \epsilon_i \\
+\epsilon_i &amp; \sim \mathcal{N}(0, \sigma^2)
+\end{aligned}
+\]</span> <span class="math inline">\(i\)</span> is an index that goes from 1 to <span class="math inline">\(n\)</span> (the total number of observations). The equation is the same as before (<span class="math inline">\(y = \beta_0 + \beta_1x\)</span>), but now we have added an error term <span class="math inline">\(\epsilon\)</span>. This term is needed because the straight line cannot go through <em>all</em> the data points (unless you have a very questionable dataset)! It represents the discrepancy between the model (the fitted straight line) and the observed data (grey points).</p>
+<p><span class="math inline">\(\epsilon\)</span> is also known as the <strong>noise</strong> term. The reason is that in general our response variable has some uncertainty associated with it (e.g counting the number of birds in an area, quantifying gene expression using microarrays or RNA-seq, etc.). The statistical assumption in linear modelling is that these errors are normally distributed with mean zero and some standard deviation <span class="math inline">\(\sigma\)</span> (mathematically this is written as <span class="math inline">\(\epsilon_i \sim \mathcal{N}(0, \sigma^2)\)</span>). This means that the <strong>response</strong> variable is also assumed to be normally distributed. For the maths aficionados amongst you:</p>
+<p><span class="math display">\[
+y_i \sim \mathcal{N}(\beta_0 + \beta_1x_i, \sigma^2)
+\]</span> Note that we do not make explicit assumptions about the <strong>explanatory</strong> variables (the <span class="math inline">\(x\)</span>’s) i.e they don’t need to be normal.</p>
+<p>The workflow in linear regression is as follows:</p>
+<ol style="list-style-type: decimal">
+<li>Infer the model’s parameters <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span>.</li>
+<li>Check the model fit.</li>
+<li>Interpret the <strong>practical</strong> significance of the estimated parameters.</li>
+</ol>
+</div>
+<div id="doing-it-in-r" class="section level2">
+<h2><span class="header-section-number">2.2</span> Doing it in R</h2>
+<p>Luckily for us, we do not need to worry about the mathematical intricacies of estimating the model’s parameters, R will do it for us. Let’s generate some fake data just to get things started.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1453</span>)
+N &lt;-<span class="st"> </span><span class="dv">100</span> ## no. of observations
+weight &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="dt">n=</span>N, <span class="dt">min=</span><span class="dv">60</span>, <span class="dt">max=</span><span class="dv">100</span>) ## hypothetical weights in kg
+height &lt;-<span class="st"> </span><span class="fl">2.2</span><span class="op">*</span>weight <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n=</span>N, <span class="dt">mean=</span><span class="dv">0</span>, <span class="dt">sd=</span><span class="dv">10</span>) ## hypothetical heights in cm
+<span class="kw">plot</span>(weight, height, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">xlab=</span><span class="st">&#39;Weight (kg)&#39;</span>, <span class="dt">ylab=</span><span class="st">&#39;Height (cm)&#39;</span>, <span class="dt">col=</span><span class="st">&#39;grey&#39;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-12-1.png" width="60%" style="display: block; margin: auto;" /></p>
+<p>To fit a linear model we use the <a href="https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/lm"><code>lm()</code></a> function (<strong>always</strong> read the documentation of a function before using it!). This function requires a <strong>formula</strong> object which has the form of <code>response ~ explanatory</code>. So in our case this will be <code>height ~ weight</code>. R will then fit the following model <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>:</p>
+<p><span class="math display">\[
+\mathrm{height}_i = \beta_0 + \beta_1\mathrm{weight}_i + \epsilon_i
+\]</span> Let’s call the R function, plot the model fit and print the output.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Linear model fit
+fit &lt;-<span class="st"> </span><span class="kw">lm</span>(height <span class="op">~</span><span class="st"> </span>weight)
+
+## Plot model fit
+<span class="kw">plot</span>(weight, height, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">xlab=</span><span class="st">&#39;Weight (kg)&#39;</span>, <span class="dt">ylab=</span><span class="st">&#39;Height (cm)&#39;</span>, <span class="dt">col=</span><span class="st">&#39;grey&#39;</span>)
+<span class="kw">lines</span>(weight, <span class="kw">predict</span>(fit), <span class="dt">col=</span><span class="st">&#39;black&#39;</span>, <span class="dt">lwd=</span><span class="dv">3</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-13-1.png" width="60%" style="display: block; margin: auto;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Print result
+<span class="kw">print</span>(fit)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = height ~ weight)
+## 
+## Coefficients:
+## (Intercept)       weight  
+##       2.352        2.174</code></pre>
+<p>This outputs two numbers, the <code>(Intercept)=</code> 2.352 cm and <code>weight=</code> 2.174 cm/kg. These are the <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> parameters.</p>
+<p>The <span class="math inline">\(\beta_0\)</span> parameter (intercept) is not very useful in this case, it basically tells us what’s the expected height of someone that weighs 0 kg (2.352 cm here). This is of course nonsense, but I’m highlighting it as a reminder that the assumptions that underlie these models can only be tested within the range of the observed data.</p>
+<blockquote>
+<p><strong>Aside</strong>: using the model to predict outside of the range of the observed data is called <strong>extrapolating</strong>. Oftentimes, statistical models are developed <em>in order</em> to be used to extrapolate (e.g. climate modelling). This is however, dangerous, as we can only assess the assumptions of the model over the range of the observed data. When extrapolating we have to assume that these relationships hold beyond the range of the data, which may or may not be reasonable (hence why weather forecast over short-time periods are OK, but climate forecasts are much more uncertain). Hence, we should always view the model as an approximation of the data generating process. In this particualr case, the interpretation of the parameters is not sensible when <span class="math inline">\(x = 0\)</span> (weight = 0 kg), but makes sense in the range that we are interested in exploring. If the case where <span class="math inline">\(x = 0\)</span> is important, then we would have to change the model to ensure that the predictions made sense at those values of <span class="math inline">\(x\)</span>.</p>
+</blockquote>
+<p>The <span class="math inline">\(\beta_1\)</span> parameter (gradient) tells us about the relationship between the outcome and explanatory variable. In this case, for every 1 kg increase in weight on <em>average</em> the height increases by 2.174 cm.</p>
+<blockquote>
+<p><strong>Warning</strong>: the notation used by R can come across as confusing. Although the returned value is labelled as <code>weight</code>, in fact it corresponds to the <span class="math inline">\(\beta_1\)</span> parameter that relates to the strength of linear relationship between <code>weight</code> and <code>height</code> (i.e it is a gradient).</p>
+</blockquote>
+<div id="using-data-frames" class="section level3">
+<h3><span class="header-section-number">2.2.1</span> Using data frames</h3>
+<p>The <code>lm()</code> function also accepts <strong>data frames</strong> as input arguments.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Create data frame
+df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">height=</span>height, <span class="dt">weight=</span>weight)
+<span class="kw">head</span>(df)</code></pre></div>
+<pre><code>##     height   weight
+## 1 211.9054 86.59694
+## 2 178.6420 77.28891
+## 3 206.1585 95.01870
+## 4 157.4803 70.66759
+## 5 175.6296 79.84837
+## 6 176.1113 83.98290</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Fit linear model
+fit &lt;-<span class="st"> </span><span class="kw">lm</span>(height <span class="op">~</span><span class="st"> </span>weight, <span class="dt">data=</span>df)</code></pre></div>
+</div>
+<div id="extended-summary" class="section level3">
+<h3><span class="header-section-number">2.2.2</span> Extended summary</h3>
+<p>The object returned by <code>lm()</code> contains further information that we can display using the <code>summary()</code> function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(fit)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = height ~ weight, data = df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -31.089  -6.926  -0.689   6.057  24.967 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  2.35229    7.11668   0.331    0.742    
+## weight       2.17446    0.08782  24.762   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 10.31 on 98 degrees of freedom
+## Multiple R-squared:  0.8622, Adjusted R-squared:  0.8608 
+## F-statistic: 613.1 on 1 and 98 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>That’s a lot of information, let’s unpick it line by line:</p>
+<ul>
+<li><p><strong>Call</strong></p>
+<p>This just states the arguments that were passed to the <code>lm()</code> function. Remember it’s <code>response ~ explanatory</code>.</p></li>
+<li><p><strong>Residuals</strong></p>
+<p>Some basic stats about the residuals (i.e the differences between the model fit and the observed data points). It is easier to plot a histogram of the residuals (shown in the next section), but these basic stats can already give us an indication of whether we have a symmetric distribution with zero mean (i.e we want the median to be close to zero, the third quartile (3Q) to be roughly equal to -1Q (first quartile) and the max to be approximately -min).</p></li>
+<li><strong>Coefficients</strong>
+<ul>
+<li><strong><code>Estimate</code></strong></li>
+</ul>
+<p>The <code>(Intercept)=</code> 2.352 cm and <code>weight=</code> 2.174 cm/kg are the <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> parameters as discussed earlier.</p>
+<ul>
+<li><strong><code>Std. Error</code></strong></li>
+</ul>
+<p>The standard error for that parameter. It tells us how confident we are in estimating that particular parameter. If the standard error is comparable or greater than the actual parameter estimate itself then that point estimate should not be trusted. We can also show the confidence intervals for the model parameters to highlight their uncertainty using the <code>confint()</code> function:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">confint</span>(fit, <span class="dt">level=</span><span class="fl">0.97</span>) ## pick the 97% confidence intervals</code></pre></div>
+<pre><code>##                  1.5 %    98.5 %
+## (Intercept) -13.319698 18.024268
+## weight        1.981077  2.367844</code></pre>
+<ul>
+<li><strong><code>t value</code></strong> and <strong><code>Pr(&gt;|t|)</code></strong></li>
+</ul>
+<p>This is the result of a hypothesis testing against the null hypothesis that the coefficient is zero.</p></li>
+<li><p><strong>Residual standard error</strong></p>
+<p>The square root of residual sum of squares/degress of freedom</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Residual standard error
+<span class="kw">sqrt</span>(<span class="kw">sum</span>(<span class="kw">residuals</span>(fit)<span class="op">^</span><span class="dv">2</span>) <span class="op">/</span><span class="st"> </span>fit<span class="op">$</span>df.residual) </code></pre></div>
+<pre><code>## [1] 10.31254</code></pre></li>
+<li><p><strong>Multiple R-squared</strong></p>
+<p>Total variation = <strong>Regression</strong> (explained) variation + <strong>Residual</strong> (unexplained) variation</p>
+<p>The <span class="math inline">\(R^2\)</span> statistic (also known as the <strong>coefficient of determination</strong>) is the proportion of the total variation that is explained by the regression. In regression with a single explanatory variable, this is the same as the Pearson correlation coefficient squared:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(height, weight)<span class="op">^</span><span class="dv">2</span></code></pre></div>
+<pre><code>## [1] 0.8621921</code></pre></li>
+<li><p><strong>F-statistic</strong></p>
+<p><span class="math display">\[
+\text{F-statistic} = \frac{\text{Regression (explained) variation}}{\text{Residual (unexplained) variation}}
+\]</span></p>
+<p>The F-statistic can be used to assess whether the amount of variation explained by the regression (<span class="math inline">\(M_1\)</span>) is <em>statistically significantly</em> different compared to the <strong>null</strong> model (<span class="math inline">\(M_0\)</span> - in this case the <strong>null</strong> model is the same as just taking the mean of the data). Large values of the F-statistic correspond to cases where the model fit is better for the more complex model compared to the null model. This test can be used to generate a p-value to assess whether the model fit is statistically significantly better given a pre-defined level of significance.</p>
+<p><span class="math display">\[
+\begin{aligned}
+M_0:~~~~~y_i &amp;= \beta_0 + \epsilon_i\\  
+M_1:~~~~~y_i &amp;= \beta_0 + \beta_1 W_i + \epsilon_i
+\end{aligned}
+\]</span></p></li>
+</ul>
+</div>
+</div>
+<div id="model-checking" class="section level2">
+<h2><span class="header-section-number">2.3</span> Model checking</h2>
+<p>The extended summary leads us nicely to the concept of model checking. In theory, we can fit an infinite number of different models to the same data by placing different assumptions/constraints. Recall:</p>
+<blockquote>
+<p>All models are wrong but some are useful - <strong>George E.P. Box</strong></p>
+</blockquote>
+<p>In order to make <strong>robust</strong> inference, we must <strong>check</strong> the model fit</p>
+<p>Model checking boils down to confirming whether or not the assumptions that we have placed on the model are reasonable. Our main assumption is that the residuals are normally distributed centred around zero. Let’s plot this:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(fit<span class="op">$</span>residuals)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-19-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>The residuals are fairly normally distributed which is a good sign. R also provides us with the following diagnostic plots:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))
+<span class="kw">plot</span>(fit, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">col=</span><span class="st">&#39;darkgrey&#39;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-20-1.png" width="768" style="display: block; margin: auto;" /></p>
+<div id="residuals-vs-fitted-values" class="section level3">
+<h3><span class="header-section-number">2.3.1</span> Residuals vs fitted values</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(fit, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">col=</span><span class="st">&#39;darkgrey&#39;</span>, <span class="dt">which=</span><span class="dv">1</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-22-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>Here we are checking that the variance is constant along the fitted line<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a>, and that there are no systematic patterns in the residuals.</p>
+<p>A couple of example where this assumption is violated.</p>
+<p><img src="_img/02-funnel.png" width="90%" style="display: block; margin: auto;" /></p>
+</div>
+<div id="residuals-vs-fitted-values-scale-location" class="section level3">
+<h3><span class="header-section-number">2.3.2</span> Residuals vs fitted values (scale-location)</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(fit, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">col=</span><span class="st">&#39;darkgrey&#39;</span>, <span class="dt">which=</span><span class="dv">3</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-24-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>This is similar to the first plot but on a different scale.</p>
+</div>
+<div id="residuals-vs.leverage" class="section level3">
+<h3><span class="header-section-number">2.3.3</span> Residuals vs. leverage</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(fit, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">col=</span><span class="st">&#39;darkgrey&#39;</span>, <span class="dt">which=</span><span class="dv">5</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-25-1.png" width="480" style="display: block; margin: auto;" /></p>
+<ul>
+<li><strong>Leverage</strong>: a measure of how isolated individual points are in relation to other points</li>
+<li><strong>Cook’s Distance</strong>: a measure of how influential a point is to the regression</li>
+</ul>
+<p>These measures help us identify potential outliers.</p>
+</div>
+<div id="qq-plots" class="section level3">
+<h3><span class="header-section-number">2.3.4</span> QQ plots</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(fit, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">col=</span><span class="st">&#39;darkgrey&#39;</span>, <span class="dt">which=</span><span class="dv">2</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-26-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>Here we are checking that the assumption of normally distributed errors is reasonable. Points should follow the dashed line.</p>
+</div>
+</div>
+<div id="sec:practical1" class="section level2">
+<h2><span class="header-section-number">2.4</span> Practical 1</h2>
+<p>We will use the fruitfly dataset (<a href="https://www.nature.com/articles/294580a0">Partridge and Farquhar (1981)</a>) introduced in the “Advanced Visualisation and Data Wrangling in R”, which is summarised again here (do not worry about the details of the study for now, this is only included for the sake of completeness):</p>
+<p>A cost of increased reproduction in terms of reduced longevity has been shown for female fruitflies, but not for males. We have data from an experiment that used a factorial design to assess whether increased sexual activity affected the lifespan of male fruitflies.</p>
+<p>The flies used were an outbred stock. Sexual activity was manipulated by supplying individual males with one or eight receptive virgin females per day. The longevity of these males was compared with that of two control types. The first control consisted of two sets of individual males kept with one or eight newly inseminated females. Newly inseminated females will not usually remate for at least two days, and thus served as a control for any effect of competition with the male for food or space. The second control was a set of individual males kept with no females. There were 25 males in each of the five groups, which were treated identically in number of anaesthetisations (using <span class="math inline">\(\mathrm{CO}_2\)</span>) and provision of fresh food medium.</p>
+<p>Download the data file from <a href="https://exeter-data-analytics.github.io/StatModelling/_data/fruitfly.rds">here</a> and save it to your working directory.</p>
+<p>Since we are working with <code>data.frame()</code> objects, where appropriate, we have provided examples using both base R or <code>tidyverse</code> (for those of you who attended the <a href="https://exeter-data-analytics.github.io/AdVis/">Advanced Visualisation and Data Wrangling</a> workshop).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ff &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;fruitfly.rds&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(ff)</code></pre></div>
+<pre><code>##   partners        type longevity thorax sleep
+## 1        8 Inseminated        35   0.64    22
+## 2        8 Inseminated        37   0.68     9
+## 3        8 Inseminated        49   0.68    49
+## 4        8 Inseminated        46   0.72     1
+## 5        8 Inseminated        63   0.72    23
+## 6        8 Inseminated        39   0.76    83</code></pre>
+<p>For the purpose of this practical we will assume that the no female case is the control case, whilst the inseminated and virgin female cases are the treatment cases.</p>
+<ul>
+<li><strong>partners</strong>: number of companions (0, 1 or 8)</li>
+<li><strong>type</strong>: type of companion (inseminated female; virgin female; control (when partners = 0))</li>
+<li><strong>longevity</strong>: lifespan, in days</li>
+<li><strong>thorax</strong>: length of thorax, in mm</li>
+<li><strong>sleep</strong>: percentage of each day spent sleeping</li>
+</ul>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+Produce a scatterplot of <code>longevity</code> against <code>thorax</code>. What does the relationship look like?
+</div>
+</div>
+<button id="displayTextunnamed-chunk-31" onclick="javascript:toggle('unnamed-chunk-31');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-31" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="tab">
+<button class="tablinksunnamed-chunk-31 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-31', 'unnamed-chunk-31');">
+Base R
+</button>
+<button class="tablinksunnamed-chunk-31" onclick="javascript:openCode(event, 'option2unnamed-chunk-31', 'unnamed-chunk-31');">
+<tt>tidyverse</tt>
+</button>
+</div>
+<div id="option1unnamed-chunk-31" class="tabcontentunnamed-chunk-31">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(longevity <span class="op">~</span><span class="st"> </span>thorax, <span class="dt">data =</span> ff, 
+     <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">col=</span><span class="st">&#39;darkgrey&#39;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-189-1.png" width="60%" style="display: block; margin: auto;" /></p>
+<p>The plot suggests that a linear relationship might exist between the two variables. So we can proceed by fitting a linear model in R.</p>
+</div>
+<div id="option2unnamed-chunk-31" class="tabcontentunnamed-chunk-31">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(ff) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> thorax, <span class="dt">y =</span> longevity))</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-190-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>The plot suggests that a linear relationship might exist between the two variables. So we can proceed by fitting a linear model in R.</p>
+</div>
+<script> javascript:hide('option2unnamed-chunk-31') </script>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+
+<ol style="list-style-type: decimal">
+<li>Fit a linear model with lifespan as response variable and thorax length as explanatory variable.</li>
+<li>Display a summary of the fit, together with the 97% confidence interval for the estimated parameters.</li>
+<li>Show the diagnostic plots for the model.
+</div>
+</div></li>
+</ol>
+<button id="displayTextunnamed-chunk-33" onclick="javascript:toggle('unnamed-chunk-33');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-33" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">lm</span>(longevity <span class="op">~</span><span class="st"> </span>thorax, ff)
+<span class="kw">summary</span>(fit)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = longevity ~ thorax, data = ff)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -28.415  -9.961   1.132   9.265  36.812 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   -61.05      13.00  -4.695  7.0e-06 ***
+## thorax        144.33      15.77   9.152  1.5e-15 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 13.6 on 123 degrees of freedom
+## Multiple R-squared:  0.4051, Adjusted R-squared:  0.4003 
+## F-statistic: 83.76 on 1 and 123 DF,  p-value: 1.497e-15</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">confint</span>(fit, <span class="dt">level=</span><span class="fl">0.97</span>)</code></pre></div>
+<pre><code>##                 1.5 %   98.5 %
+## (Intercept) -89.60261 -32.5008
+## thorax      109.70817 178.9580</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))
+<span class="kw">plot</span>(fit, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">col=</span><span class="st">&#39;darkgrey&#39;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-191-1.png" width="60%" style="display: block; margin: auto;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<div id="sec:prediction" class="section level2">
+<h2><span class="header-section-number">2.5</span> Prediction</h2>
+<p>One of the key benefits of fitting a statistical model is that we can use it to produce predictions of the response variable for new values of the explanatory variable(s). We can do this using the <code>predict()</code> function in R. For example, in the fruitflies example above, we may want to produce estimates of average <code>longevity</code> for given values of <code>thorax</code>. To do this we must create a new <code>data.frame</code> object containing all the values of <strong>explanatory</strong> variables that we want to use for our prediction.</p>
+<blockquote>
+<p><strong>Note</strong>: we only require the <strong><em>explanatory</em></strong> variables in this new data frame, the <strong><em>response</em></strong> variable will be generated from the model.</p>
+</blockquote>
+<p>For example, if we wanted to produce an estimate of <code>longevity</code> for an average individual with a <code>thorax</code> length of 0.8mm, we can run:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## produce predicted longevity for thorax = 0.8mm
+newdata &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">thorax =</span> <span class="fl">0.8</span>)
+<span class="kw">predict</span>(fit, newdata)</code></pre></div>
+<pre><code>##        1 
+## 54.41478</code></pre>
+<p>We can also use this to produce <strong>confidence</strong> or <strong>prediction</strong> intervals as follows:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## produce predicted longevity for thorax = 0.8mm
+newdata &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">thorax =</span> <span class="fl">0.8</span>)
+<span class="kw">predict</span>(fit, newdata, <span class="dt">interval =</span> <span class="st">&quot;confidence&quot;</span>, <span class="dt">level =</span> <span class="fl">0.97</span>)</code></pre></div>
+<pre><code>##        fit      lwr      upr
+## 1 54.41478 51.64686 57.18269</code></pre>
+<blockquote>
+<p><strong>Note</strong>: If you predict <em>without</em> an <code>interval</code> argument, the <code>predict()</code> function returns a <code>vector</code>, otherwise it returns a <code>matrix</code>.</p>
+</blockquote>
+<p><strong>Aside</strong>: there are two types of intervals that you might want to produce: <strong>confidence</strong> or <strong>prediction</strong> intervals.</p>
+<ul>
+<li><strong>Confidence</strong> intervals: these correspond to the uncertainty surrounding our estimate of an <strong>average</strong> individual (i.e. it represents the uncertainty in the <strong>mean</strong>: <span class="math inline">\(y = \beta_0 + \beta_1 x\)</span></li>
+<li><strong>Prediction</strong> intervals: these correspond to the uncertainty surrounding an <strong>individual</strong> observation: <span class="math inline">\(y_i = \beta_0 + \beta_1 x_i + \epsilon_i\)</span>.</li>
+</ul>
+<p>If the model fits well, then we would expect <span class="math inline">\(100(1 - \alpha)\)</span>% of the individual measurements to lie within the <strong>prediction</strong> interval, where <span class="math inline">\(\alpha\)</span> is the significance level (so <span class="math inline">\(\alpha = 0.03\)</span> corresponds to a 97% confidence interval).</p>
+<p>The <code>predict()</code> function can be used as a very general way to produce plots of the fitted values over the observed data. For example, let’s consider that we wish to add our fitted regression line to our observed data plot.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(longevity <span class="op">~</span><span class="st"> </span>thorax, <span class="dt">data =</span> ff, <span class="dt">pch =</span> <span class="dv">19</span>, <span class="dt">col=</span><span class="st">&#39;darkgrey&#39;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-36-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>There are various ways to add the correct regression line to this plot, but we will show you a general way that can be used for lots of different types of models. Firstly, we generate a range of <span class="math inline">\(x\)</span>-coordinates that we wish to predict to e.g.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## create new data frame to predict to
+newdata &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">thorax=</span><span class="kw">seq</span>(<span class="kw">min</span>(ff<span class="op">$</span>thorax), <span class="kw">max</span>(ff<span class="op">$</span>thorax), <span class="dt">length.out=</span><span class="dv">50</span>))</code></pre></div>
+<p>We then have to use the model to predict the mean <code>longevity</code> at each of these <code>thorax</code> values:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## predict longevity form the model
+newdata &lt;-<span class="st"> </span><span class="kw">cbind</span>(newdata, <span class="dt">longevity=</span><span class="kw">predict</span>(fit, newdata))</code></pre></div>
+<p>Just as an illustration we will overlay these predictions onto the original scatterplot as points:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## add predicted points to original plot
+<span class="kw">plot</span>(longevity <span class="op">~</span><span class="st"> </span>thorax, <span class="dt">data =</span> ff, <span class="dt">pch =</span> <span class="dv">19</span>, <span class="dt">col=</span><span class="st">&#39;darkgrey&#39;</span>)
+<span class="kw">points</span>(longevity <span class="op">~</span><span class="st"> </span>thorax, <span class="dt">data =</span> newdata, <span class="dt">pch =</span> <span class="dv">19</span>, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-39-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>So we have used the <code>predict()</code> function to produce predicted coordinates that we can overlay on the original scatterplot. In practice we would usually plot these predictions as a <strong>line</strong> rather than points. This approach is particularly useful if the predictions that we wish to plot are not straight lines (such as when we generate <strong>confidence</strong> or <strong>prediction</strong> intervals). To complete this example we will now plot the fitted line and associated confidence interval as follows:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## create new data frame to predict to
+newdata &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">thorax=</span><span class="kw">seq</span>(<span class="kw">min</span>(ff<span class="op">$</span>thorax), <span class="kw">max</span>(ff<span class="op">$</span>thorax), <span class="dt">length.out=</span><span class="dv">50</span>))
+
+## produce predictions and intervals
+newdata &lt;-<span class="st"> </span><span class="kw">cbind</span>(newdata, <span class="kw">predict</span>(fit, newdata, <span class="dt">interval=</span><span class="st">&quot;confidence&quot;</span>, <span class="dt">level=</span><span class="fl">0.97</span>))
+newdata<span class="op">$</span>longevity &lt;-<span class="st"> </span>newdata<span class="op">$</span>fit
+newdata<span class="op">$</span>fit &lt;-<span class="st"> </span><span class="ot">NULL</span></code></pre></div>
+<div class="tab">
+<button class="tablinksunnamed-chunk-41 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-41', 'unnamed-chunk-41');">
+Base R
+</button>
+<button class="tablinksunnamed-chunk-41" onclick="javascript:openCode(event, 'option2unnamed-chunk-41', 'unnamed-chunk-41');">
+<tt>tidyverse</tt>
+</button>
+</div>
+<div id="option1unnamed-chunk-41" class="tabcontentunnamed-chunk-41">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## plot fitted line against the raw data
+<span class="kw">plot</span>(longevity <span class="op">~</span><span class="st"> </span>thorax, <span class="dt">data =</span> ff, 
+     <span class="dt">pch =</span> <span class="dv">19</span>, <span class="dt">col=</span><span class="st">&#39;darkgrey&#39;</span>,
+     <span class="dt">main =</span> <span class="st">&quot;Fitted regression line</span>
+<span class="st">     with 97% confidence interval&quot;</span>)
+<span class="kw">lines</span>(longevity <span class="op">~</span><span class="st"> </span>thorax, <span class="dt">data =</span> newdata)
+<span class="kw">lines</span>(lwr <span class="op">~</span><span class="st"> </span>thorax, <span class="dt">data =</span> newdata, <span class="dt">lty =</span> <span class="dv">2</span>)
+<span class="kw">lines</span>(upr <span class="op">~</span><span class="st"> </span>thorax, <span class="dt">data =</span> newdata, <span class="dt">lty =</span> <span class="dv">2</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-192-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<div id="option2unnamed-chunk-41" class="tabcontentunnamed-chunk-41">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## plot fitted line against the raw data
+<span class="kw">ggplot</span>(<span class="dt">mapping =</span> 
+        <span class="kw">aes</span>(<span class="dt">x =</span> thorax, <span class="dt">y =</span> longevity)) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">data =</span> ff) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="dt">data =</span> newdata) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_ribbon</span>(
+        <span class="kw">aes</span>(<span class="dt">ymin =</span> lwr, <span class="dt">ymax =</span> upr), 
+        <span class="dt">data =</span> newdata, <span class="dt">alpha =</span> <span class="fl">0.5</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-193-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<script> javascript:hide('option2unnamed-chunk-41') </script>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+Produce the same plot but with a 97% <strong>prediction</strong> interval
+</div>
+</div>
+<button id="displayTextunnamed-chunk-43" onclick="javascript:toggle('unnamed-chunk-43');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-43" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="tab">
+<button class="tablinksunnamed-chunk-43 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-43', 'unnamed-chunk-43');">
+Base R
+</button>
+<button class="tablinksunnamed-chunk-43" onclick="javascript:openCode(event, 'option2unnamed-chunk-43', 'unnamed-chunk-43');">
+<tt>tidyverse</tt>
+</button>
+</div>
+<div id="option1unnamed-chunk-43" class="tabcontentunnamed-chunk-43">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## create new data frame to predict to
+newdata &lt;-<span class="st"> </span><span class="kw">data.frame</span>(
+    <span class="dt">thorax =</span> <span class="kw">seq</span>(<span class="kw">min</span>(ff<span class="op">$</span>thorax), 
+        <span class="kw">max</span>(ff<span class="op">$</span>thorax), <span class="dt">length.out =</span> <span class="dv">50</span>)
+)
+
+## produce predictions and intervals
+newdata &lt;-<span class="st"> </span><span class="kw">cbind</span>(newdata, 
+    <span class="kw">predict</span>(fit, newdata, 
+        <span class="dt">interval =</span> <span class="st">&quot;prediction&quot;</span>, 
+        <span class="dt">level =</span> <span class="fl">0.97</span>))
+newdata<span class="op">$</span>longevity &lt;-<span class="st"> </span>newdata<span class="op">$</span>fit
+newdata<span class="op">$</span>fit &lt;-<span class="st"> </span><span class="ot">NULL</span>
+
+## plot fitted line against the raw data
+<span class="kw">plot</span>(longevity <span class="op">~</span><span class="st"> </span>thorax, <span class="dt">data =</span> ff, 
+     <span class="dt">pch =</span> <span class="dv">19</span>, <span class="dt">col=</span><span class="st">&#39;darkgrey&#39;</span>,
+     <span class="dt">main =</span> <span class="st">&quot;Fitted regression line </span>
+<span class="st">     with 97% prediction interval&quot;</span>)
+<span class="kw">lines</span>(longevity <span class="op">~</span><span class="st"> </span>thorax, <span class="dt">data =</span> newdata)
+<span class="kw">lines</span>(lwr <span class="op">~</span><span class="st"> </span>thorax, <span class="dt">data =</span> newdata, 
+      <span class="dt">lty =</span> <span class="dv">2</span>)
+<span class="kw">lines</span>(upr <span class="op">~</span><span class="st"> </span>thorax, <span class="dt">data =</span> newdata, 
+      <span class="dt">lty =</span> <span class="dv">2</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-194-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<div id="option2unnamed-chunk-43" class="tabcontentunnamed-chunk-43">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## create new data frame to predict to
+newdata &lt;-<span class="st"> </span><span class="kw">data.frame</span>(
+    <span class="dt">thorax =</span> <span class="kw">seq</span>(<span class="kw">min</span>(ff<span class="op">$</span>thorax), 
+        <span class="kw">max</span>(ff<span class="op">$</span>thorax), <span class="dt">length.out =</span> <span class="dv">50</span>)
+)
+
+## produce predictions and intervals
+newdata &lt;-<span class="st"> </span><span class="kw">cbind</span>(newdata, 
+    <span class="kw">predict</span>(fit, newdata, 
+        <span class="dt">interval =</span> <span class="st">&quot;prediction&quot;</span>, 
+        <span class="dt">level =</span> <span class="fl">0.97</span>)) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">rename</span>(<span class="dt">longevity =</span> fit)
+
+## plot fitted line against the raw data
+<span class="kw">ggplot</span>(<span class="dt">mapping =</span> 
+        <span class="kw">aes</span>(<span class="dt">x =</span> thorax, <span class="dt">y =</span> longevity)) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">data =</span> ff) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="dt">data =</span> newdata) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_ribbon</span>(<span class="kw">aes</span>(<span class="dt">ymin =</span> lwr, <span class="dt">ymax =</span> upr), 
+        <span class="dt">data =</span> newdata, <span class="dt">alpha =</span> <span class="fl">0.5</span>) <span class="op">+</span>
+<span class="st">    </span><span class="kw">ggtitle</span>(<span class="st">&quot;Fitted regression line</span>
+<span class="st">        with 97% prediction interval&quot;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-195-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<script> javascript:hide('option2unnamed-chunk-43') </script>
+</div>
+</div>
+</div>
+</div>
+<div id="multiple-linear-regression" class="section level2">
+<h2><span class="header-section-number">2.6</span> Multiple linear regression</h2>
+<p>So far we have looked at examples with one response and one explanatory variable. In most applications we will have several variables that affect our outcome. Extending our simple linear regression model to accommodate multiple explanatory variables is straightforward, we just add them to the model.</p>
+<p>Using our illustrative example of height vs weight, let’s add another explanatory variable, for example, the mean height of the individual’s parents (<code>heightParents</code>). Our linear model is defined as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+y_i &amp; = \beta_0 + \beta_1x_{1i} + \beta_2x_{2i} + \epsilon_i \\
+\epsilon_i &amp; \sim \mathcal{N}(0, \sigma^2)
+\end{aligned}
+\]</span> Or in English:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathrm{height}_i &amp; = \beta_0 + \beta_1\mathrm{weight}_i + + \beta_2\mathrm{heightParents}_i+ \epsilon_i \\
+\epsilon_i &amp; \sim \mathcal{N}(0, \sigma^2)
+\end{aligned}
+\]</span></p>
+<p>Let us make up some data again and plot it.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">451</span>)
+
+## no. of observations
+N &lt;-<span class="st"> </span><span class="dv">100</span> 
+
+## hypothetical weights in kg
+weight &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="dt">n=</span>N, <span class="dt">min=</span><span class="dv">60</span>, <span class="dt">max=</span><span class="dv">100</span>) 
+
+## hypothetical mean heights of parents in cm
+heightParents &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="dt">n=</span>N, <span class="dt">min=</span><span class="dv">130</span>, <span class="dt">max=</span><span class="dv">210</span>) 
+
+## hypothetical heights in cm
+height &lt;-<span class="st"> </span><span class="fl">0.1</span><span class="op">*</span>weight <span class="op">+</span><span class="st"> </span><span class="fl">1.05</span><span class="op">*</span>heightParents <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n=</span>N, <span class="dt">mean=</span><span class="dv">0</span>, <span class="dt">sd=</span><span class="dv">10</span>) 
+
+## store as df
+df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">weight=</span>weight, <span class="dt">heightParents=</span>heightParents, <span class="dt">height=</span>height) 
+
+## Plot
+<span class="kw">library</span>(scatterplot3d) ## library needed for 3D plotting
+<span class="kw">scatterplot3d</span>(weight, heightParents, height, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">xlab=</span><span class="st">&#39;Weight (kg)&#39;</span>, 
+              <span class="dt">ylab=</span><span class="st">&#39;Height of Parents (cm)&#39;</span>, <span class="dt">zlab=</span><span class="st">&#39;Height (cm)&#39;</span>, <span class="dt">color=</span><span class="st">&#39;grey&#39;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-44-1.png" width="60%" style="display: block; margin: auto;" /></p>
+<p>Note how by adding another explanatory variable we are <em>spreading</em> the observations across an additional dimension. That is, we go from a 2D plot to a 3D plot (if we add a third explanatory variable we would need a 4D plot). It is important to keep this in mind; the more explanatory variables we add the more we spread our data thinly across multiple dimensions. In practice, this means that our observations will be sparsely scattered across a high dimensional space, making it hard to fit a robust linear model. In the limit, when we have more explanatory variables than observations, we would not be able to fit a linear model at all (unless we employ a different statistical framework and impose further assumptions/constraints).</p>
+<p>The objective of linear modelling is still the same, finding the “best” straight line, or in this case a <strong>hyperplane</strong> (a line in higher dimensions). You can think of a <strong>hyperplane</strong> as a (rigid) sheet of paper, where the objective is to place it such that it passes as close as possible to the observed data.</p>
+<p>To fit a multiple linear regression model we use the <a href="https://www.rdocumentation.org/packages/stats/versions/3.5.1/topics/lm"><code>lm()</code></a> function again and pass the appropriate <strong>formula</strong> object which has the form of <code>response ~ explanatory_1 + explanatory_2</code>. In in our case this will be <code>height ~ weight + heightParents</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">lm</span>(height <span class="op">~</span><span class="st"> </span>weight <span class="op">+</span><span class="st"> </span>heightParents, df)</code></pre></div>
+<p>Let us plot the resultant model first (i.e the hyperplane).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hFig &lt;-<span class="st"> </span><span class="kw">scatterplot3d</span>(weight, heightParents, height, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">xlab=</span><span class="st">&#39;Weight (kg)&#39;</span>, 
+                      <span class="dt">ylab=</span><span class="st">&#39;Height of Parents (cm)&#39;</span>, <span class="dt">zlab=</span><span class="st">&#39;Height (cm)&#39;</span>, <span class="dt">color=</span><span class="st">&#39;grey&#39;</span>)
+hFig<span class="op">$</span><span class="kw">plane3d</span>(fit, <span class="dt">draw_polygon=</span><span class="ot">TRUE</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-46-1.png" width="60%" style="display: block; margin: auto;" /></p>
+<p>Let us look at the fit’s summary</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(fit)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = height ~ weight + heightParents, data = df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -28.578  -6.052   0.235   6.027  27.829 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   -1.65589   10.70833  -0.155    0.877    
+## weight         0.11790    0.09198   1.282    0.203    
+## heightParents  1.04644    0.04707  22.233   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 10.19 on 97 degrees of freedom
+## Multiple R-squared:  0.8372, Adjusted R-squared:  0.8338 
+## F-statistic: 249.4 on 2 and 97 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Same as before, the <code>(Intercept)=</code> -1.656 cm, <code>weight=</code> 0.1179 cm/kg and <code>heightParents=</code> 1.046 cm/cm are the <span class="math inline">\(\beta_0\)</span>, <span class="math inline">\(\beta_1\)</span> and <span class="math inline">\(\beta_2\)</span> parameters.</p>
+<ul>
+<li>The <span class="math inline">\(\beta_0\)</span> parameter (intercept) is the expected height of someone that weighs 0 kg <em>and</em> whose parents have a mean height of 0 cm. Again, this parameter is not useful in this case.</li>
+<li>The <span class="math inline">\(\beta_1\)</span> parameter tells us about the relationship between <code>height</code> and <code>weight</code>. For every 1 kg increase in weight on <em>average</em> the height increases by 0.1179 cm.</li>
+<li>The <span class="math inline">\(\beta_2\)</span> parameter tells us about the relationship between <code>height</code> and <code>heightParents</code>. For every 1 cm increase in mean height of parents on <em>average</em> the person’s height increases by 1.046 cm.</li>
+</ul>
+<p>As before we look at the model diagnostic plots to check the model fit.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))
+<span class="kw">plot</span>(fit, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">col=</span><span class="st">&#39;darkgrey&#39;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-48-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>We can extend this framework to any arbitrary large number of explanatory variables. The model is:</p>
+<p><span class="math display">\[
+\begin{aligned}
+y_i &amp; = \beta_0 + \beta_1x_{1i} + \ldots + \beta_px_{pi} + \epsilon_i \\
+\epsilon_i &amp; \sim \mathcal{N}(0, \sigma^2)
+\end{aligned}
+\]</span> Where <span class="math inline">\(i\)</span> is an index that goes from 1 to <span class="math inline">\(n\)</span> (the total number of observations) and <span class="math inline">\(p\)</span> is the total number of explanatory variables. Hopefully it is now clearer why statisticians use Greek letters <span class="math inline">\(\beta_0, \ldots, \beta_p\)</span>, else the equation would be too long to write in English</p>
+<p>outcome = intercept + ((gradient outcome vs explanatory variable 1) x (explanatory variable 1)) + ((gradient outcome vs explanatory variable 2) x (explanatory variable 2)) + …)</p>
+</div>
+<div id="practical-2" class="section level2">
+<h2><span class="header-section-number">2.7</span> Practical 2</h2>
+<p>We will use the fruitfly dataset (<a href="https://www.nature.com/articles/294580a0">Partridge and Farquhar (1981)</a>) as we did in the previous practical</p>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+
+<ol style="list-style-type: decimal">
+<li>Fit a linear model with lifespan as response variable and thorax length and sleep as explanatory variables</li>
+<li>Display a summary of the fit, together with the 97% confidence intervals for the estimated parameters</li>
+<li>What’s the practical significance of the estimated parameters?</li>
+<li>Show the diagnostic plots for the model, what can you say about the model fit?</li>
+<li>What is the total variation explained by <code>thorax</code> and <code>sleep</code>?
+</div>
+</div></li>
+</ol>
+<button id="displayTextunnamed-chunk-51" onclick="javascript:toggle('unnamed-chunk-51');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-51" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">lm</span>(longevity <span class="op">~</span><span class="st"> </span>thorax <span class="op">+</span><span class="st"> </span>sleep, ff)
+<span class="kw">summary</span>(fit)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = longevity ~ thorax + sleep, data = ff)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -28.548 -10.062   1.116   8.787  36.572 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -60.53266   13.07649  -4.629 9.24e-06 ***
+## thorax      144.89926   15.85031   9.142 1.68e-15 ***
+## sleep        -0.04193    0.07731  -0.542    0.589    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 13.64 on 122 degrees of freedom
+## Multiple R-squared:  0.4065, Adjusted R-squared:  0.3968 
+## F-statistic: 41.79 on 2 and 122 DF,  p-value: 1.502e-14</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">confint</span>(fit, <span class="dt">level=</span><span class="fl">0.97</span>)</code></pre></div>
+<pre><code>##                   1.5 %      98.5 %
+## (Intercept) -89.2456056 -31.8197076
+## thorax      110.0956304 179.7028839
+## sleep        -0.2116944   0.1278351</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))
+<span class="kw">plot</span>(fit, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">col=</span><span class="st">&#39;darkgrey&#39;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-196-1.png" width="60%" style="display: block; margin: auto;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</code></pre></div>
+<p><strong>Practical significance of estimated parameters</strong></p>
+<p>The <code>intercept</code> parameter (-60.5 days) represents the expected longevity for a fruitfly that has a thorax length of zero and that spends no time sleeping. This is of course biologically implausible, but again acts as a reminder that the linearity assumption is not necessarily true outside the range of the observed data</p>
+<p>The <code>thorax</code> parameter (145 days/mm) is the expected increase in longevity for every 1mm increase in <code>thorax</code>. A 1mm increase in thorax length is huge and so for ease of interpretation we can instead state it as 14.5 days per 0.1mm increase in thorax length. The confidence intervals around this parameter is relatively narrow and always positive, suggesting that having a longer thorax is associated with an increased lifespan.</p>
+<p>The <code>sleep</code> parameter (-0.0419days/%) is the expected increase in longevity for every 1% increase in <code>sleep</code>. This parameter has a standard error which is comparable to the parameter estimate itself, suggesting a huge uncertainty around this estimate. This is reflected in the 97% confidence intervals which spans from a negative to a positive value. It is therefore unlikely that <code>sleep</code> is associated with <code>longevity</code>.</p>
+<p><strong>Model fit</strong></p>
+<p>All of the diagnostic plots look sensible, suggesting that our model assumptions are satisfied.</p>
+<p><strong>Explained variation</strong></p>
+<p>The <span class="math inline">\(R^2\)</span> statistic (also known as the <strong>coefficient of determination</strong>) is the proportion of the total variation that is explained by the regression. Which in this case is 40.7%. This is essentially the same as the previous model which only contained <code>thorax</code>, suggesting that <code>sleep</code> is not an important predictor of <code>longevity</code>.</p>
+</div>
+</div>
+</div>
+</div>
+<div id="sec:categorical" class="section level2">
+<h2><span class="header-section-number">2.8</span> Categorical explanatory variables</h2>
+<p>So far we have only considered <strong>continuous</strong> explanatory variables. How do we include <strong>categorical</strong> explanatory variables? Let’s go back to our <code>height</code> vs <code>weight</code> toy example and consider <code>sex</code> as an additional categorical variable. Let us simulate some data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">101</span>)
+
+## no. of observations
+N &lt;-<span class="st"> </span><span class="dv">50</span> 
+
+## hypothetical weights in kg
+weightMale &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="dt">n=</span>N, <span class="dt">min=</span><span class="dv">60</span>, <span class="dt">max=</span><span class="dv">100</span>) 
+
+ ## hypothetical weights in kg
+weightFemale &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="dt">n=</span>N, <span class="dt">min=</span><span class="dv">60</span>, <span class="dt">max=</span><span class="dv">100</span>)
+
+## hypothetical heights in cm
+heightMale &lt;-<span class="st"> </span><span class="fl">2.2</span><span class="op">*</span>weightMale <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n=</span>N, <span class="dt">mean=</span><span class="dv">0</span>, <span class="dt">sd=</span><span class="dv">10</span>) <span class="op">+</span><span class="st"> </span><span class="dv">40</span>  
+
+## hypothetical heights in cm
+heightFemale &lt;-<span class="st"> </span><span class="fl">2.2</span><span class="op">*</span>weightFemale <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n=</span>N, <span class="dt">mean=</span><span class="dv">0</span>, <span class="dt">sd=</span><span class="dv">10</span>) <span class="op">+</span><span class="st"> </span><span class="dv">2</span> 
+height &lt;-<span class="st"> </span><span class="kw">c</span>(heightMale, heightFemale)
+weight &lt;-<span class="st"> </span><span class="kw">c</span>(weightMale, weightFemale)
+sex &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">rep</span>(<span class="st">&#39;Male&#39;</span>, N), <span class="kw">rep</span>(<span class="st">&#39;Female&#39;</span>, N))
+
+## Store in data frame
+df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">weight=</span>weight, <span class="dt">sex=</span>sex, <span class="dt">height=</span>height)</code></pre></div>
+<div class="tab">
+<button class="tablinksunnamed-chunk-53 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-53', 'unnamed-chunk-53');">
+Base R
+</button>
+<button class="tablinksunnamed-chunk-53" onclick="javascript:openCode(event, 'option2unnamed-chunk-53', 'unnamed-chunk-53');">
+<tt>tidyverse</tt>
+</button>
+</div>
+<div id="option1unnamed-chunk-53" class="tabcontentunnamed-chunk-53">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Plot
+<span class="kw">plot</span>(height <span class="op">~</span><span class="st"> </span>weight, <span class="dt">data=</span>df, 
+     <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">xlab=</span><span class="st">&#39;Weight (kg)&#39;</span>, 
+     <span class="dt">ylab=</span><span class="st">&#39;Height (cm)&#39;</span>, <span class="dt">col=</span><span class="st">&#39;grey&#39;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-197-1.png" width="576" style="display: block; margin: auto;" /></p>
+</div>
+<div id="option2unnamed-chunk-53" class="tabcontentunnamed-chunk-53">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_point</span>(
+        <span class="kw">aes</span>(<span class="dt">x =</span> weight, <span class="dt">y =</span> height)) <span class="op">+</span>
+<span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;Weight (kg)&quot;</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">ylab</span>(<span class="st">&quot;Height (cm)&quot;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-198-1.png" width="576" style="display: block; margin: auto;" /></p>
+</div>
+<script> javascript:hide('option2unnamed-chunk-53') </script>
+<p>Data looks similar as before, albeit with a larger variation. We can fit a model as we have done before and assess the relationship between <code>height</code> and <code>weight</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Linear model fit
+fit &lt;-<span class="st"> </span><span class="kw">lm</span>(height <span class="op">~</span><span class="st"> </span>weight, <span class="dt">data=</span>df)</code></pre></div>
+<div class="tab">
+<button class="tablinksunnamed-chunk-55 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-55', 'unnamed-chunk-55');">
+Base R
+</button>
+<button class="tablinksunnamed-chunk-55" onclick="javascript:openCode(event, 'option2unnamed-chunk-55', 'unnamed-chunk-55');">
+<tt>tidyverse</tt>
+</button>
+</div>
+<div id="option1unnamed-chunk-55" class="tabcontentunnamed-chunk-55">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## predictions
+newdata &lt;-<span class="st"> </span><span class="kw">data.frame</span>(
+    <span class="dt">weight =</span> <span class="kw">seq</span>(<span class="kw">min</span>(df<span class="op">$</span>weight), 
+        <span class="kw">max</span>(df<span class="op">$</span>weight), <span class="dt">length.out =</span> <span class="dv">50</span>))
+newdata<span class="op">$</span>height &lt;-<span class="st"> </span><span class="kw">predict</span>(fit, newdata)
+
+## Plot model fit
+<span class="kw">plot</span>(height <span class="op">~</span><span class="st"> </span>weight, <span class="dt">data =</span> df, 
+     <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">xlab=</span><span class="st">&#39;Weight (kg)&#39;</span>, 
+     <span class="dt">ylab=</span><span class="st">&#39;Height (cm)&#39;</span>, <span class="dt">col=</span><span class="st">&#39;grey&#39;</span>)
+<span class="kw">lines</span>(height <span class="op">~</span><span class="st"> </span>weight, <span class="dt">data =</span> newdata, 
+     <span class="dt">col=</span><span class="st">&#39;black&#39;</span>, <span class="dt">lwd=</span><span class="dv">3</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-199-1.png" width="576" style="display: block; margin: auto;" /></p>
+</div>
+<div id="option2unnamed-chunk-55" class="tabcontentunnamed-chunk-55">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## plot model fit
+newdata &lt;-<span class="st"> </span><span class="kw">data.frame</span>(
+    <span class="dt">weight =</span> <span class="kw">seq</span>(<span class="kw">min</span>(df<span class="op">$</span>weight), 
+        <span class="kw">max</span>(df<span class="op">$</span>weight), <span class="dt">length.out =</span> <span class="dv">50</span>))
+newdata &lt;-<span class="st"> </span><span class="kw">mutate</span>(newdata, 
+    <span class="dt">height =</span> <span class="kw">predict</span>(fit, newdata))
+<span class="kw">ggplot</span>(<span class="dt">mapping =</span> 
+        <span class="kw">aes</span>(<span class="dt">x =</span> weight, <span class="dt">y =</span> height)) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">data =</span> df) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="dt">data =</span> newdata) <span class="op">+</span>
+<span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;Weight (kg)&quot;</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">ylab</span>(<span class="st">&quot;Height (cm)&quot;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-200-1.png" width="576" style="display: block; margin: auto;" /></p>
+</div>
+<script> javascript:hide('option2unnamed-chunk-55') </script>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Print result
+<span class="kw">summary</span>(fit)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = height ~ weight, data = df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -40.753 -20.526   2.579  18.889  37.925 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  33.0877    15.2188   2.174   0.0321 *  
+## weight        2.0493     0.1859  11.024   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 22.08 on 98 degrees of freedom
+## Multiple R-squared:  0.5536, Adjusted R-squared:  0.549 
+## F-statistic: 121.5 on 1 and 98 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>If we colour the data by sex it becomes obvious that this extra variation is due to sex.</p>
+<div class="tab">
+<button class="tablinksunnamed-chunk-57 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-57', 'unnamed-chunk-57');">
+Base R
+</button>
+<button class="tablinksunnamed-chunk-57" onclick="javascript:openCode(event, 'option2unnamed-chunk-57', 'unnamed-chunk-57');">
+<tt>tidyverse</tt>
+</button>
+</div>
+<div id="option1unnamed-chunk-57" class="tabcontentunnamed-chunk-57">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(height <span class="op">~</span><span class="st"> </span>weight, <span class="dt">data =</span> df, 
+     <span class="dt">pch =</span> <span class="dv">19</span>)
+<span class="kw">points</span>(height <span class="op">~</span><span class="st"> </span>weight, 
+       <span class="dt">pch =</span> <span class="dv">19</span>, 
+       <span class="dt">data =</span> df[df<span class="op">$</span>sex <span class="op">==</span><span class="st"> &quot;Female&quot;</span>, ], 
+       <span class="dt">col =</span> <span class="st">&quot;green&quot;</span>)
+<span class="kw">points</span>(height <span class="op">~</span><span class="st"> </span>weight, 
+       <span class="dt">pch =</span> <span class="dv">19</span>, 
+       <span class="dt">data =</span> df[df<span class="op">$</span>sex <span class="op">==</span><span class="st"> &quot;Male&quot;</span>, ], 
+       <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>)
+<span class="kw">legend</span>(<span class="kw">par</span>(<span class="st">&quot;usr&quot;</span>)[<span class="dv">1</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.1</span>, 
+       <span class="kw">par</span>(<span class="st">&quot;usr&quot;</span>)[<span class="dv">4</span>] <span class="op">*</span><span class="st"> </span><span class="fl">0.9</span>,
+       <span class="dt">legend =</span> <span class="kw">c</span>(<span class="st">&quot;Female&quot;</span>, <span class="st">&quot;Male&quot;</span>),
+       <span class="dt">pch =</span> <span class="kw">c</span>(<span class="dv">19</span>, <span class="dv">19</span>),
+       <span class="dt">col =</span> <span class="kw">c</span>(<span class="st">&quot;green&quot;</span>, <span class="st">&quot;blue&quot;</span>))</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-201-1.png" width="60%" style="display: block; margin: auto;" /></p>
+</div>
+<div id="option2unnamed-chunk-57" class="tabcontentunnamed-chunk-57">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df, 
+       <span class="kw">aes</span>(<span class="dt">x =</span> weight, <span class="dt">y =</span> height, 
+           <span class="dt">colour =</span> sex)) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-202-1.png" width="576" style="display: block; margin: auto;" /></p>
+</div>
+<script> javascript:hide('option2unnamed-chunk-57') </script>
+<p><code>sex</code> is an important covariate and should therefore be added to the model. That is, we need a model that has different regression lines for each sex. The <em>syntax</em> for the R formula remains exactly the same <code>response ~ explanatory_1 + ... + explanatory_p</code>, but behind the scenes categorical variables are treated differently to continuous variables.</p>
+<p>To cope with categorical variables (known as <strong>factors</strong> in R’s lingo), we introduce a <strong>dummy</strong> variable.</p>
+<p><span class="math display">\[
+S_i = \left\{\begin{array}{ll}
+        1 &amp; \mbox{if $i$ is male},\\
+        0 &amp; \mbox{otherwise}
+        \end{array}
+        \right.
+\]</span></p>
+<p>Here, female is known as the <strong>baseline</strong>/<strong>reference level</strong></p>
+<p>The regression is:</p>
+<p><span class="math display">\[
+y_i = \beta_0 + \beta_1 S_i + \beta_2 x_i + \epsilon_i
+\]</span> Or in English:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathrm{height}_i &amp; = \beta_0 + \beta_1\mathrm{sex}_i + \beta_2\mathrm{weight}_i + \epsilon_i \\
+\end{aligned}
+\]</span> Where <code>sex</code> is the dummy variable <code>S_i</code> that can take the value of 0 (female) or 1 (male)</p>
+<p>The mean regression lines for male and female now look like this:</p>
+<ul>
+<li><strong>Female</strong> (<code>sex=0</code>)</li>
+</ul>
+<p><span class="math display">\[
+\begin{aligned}
+    \mathrm{height}_i &amp; = \beta_0 + (\beta_1 \times 0) + \beta_2\mathrm{weight}_i\\
+    \mathrm{height}_i &amp; = \beta_0 + \beta_2\mathrm{weight}_i
+\end{aligned}
+\]</span></p>
+<ul>
+<li><strong>Male</strong> (<code>sex=1</code>)</li>
+</ul>
+<p><span class="math display">\[
+\begin{aligned}
+    \mathrm{height}_i &amp; = \beta_0 + (\beta_1 \times 1) + \beta_2\mathrm{weight}_i\\
+    \mathrm{height}_i &amp; = (\beta_0 + \beta_1) + \beta_2\mathrm{weight}_i
+\end{aligned}
+\]</span> By introducing a dummy variable, we have now simplified the problem into <strong>two</strong> regression lines, where the <strong>intercept</strong> is:</p>
+<ul>
+<li><strong>Female</strong>: <span class="math inline">\(\beta_0\)</span></li>
+<li><strong>Male</strong>: <span class="math inline">\(\beta_0 + \beta_1\)</span></li>
+</ul>
+<p>Whilst the <strong>gradient</strong> is <span class="math inline">\(\beta_2\)</span> in both cases.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Linear model fit
+fit &lt;-<span class="st"> </span><span class="kw">lm</span>(height <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span>weight, <span class="dt">data=</span>df)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Print result
+<span class="kw">summary</span>(fit)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = height ~ sex + weight, data = df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -21.106  -6.853  -1.162   6.691  22.111 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   1.8269     7.0411   0.259    0.796    
+## sexMale      39.2220     1.9976  19.634   &lt;2e-16 ***
+## weight        2.1931     0.0841  26.078   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 9.95 on 97 degrees of freedom
+## Multiple R-squared:  0.9103, Adjusted R-squared:  0.9084 
+## F-statistic: 491.9 on 2 and 97 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>The <code>sexMale</code> coefficient is <span class="math inline">\(\beta_1\)</span> in the equations above and it represents the <em>difference</em> in intercept between males and females (remember that the gradient is the same for both sexes). Thus for the <em>same</em> weight, men on average will be <code>sexMale</code>=39.2 cm taller than females.</p>
+<p>To plot the fitted lines, we can use a similar trick using <code>predict()</code> as <a href="linear-models.html#sec:prediction">before</a>. This time we need to produce predictions using all relevant combinations of explanatory variables: <code>weight</code> and <code>sex</code> in this case. A useful function to do this is <code>expand.grid()</code>:</p>
+<div class="tab">
+<button class="tablinksunnamed-chunk-60 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-60', 'unnamed-chunk-60');">
+Base R
+</button>
+<button class="tablinksunnamed-chunk-60" onclick="javascript:openCode(event, 'option2unnamed-chunk-60', 'unnamed-chunk-60');">
+<tt>tidyverse</tt>
+</button>
+</div>
+<div id="option1unnamed-chunk-60" class="tabcontentunnamed-chunk-60">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## create dataset to predict to
+newdata &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(
+    <span class="dt">weight =</span> <span class="kw">seq</span>(<span class="kw">min</span>(df<span class="op">$</span>weight), 
+        <span class="kw">max</span>(df<span class="op">$</span>weight), <span class="dt">length.out =</span> <span class="dv">50</span>),
+    <span class="dt">sex =</span> <span class="kw">c</span>(<span class="st">&quot;Female&quot;</span>, <span class="st">&quot;Male&quot;</span>))
+
+## generate predictions
+newdata &lt;-<span class="st"> </span><span class="kw">cbind</span>(newdata, 
+    <span class="dt">height =</span> <span class="kw">predict</span>(fit, newdata))
+
+## plot fitted lines against the data
+<span class="kw">plot</span>(height <span class="op">~</span><span class="st"> </span>weight, <span class="dt">data =</span> df, 
+    <span class="dt">pch =</span> <span class="dv">19</span>)
+<span class="kw">points</span>(height <span class="op">~</span><span class="st"> </span>weight, 
+    <span class="dt">pch =</span> <span class="dv">19</span>, 
+    <span class="dt">data =</span> df[df<span class="op">$</span>sex <span class="op">==</span><span class="st"> &quot;Female&quot;</span>, ], 
+    <span class="dt">col =</span> <span class="st">&quot;green&quot;</span>)
+<span class="kw">points</span>(height <span class="op">~</span><span class="st"> </span>weight, 
+    <span class="dt">pch =</span> <span class="dv">19</span>, 
+    <span class="dt">data =</span> df[df<span class="op">$</span>sex <span class="op">==</span><span class="st"> &quot;Male&quot;</span>, ], 
+    <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>)
+<span class="kw">lines</span>(height <span class="op">~</span><span class="st"> </span>weight, 
+    <span class="dt">data =</span> newdata[
+        newdata<span class="op">$</span>sex <span class="op">==</span><span class="st"> &quot;Female&quot;</span>, ], 
+    <span class="dt">col =</span> <span class="st">&quot;green&quot;</span>)
+<span class="kw">lines</span>(height <span class="op">~</span><span class="st"> </span>weight, 
+    <span class="dt">data =</span> newdata[
+        newdata<span class="op">$</span>sex <span class="op">==</span><span class="st"> &quot;Male&quot;</span>, ], 
+    <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>)
+<span class="kw">legend</span>(<span class="kw">par</span>(<span class="st">&quot;usr&quot;</span>)[<span class="dv">1</span>] <span class="op">*</span><span class="st"> </span><span class="fl">1.1</span>, 
+    <span class="kw">par</span>(<span class="st">&quot;usr&quot;</span>)[<span class="dv">4</span>] <span class="op">*</span><span class="st"> </span><span class="fl">0.9</span>,
+    <span class="dt">legend =</span> <span class="kw">c</span>(<span class="st">&quot;Female&quot;</span>, <span class="st">&quot;Male&quot;</span>),
+    <span class="dt">pch =</span> <span class="kw">c</span>(<span class="dv">19</span>, <span class="dv">19</span>),
+    <span class="dt">col =</span> <span class="kw">c</span>(<span class="st">&quot;green&quot;</span>, <span class="st">&quot;blue&quot;</span>))</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-203-1.png" width="60%" style="display: block; margin: auto;" /></p>
+</div>
+<div id="option2unnamed-chunk-60" class="tabcontentunnamed-chunk-60">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## create dataset to predict to
+newdata &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(
+    <span class="dt">weight =</span> <span class="kw">seq</span>(<span class="kw">min</span>(df<span class="op">$</span>weight), 
+        <span class="kw">max</span>(df<span class="op">$</span>weight), <span class="dt">length.out =</span> <span class="dv">50</span>),
+    <span class="dt">sex =</span> <span class="kw">c</span>(<span class="st">&quot;Female&quot;</span>, <span class="st">&quot;Male&quot;</span>))
+
+## generate predictions
+newdata &lt;-<span class="st"> </span><span class="kw">mutate</span>(newdata, 
+    <span class="dt">height =</span> <span class="kw">predict</span>(fit, newdata))
+
+## plot fitted lines against the data
+<span class="kw">ggplot</span>(<span class="dt">mapping =</span> 
+        <span class="kw">aes</span>(<span class="dt">x =</span> weight, <span class="dt">y =</span> height, 
+            <span class="dt">colour =</span> sex)) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">data =</span> df) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="dt">data =</span> newdata)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-204-1.png" width="576" style="display: block; margin: auto;" /></p>
+</div>
+<script> javascript:hide('option2unnamed-chunk-60') </script>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+Add 97% confidence intervals to the fitted lines plots above.
+</div>
+</div>
+<button id="displayTextunnamed-chunk-62" onclick="javascript:toggle('unnamed-chunk-62');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-62" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="tab">
+<button class="tablinksunnamed-chunk-62 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-62', 'unnamed-chunk-62');">
+Base R
+</button>
+<button class="tablinksunnamed-chunk-62" onclick="javascript:openCode(event, 'option2unnamed-chunk-62', 'unnamed-chunk-62');">
+<tt>tidyverse</tt>
+</button>
+</div>
+<div id="option1unnamed-chunk-62" class="tabcontentunnamed-chunk-62">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## create dataset to predict to
+newdata &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(
+  <span class="dt">weight =</span> <span class="kw">seq</span>(<span class="kw">min</span>(df<span class="op">$</span>weight), 
+    <span class="kw">max</span>(df<span class="op">$</span>weight), <span class="dt">length.out =</span> <span class="dv">50</span>),
+  <span class="dt">sex =</span> <span class="kw">c</span>(<span class="st">&quot;Female&quot;</span>, <span class="st">&quot;Male&quot;</span>))
+
+## generate predictions
+newdata &lt;-<span class="st"> </span><span class="kw">cbind</span>(newdata, 
+  <span class="kw">predict</span>(fit, newdata, <span class="dt">level =</span> <span class="fl">0.97</span>,
+    <span class="dt">interval =</span> <span class="st">&quot;confidence&quot;</span>))
+newdata<span class="op">$</span>height &lt;-<span class="st"> </span>newdata<span class="op">$</span>fit
+newdata<span class="op">$</span>fit &lt;-<span class="st"> </span><span class="ot">NULL</span>
+
+## plot fitted lines against the data
+<span class="kw">plot</span>(height <span class="op">~</span><span class="st"> </span>weight, <span class="dt">data =</span> df, <span class="dt">pch =</span> <span class="dv">19</span>)
+<span class="kw">points</span>(height <span class="op">~</span><span class="st"> </span>weight, 
+  <span class="dt">pch =</span> <span class="dv">19</span>, <span class="dt">col =</span> <span class="st">&quot;green&quot;</span>,
+  <span class="dt">data =</span> df[df<span class="op">$</span>sex <span class="op">==</span><span class="st"> &quot;Female&quot;</span>, ])
+<span class="kw">points</span>(height <span class="op">~</span><span class="st"> </span>weight, 
+  <span class="dt">pch =</span> <span class="dv">19</span>, <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>,
+  <span class="dt">data =</span> df[df<span class="op">$</span>sex <span class="op">==</span><span class="st"> &quot;Male&quot;</span>, ])
+<span class="kw">lines</span>(height <span class="op">~</span><span class="st"> </span>weight, <span class="dt">col =</span> <span class="st">&quot;green&quot;</span>,
+  <span class="dt">data =</span> newdata[newdata<span class="op">$</span>sex <span class="op">==</span><span class="st"> &quot;Female&quot;</span>, ])
+<span class="kw">lines</span>(height <span class="op">~</span><span class="st"> </span>weight, <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>, 
+  <span class="dt">data =</span> newdata[newdata<span class="op">$</span>sex <span class="op">==</span><span class="st"> &quot;Male&quot;</span>, ])
+<span class="kw">lines</span>(lwr <span class="op">~</span><span class="st"> </span>weight, 
+  <span class="dt">data =</span> newdata[newdata<span class="op">$</span>sex <span class="op">==</span><span class="st"> &quot;Female&quot;</span>, ], 
+  <span class="dt">col =</span> <span class="st">&quot;green&quot;</span>, <span class="dt">lty =</span> <span class="dv">2</span>)
+<span class="kw">lines</span>(lwr <span class="op">~</span><span class="st"> </span>weight, 
+  <span class="dt">data =</span> newdata[newdata<span class="op">$</span>sex <span class="op">==</span><span class="st"> &quot;Male&quot;</span>, ], 
+  <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">lty =</span> <span class="dv">2</span>)
+<span class="kw">lines</span>(upr <span class="op">~</span><span class="st"> </span>weight, 
+  <span class="dt">data =</span> newdata[newdata<span class="op">$</span>sex <span class="op">==</span><span class="st"> &quot;Female&quot;</span>, ], 
+  <span class="dt">col =</span> <span class="st">&quot;green&quot;</span>, <span class="dt">lty =</span> <span class="dv">2</span>)
+<span class="kw">lines</span>(upr <span class="op">~</span><span class="st"> </span>weight, 
+  <span class="dt">data =</span> newdata[newdata<span class="op">$</span>sex <span class="op">==</span><span class="st"> &quot;Male&quot;</span>, ], 
+  <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">lty =</span> <span class="dv">2</span>)
+<span class="kw">legend</span>(<span class="kw">par</span>(<span class="st">&quot;usr&quot;</span>)[<span class="dv">1</span>]<span class="op">*</span><span class="fl">1.1</span>, <span class="kw">par</span>(<span class="st">&quot;usr&quot;</span>)[<span class="dv">4</span>]<span class="op">*</span><span class="fl">0.9</span>, 
+  <span class="dt">pch =</span> <span class="kw">c</span>(<span class="dv">19</span>, <span class="dv">19</span>), <span class="dt">col =</span> <span class="kw">c</span>(<span class="st">&quot;green&quot;</span>, <span class="st">&quot;blue&quot;</span>),
+  <span class="dt">legend =</span> <span class="kw">c</span>(<span class="st">&quot;Female&quot;</span>, <span class="st">&quot;Male&quot;</span>))</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-205-1.png" width="60%" style="display: block; margin: auto;" /></p>
+</div>
+<div id="option2unnamed-chunk-62" class="tabcontentunnamed-chunk-62">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## create dataset to predict to
+newdata &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(
+    <span class="dt">weight =</span> <span class="kw">seq</span>(<span class="kw">min</span>(df<span class="op">$</span>weight), 
+        <span class="kw">max</span>(df<span class="op">$</span>weight), <span class="dt">length.out =</span> <span class="dv">50</span>),
+    <span class="dt">sex =</span> <span class="kw">c</span>(<span class="st">&quot;Female&quot;</span>, <span class="st">&quot;Male&quot;</span>))
+
+## generate predictions
+newdata &lt;-<span class="st"> </span><span class="kw">cbind</span>(newdata, 
+    <span class="kw">predict</span>(fit, newdata, 
+        <span class="dt">interval =</span> <span class="st">&quot;confidence&quot;</span>, 
+        <span class="dt">level =</span> <span class="fl">0.97</span>)) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">rename</span>(<span class="dt">height =</span> fit)
+
+## plot fitted lines against the data
+<span class="kw">ggplot</span>(<span class="dt">mapping =</span> <span class="kw">aes</span>(<span class="dt">x =</span> weight)) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> height, <span class="dt">colour =</span> sex), 
+        <span class="dt">data =</span> df) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> height, <span class="dt">colour =</span> sex), 
+        <span class="dt">data =</span> newdata) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_ribbon</span>(<span class="kw">aes</span>(<span class="dt">ymin =</span> lwr, <span class="dt">ymax =</span> upr, 
+        <span class="dt">fill =</span> sex), <span class="dt">data =</span> newdata, 
+        <span class="dt">alpha =</span> <span class="fl">0.5</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-206-1.png" width="576" style="display: block; margin: auto;" /></p>
+</div>
+<script> javascript:hide('option2unnamed-chunk-62') </script>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+Compare the total variation explained by the model with just weight to the one which considers weight <em>and</em> sex. What gives rise to this difference?
+</div>
+</div>
+<button id="displayTextunnamed-chunk-64" onclick="javascript:toggle('unnamed-chunk-64');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-64" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<p>By omitting <code>sex</code> from our model, we have no other alternatives but to treat this extra variation as <strong>noise</strong>, <span class="math inline">\(\epsilon_i \sim \mathcal{N}(0, \sigma^2)\)</span>. The unexplained variation (<span class="math inline">\(\sigma^2\)</span>) is due to observation noise <em>and</em> sex. Once we put <code>sex</code> into our model, it will “soak” up the variation that is due to sex which improves our model considerably. The unexplained variation (<span class="math inline">\(\sigma^2\)</span>) is now only due to the observation error (and other factors that we might be omitting).</p>
+</div>
+</div>
+</div>
+<p><strong>Note</strong> the baseline/reference level in R is automatically taken to be the <em>first</em> factor level.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">levels</span>(df<span class="op">$</span>sex)</code></pre></div>
+<pre><code>## [1] &quot;Female&quot; &quot;Male&quot;</code></pre>
+<p>We can change this by re-ordering the levels if we wanted to.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df<span class="op">$</span>sex &lt;-<span class="st"> </span><span class="kw">factor</span>(df<span class="op">$</span>sex, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&#39;Male&#39;</span>, <span class="st">&#39;Female&#39;</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Linear model fit
+fit &lt;-<span class="st"> </span><span class="kw">lm</span>(height <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span>weight, <span class="dt">data=</span>df)
+
+## Print result
+<span class="kw">summary</span>(fit)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = height ~ sex + weight, data = df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -21.106  -6.853  -1.162   6.691  22.111 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  41.0489     6.8707   5.975 3.81e-08 ***
+## sexFemale   -39.2220     1.9976 -19.634  &lt; 2e-16 ***
+## weight        2.1931     0.0841  26.078  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 9.95 on 97 degrees of freedom
+## Multiple R-squared:  0.9103, Adjusted R-squared:  0.9084 
+## F-statistic: 491.9 on 2 and 97 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>As expected this change simply changes the sign of the <span class="math inline">\(\beta_1\)</span> parameter, because the dummy variable now takes the value of 0 for male and 1 for female (i.e we switched things around).</p>
+</div>
+<div id="practical-3" class="section level2">
+<h2><span class="header-section-number">2.9</span> Practical 3</h2>
+<p>We will use the fruitfly dataset (<a href="https://www.nature.com/articles/294580a0">Partridge and Farquhar (1981)</a>) as we did in the previous practical</p>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+
+<ol style="list-style-type: decimal">
+<li>Fit a linear model with lifespan as response variable and thorax length and type of companion as explanatory variables</li>
+<li>Display a summary of the fit, together with the 97% confidence intervals for the estimated parameters</li>
+<li>Why do we get two parameters for type of companion and what do they mean in practice?
+</div>
+</div></li>
+</ol>
+<button id="displayTextunnamed-chunk-69" onclick="javascript:toggle('unnamed-chunk-69');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-69" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw">lm</span>(longevity <span class="op">~</span><span class="st"> </span>type <span class="op">+</span><span class="st"> </span>thorax, ff)
+<span class="kw">summary</span>(fit)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = longevity ~ type + thorax, data = ff)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -27.330  -6.803  -2.531   7.143  29.415 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)      -56.521     11.149  -5.069 1.45e-06 ***
+## typeInseminated    3.450      2.759   1.250    0.214    
+## typeVirgin       -13.349      2.756  -4.845 3.80e-06 ***
+## thorax           143.638     13.064  10.995  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 11.21 on 121 degrees of freedom
+## Multiple R-squared:  0.6024, Adjusted R-squared:  0.5925 
+## F-statistic:  61.1 on 3 and 121 DF,  p-value: &lt; 2.2e-16</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">confint</span>(fit, <span class="dt">level=</span><span class="fl">0.97</span>)</code></pre></div>
+<pre><code>##                      1.5 %     98.5 %
+## (Intercept)     -81.005320 -32.037404
+## typeInseminated  -2.609106   9.509537
+## typeVirgin      -19.400571  -7.298282
+## thorax          114.949413 172.326573</code></pre>
+<p><strong>The type of companion parameters</strong></p>
+<p>In our toy example we introduced one dummy variable because the variable <code>sex</code> only had two factors (male or female). Type of companion has three factors (inseminated, virgin and control), we therefore need <strong>two</strong> dummy variables as follows:</p>
+<p><span class="math display">\[
+S_{1i} = \left\{\begin{array}{ll}
+        1 &amp; \mbox{if $i$ is inseminated},\\
+        0 &amp; \mbox{otherwise}
+        \end{array}
+        \right.
+\]</span></p>
+<p><span class="math display">\[
+S_{2i} = \left\{\begin{array}{ll}
+        1 &amp; \mbox{if $i$ is virgin},\\
+        0 &amp; \mbox{otherwise}
+        \end{array}
+        \right.
+\]</span></p>
+<p>Here, control is the <strong>baseline</strong>/<strong>reference level</strong> for type of companion.</p>
+<pre><code>    The mean regression line is:</code></pre>
+<p><span class="math display">\[
+y_i = \beta_0 + \beta_1 S_{1i} + \beta_2 S_{2i} + \beta_3 x_i
+\]</span></p>
+<p>Or in English:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathrm{longevity}_i &amp; = \beta_0 + \beta_1\mathrm{inseminated}_i + \beta_2\mathrm{virgin}_i + \beta_3\mathrm{thorax}_i
+\end{aligned}
+\]</span></p>
+<p>Where <code>inseminated</code> is a dummy variable that takes the value of 1 (inseminated) or 0 (otherwise) and <code>virgin</code> is another dummy variable that takes the value of 1 (virgin) or 0 (otherwise). For <code>control</code> both dummy variables are zero.</p>
+<p>The mean regression lines for the three cases is as follows:</p>
+<ul>
+<li><strong>Control</strong> (<code>inseminated=0</code> and <code>virgin=0</code>)</li>
+</ul>
+<p><span class="math display">\[
+\begin{aligned}
+    \mathrm{longevity}_i &amp; = \beta_0 + (\beta_1 \times 0) + (\beta_2 \times 0) + \beta_3\mathrm{thorax}_i\\
+        \mathrm{longevity}_i &amp; = \beta_0 + \beta_3\mathrm{thorax}_i
+\end{aligned}
+\]</span></p>
+<ul>
+<li><strong>Inseminated</strong> (<code>inseminated=1</code> and <code>virgin=0</code>)</li>
+</ul>
+<p><span class="math display">\[
+\begin{aligned}
+    \mathrm{longevity}_i &amp; = \beta_0 + (\beta_1 \times 1) + (\beta_2 \times 0) + \beta_3\mathrm{thorax}_i\\
+        \mathrm{longevity}_i &amp; = (\beta_0 + \beta_1) + \beta_3\mathrm{thorax}_i
+\end{aligned}
+\]</span></p>
+<ul>
+<li><strong>Virgin</strong> (<code>inseminated=0</code> and <code>virgin=1</code>)</li>
+</ul>
+<p><span class="math display">\[
+\begin{aligned}
+    \mathrm{longevity}_i &amp; = \beta_0 + (\beta_1 \times 0) + (\beta_2 \times 1) + \beta_3\mathrm{thorax}_i\\
+        \mathrm{longevity}_i &amp; = (\beta_0 + \beta_2) + \beta_3\mathrm{thorax}_i
+\end{aligned}
+\]</span></p>
+<p>The <strong>intercept</strong> for these three regression lines is therefore:</p>
+<ul>
+<li><strong>Control</strong>: <span class="math inline">\(\beta_0\)</span> = <code>intercept</code>=-56.5 days</li>
+<li><strong>Inseminated</strong>: <span class="math inline">\(\beta_0 + \beta_1\)</span> = <code>intercept</code> + <code>typeInesminated</code> = -56.5 + 3.45 = -53.1 days</li>
+<li><strong>Virgin</strong>: <span class="math inline">\(\beta_0 + \beta_2\)</span> = <code>intercept</code> + <code>typeVirgin</code> = -56.5 + -13.3 = -69.9 days</li>
+</ul>
+<p>The intercepts <em>per se</em> are not a useful measure as they represent the expected longevity of a fruitfly which has a thorax length of zero, which is clearly absurd. What is important is the <em>difference</em> between these intercepts as it represents a vertical shift in the regression line for the three conditions (see plot).</p>
+<p><code>typeInseminated</code> = 3.45 days is the expected increase in longevity for inseminated with respect to control for <em>any</em> thorax length. Similarly, <code>typeVirgin</code> = -13.3 days, is the expected increase in longevity for virgin with respect to control. We can also compute the expected increase in longevity for virgin with respect to inseminated which is <code>typeVirgin</code> - <code>typeInseminated</code> = -13.3 + 3.45 = -16.8 days.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+
+<ol start="4" style="list-style-type: decimal">
+<li>Plot the mean regression line for each type of companion together with the observed data.
+</div>
+</div></li>
+</ol>
+<button id="displayTextunnamed-chunk-71" onclick="javascript:toggle('unnamed-chunk-71');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-71" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="tab">
+<button class="tablinksunnamed-chunk-71 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-71', 'unnamed-chunk-71');">
+Base R
+</button>
+<button class="tablinksunnamed-chunk-71" onclick="javascript:openCode(event, 'option2unnamed-chunk-71', 'unnamed-chunk-71');">
+<tt>tidyverse</tt>
+</button>
+</div>
+<div id="option1unnamed-chunk-71" class="tabcontentunnamed-chunk-71">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">newdata &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(
+    <span class="dt">thorax =</span> <span class="kw">seq</span>(<span class="kw">min</span>(ff<span class="op">$</span>thorax), 
+        <span class="kw">max</span>(ff<span class="op">$</span>thorax), <span class="dt">length.out =</span> <span class="dv">50</span>),
+    <span class="dt">type =</span> <span class="kw">levels</span>(ff<span class="op">$</span>type)
+)
+newdata &lt;-<span class="st"> </span><span class="kw">cbind</span>(newdata, 
+    <span class="dt">longevity =</span> <span class="kw">predict</span>(fit, newdata))
+<span class="kw">plot</span>(longevity <span class="op">~</span><span class="st"> </span>thorax, <span class="dt">data =</span> ff, 
+     <span class="dt">pch =</span> <span class="dv">19</span>, <span class="dt">col =</span> <span class="kw">as.numeric</span>(ff<span class="op">$</span>type))
+<span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">3</span>){
+    <span class="kw">lines</span>(longevity <span class="op">~</span><span class="st"> </span>thorax, 
+        <span class="dt">data =</span> newdata[newdata<span class="op">$</span>type <span class="op">==</span><span class="st"> </span>
+<span class="st">            </span><span class="kw">levels</span>(ff<span class="op">$</span>type)[i], ], 
+        <span class="dt">col =</span> i)
+}</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-208-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<div id="option2unnamed-chunk-71" class="tabcontentunnamed-chunk-71">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">newdata &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(
+    <span class="dt">thorax =</span> <span class="kw">seq</span>(<span class="kw">min</span>(ff<span class="op">$</span>thorax), 
+        <span class="kw">max</span>(ff<span class="op">$</span>thorax), <span class="dt">length.out =</span> <span class="dv">50</span>),
+    <span class="dt">type =</span> <span class="kw">levels</span>(ff<span class="op">$</span>type)
+)
+newdata &lt;-<span class="st"> </span><span class="kw">cbind</span>(newdata, 
+    <span class="dt">longevity =</span> <span class="kw">predict</span>(fit, newdata))
+<span class="kw">ggplot</span>(<span class="dt">mapping =</span> <span class="kw">aes</span>(<span class="dt">x =</span> thorax, y
+        =<span class="st"> </span>longevity, <span class="dt">colour =</span> type)) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">data =</span> ff) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="dt">data =</span> newdata)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-209-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<script> javascript:hide('option2unnamed-chunk-71') </script>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+
+<ol start="5" style="list-style-type: decimal">
+<li>Show the diagnostic plots for the model, what can you say about the model fit?</li>
+<li>Compare the total variation explained by this model with the one that only used <code>thorax</code> as a covariate. What can you say about the importance of the type of companion?
+</div>
+</div></li>
+</ol>
+<button id="displayTextunnamed-chunk-73" onclick="javascript:toggle('unnamed-chunk-73');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-73" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<p><strong>Model fit</strong></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))
+<span class="kw">plot</span>(fit, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">col=</span><span class="st">&#39;darkgrey&#39;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-210-1.png" width="480" style="display: block; margin: auto;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</code></pre></div>
+<p>All of the diagnostic plots look sensible, suggesting that our model assumptions are satisfied.</p>
+<p><strong>Explained variation</strong></p>
+<p>The <span class="math inline">\(R^2\)</span> statistic (also known as the <strong>coefficient of determination</strong>) is the proportion of the total variation that is explained by the regression. Which in this case is 60.2%. This is considerably higher than the 40% achieved with just <code>thorax</code>, suggesting that type of companion is indeed an important covariate and thus should be included in the model.</p>
+</div>
+</div>
+</div>
+</div>
+<div id="practical-issues" class="section level2">
+<h2><span class="header-section-number">2.10</span> Practical issues</h2>
+<p>The most common issues when trying to fit simple linear regression models is that our response variable is not normal which violates our modelling assumption. There are two things we can do in this case:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Variable transformation</strong>
+<ul>
+<li>Can sometimes fix linearity</li>
+<li>Can sometimes fix non-normality and heteroscedasticity (i.e non-constant variance)</li>
+</ul></li>
+<li><strong><em>Generalised</em> Linear Models (GLMs)</strong> to change the <strong>error</strong> structure (i.e the assumption that residuals need to be normal)</li>
+</ol>
+</div>
+<div id="summary-1" class="section level2">
+<h2><span class="header-section-number">2.11</span> Summary</h2>
+<p><strong>Linear regression</strong> is a powerful tool:</p>
+<ul>
+<li>It splits the data into <strong>signal</strong> (trend / mean), and <strong>noise</strong> (residual error).</li>
+<li>It can cope with <strong>multiple variables</strong>.</li>
+<li>It can incorporate different <strong>types</strong> of variable</li>
+<li>It can be used to produce <strong>point</strong> and <strong>interval</strong> estimates for the parameters.</li>
+<li>It can be used to assess the importance of variables.</li>
+</ul>
+<p><strong>But</strong> always <strong>check</strong> that the model fit is sensible and that the results make sense within the context of the problem at hand. Investigate thoroughly if they do not!!</p>
+
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol start="1">
+<li id="fn1"><p>this notation is such that we can have any arbitrary large number of explantory variables i.e <span class="math inline">\(\beta_1\)</span>, <span class="math inline">\(\beta_2\)</span>, <span class="math inline">\(\beta_3\)</span>…etc., without running out of letters in the alphabet!<a href="linear-models.html#fnref1">↩</a></p></li>
+<li id="fn2"><p>weight is our explanatory variable (<span class="math inline">\(x_i\)</span>) and height the response variable (<span class="math inline">\(y_i\)</span>)<a href="linear-models.html#fnref2">↩</a></p></li>
+<li id="fn3"><p>non-constant variance is known as <strong>heteroscedacity</strong><a href="linear-models.html#fnref3">↩</a></p></li>
+</ol>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="introduction.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="generalised-linear-models.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": null,
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"download": ["_main.pdf"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "";
+    if (src === "" || src === "true") src = "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

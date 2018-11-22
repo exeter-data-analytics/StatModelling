@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Statistical modelling in R</title>
+  <meta name="description" content="Statistical modelling in R">
+  <meta name="generator" content="bookdown 0.7 and GitBook 2.6.7">
+
+  <meta property="og:title" content="Statistical modelling in R" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Statistical modelling in R" />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Statistical modelling in R" />
+  
+  <meta name="twitter:description" content="Statistical modelling in R" />
+  
+
+<meta name="author" content="JJ Valletta and TJ McKinley">
+
+
+<meta name="date" content="2018-11-22">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="generalised-linear-models.html">
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+<script language="javascript"> 
+    function toggle(id) {
+        var ele = document.getElementById("toggleText" + id);
+        var text = document.getElementById("displayText" + id);
+        var buttonText = text.innerHTML.replace("Show ", "");
+        buttonText = buttonText.replace("Hide ", "");
+        if(ele.style.display == "block") {
+            ele.style.display = "none";
+            text.innerHTML = "Show " + buttonText;
+        } else {
+            ele.style.display = "block";
+            text.innerHTML = "Hide " + buttonText;
+        }
+    } 
+</script>
+
+<script language="javascript">
+    function openCode(evt, codeName, id) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent" + id);
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks" + id);
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(codeName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+</script>
+
+<script language="javascript">
+    function hide(id){
+        document.getElementById(id).style.display = "none";
+    }
+</script>
+</script>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+<link rel="stylesheet" href="_style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a><ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#prerequisites"><i class="fa fa-check"></i>Prerequisites</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#learning-outcomes"><i class="fa fa-check"></i>Learning outcomes</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#recommended-reading"><i class="fa fa-check"></i>Recommended reading</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#data-files"><i class="fa fa-check"></i>Data files</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#acknowledgements"><i class="fa fa-check"></i>Acknowledgements</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="introduction.html"><a href="introduction.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1.1" data-path="introduction.html"><a href="introduction.html#motivation"><i class="fa fa-check"></i><b>1.1</b> Motivation</a></li>
+<li class="chapter" data-level="1.2" data-path="introduction.html"><a href="introduction.html#what-is-a-model"><i class="fa fa-check"></i><b>1.2</b> What is a model?</a></li>
+<li class="chapter" data-level="1.3" data-path="introduction.html"><a href="introduction.html#what-is-a-statistical-stochastic-model"><i class="fa fa-check"></i><b>1.3</b> What is a statistical (stochastic) model?</a></li>
+<li class="chapter" data-level="1.4" data-path="introduction.html"><a href="introduction.html#illustrative-example"><i class="fa fa-check"></i><b>1.4</b> Illustrative example</a></li>
+<li class="chapter" data-level="1.5" data-path="introduction.html"><a href="introduction.html#summary"><i class="fa fa-check"></i><b>1.5</b> Summary</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="linear-models.html"><a href="linear-models.html"><i class="fa fa-check"></i><b>2</b> Linear models</a><ul>
+<li class="chapter" data-level="2.1" data-path="linear-models.html"><a href="linear-models.html#simple-linear-regression"><i class="fa fa-check"></i><b>2.1</b> Simple linear regression</a></li>
+<li class="chapter" data-level="2.2" data-path="linear-models.html"><a href="linear-models.html#doing-it-in-r"><i class="fa fa-check"></i><b>2.2</b> Doing it in R</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="linear-models.html"><a href="linear-models.html#using-data-frames"><i class="fa fa-check"></i><b>2.2.1</b> Using data frames</a></li>
+<li class="chapter" data-level="2.2.2" data-path="linear-models.html"><a href="linear-models.html#extended-summary"><i class="fa fa-check"></i><b>2.2.2</b> Extended summary</a></li>
+</ul></li>
+<li class="chapter" data-level="2.3" data-path="linear-models.html"><a href="linear-models.html#model-checking"><i class="fa fa-check"></i><b>2.3</b> Model checking</a><ul>
+<li class="chapter" data-level="2.3.1" data-path="linear-models.html"><a href="linear-models.html#residuals-vs-fitted-values"><i class="fa fa-check"></i><b>2.3.1</b> Residuals vs fitted values</a></li>
+<li class="chapter" data-level="2.3.2" data-path="linear-models.html"><a href="linear-models.html#residuals-vs-fitted-values-scale-location"><i class="fa fa-check"></i><b>2.3.2</b> Residuals vs fitted values (scale-location)</a></li>
+<li class="chapter" data-level="2.3.3" data-path="linear-models.html"><a href="linear-models.html#residuals-vs.leverage"><i class="fa fa-check"></i><b>2.3.3</b> Residuals vs. leverage</a></li>
+<li class="chapter" data-level="2.3.4" data-path="linear-models.html"><a href="linear-models.html#qq-plots"><i class="fa fa-check"></i><b>2.3.4</b> QQ plots</a></li>
+</ul></li>
+<li class="chapter" data-level="2.4" data-path="linear-models.html"><a href="linear-models.html#sec:practical1"><i class="fa fa-check"></i><b>2.4</b> Practical 1</a></li>
+<li class="chapter" data-level="2.5" data-path="linear-models.html"><a href="linear-models.html#sec:prediction"><i class="fa fa-check"></i><b>2.5</b> Prediction</a></li>
+<li class="chapter" data-level="2.6" data-path="linear-models.html"><a href="linear-models.html#multiple-linear-regression"><i class="fa fa-check"></i><b>2.6</b> Multiple linear regression</a></li>
+<li class="chapter" data-level="2.7" data-path="linear-models.html"><a href="linear-models.html#practical-2"><i class="fa fa-check"></i><b>2.7</b> Practical 2</a></li>
+<li class="chapter" data-level="2.8" data-path="linear-models.html"><a href="linear-models.html#sec:categorical"><i class="fa fa-check"></i><b>2.8</b> Categorical explanatory variables</a></li>
+<li class="chapter" data-level="2.9" data-path="linear-models.html"><a href="linear-models.html#practical-3"><i class="fa fa-check"></i><b>2.9</b> Practical 3</a></li>
+<li class="chapter" data-level="2.10" data-path="linear-models.html"><a href="linear-models.html#practical-issues"><i class="fa fa-check"></i><b>2.10</b> Practical issues</a></li>
+<li class="chapter" data-level="2.11" data-path="linear-models.html"><a href="linear-models.html#summary-1"><i class="fa fa-check"></i><b>2.11</b> Summary</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html"><i class="fa fa-check"></i><b>3</b> Generalised linear models</a><ul>
+<li class="chapter" data-level="3.1" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#motivation-1"><i class="fa fa-check"></i><b>3.1</b> Motivation</a></li>
+<li class="chapter" data-level="3.2" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#generalised-linear-models-glms"><i class="fa fa-check"></i><b>3.2</b> Generalised Linear Models (GLMs)</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#link-functions"><i class="fa fa-check"></i><b>3.2.1</b> Link functions</a></li>
+<li class="chapter" data-level="3.2.2" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#workflow"><i class="fa fa-check"></i><b>3.2.2</b> Workflow</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#poisson-regression-for-count-data"><i class="fa fa-check"></i><b>3.3</b> Poisson regression (for count data)</a></li>
+<li class="chapter" data-level="3.4" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#example-cuckoos"><i class="fa fa-check"></i><b>3.4</b> Example: Cuckoos</a></li>
+<li class="chapter" data-level="3.5" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#practical-4---species-richness"><i class="fa fa-check"></i><b>3.5</b> Practical 4 - Species richness</a></li>
+<li class="chapter" data-level="3.6" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#logistic-regression-for-binary-data"><i class="fa fa-check"></i><b>3.6</b> Logistic regression (for binary data)</a></li>
+<li class="chapter" data-level="3.7" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#example-1992-us-election-survey"><i class="fa fa-check"></i><b>3.7</b> Example: 1992 US election survey</a><ul>
+<li class="chapter" data-level="3.7.1" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#the-divide-by-four-rule"><i class="fa fa-check"></i><b>3.7.1</b> The ‘divide-by-four’ rule</a></li>
+<li class="chapter" data-level="3.7.2" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#odds-ratios"><i class="fa fa-check"></i><b>3.7.2</b> Odds ratios</a></li>
+<li class="chapter" data-level="3.7.3" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#model-diagnostics"><i class="fa fa-check"></i><b>3.7.3</b> Model diagnostics</a></li>
+</ul></li>
+<li class="chapter" data-level="3.8" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#practical-5---wine"><i class="fa fa-check"></i><b>3.8</b> Practical 5 - Wine</a></li>
+<li class="chapter" data-level="3.9" data-path="generalised-linear-models.html"><a href="generalised-linear-models.html#summary-2"><i class="fa fa-check"></i><b>3.9</b> Summary</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html"><i class="fa fa-check"></i><b>4</b> Mixed effects models</a><ul>
+<li class="chapter" data-level="4.1" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#a-note-on-variable-selection-and-model-simplification"><i class="fa fa-check"></i><b>4.1</b> A note on variable selection and model simplification</a><ul>
+<li class="chapter" data-level="4.1.1" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#common-nhst-approaches-to-model-simplification"><i class="fa fa-check"></i><b>4.1.1</b> Common NHST approaches to model simplification</a></li>
+</ul></li>
+<li class="chapter" data-level="4.2" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#non-independent-data-randomised-complete-block-design"><i class="fa fa-check"></i><b>4.2</b> Non-independent data: Randomised Complete Block Design</a><ul>
+<li class="chapter" data-level="4.2.1" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#mixed-model-approach"><i class="fa fa-check"></i><b>4.2.1</b> Mixed model approach</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#non-independent-data-pseudoreplication-nested-variance-and-derived-variable-analysis"><i class="fa fa-check"></i><b>4.3</b> Non-independent data: pseudoreplication, nested variance and derived variable analysis</a><ul>
+<li class="chapter" data-level="4.3.1" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#the-wrong-analysis"><i class="fa fa-check"></i><b>4.3.1</b> The Wrong Analysis</a></li>
+<li class="chapter" data-level="4.3.2" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#derived-variables-avoid-pseudoreplication"><i class="fa fa-check"></i><b>4.3.2</b> Derived variables avoid pseudoreplication</a></li>
+<li class="chapter" data-level="4.3.3" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#secmixed"><i class="fa fa-check"></i><b>4.3.3</b> Mixed model approach</a></li>
+</ul></li>
+<li class="chapter" data-level="4.4" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#non-independent-data-split-plot-analyses"><i class="fa fa-check"></i><b>4.4</b> Non-independent data: Split-plot analyses</a><ul>
+<li class="chapter" data-level="4.4.1" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#analysing-split-plot-designs-using-lmer"><i class="fa fa-check"></i><b>4.4.1</b> Analysing split-plot designs using <code>lmer</code></a></li>
+</ul></li>
+<li class="chapter" data-level="4.5" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#non-independent-data-absorbing-the-influence-of-random-effects"><i class="fa fa-check"></i><b>4.5</b> Non-independent data: Absorbing the influence of random effects</a></li>
+<li class="chapter" data-level="4.6" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#model-checking-with-mixed-models"><i class="fa fa-check"></i><b>4.6</b> Model checking with mixed models</a></li>
+<li class="chapter" data-level="4.7" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#why-arent-glms-much-good-at-modelling-non-independent-data"><i class="fa fa-check"></i><b>4.7</b> Why aren’t GLMs much good at modelling non-independent data?</a></li>
+<li class="chapter" data-level="4.8" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#generalised-linear-mixed-modelling-glmm"><i class="fa fa-check"></i><b>4.8</b> Generalised Linear Mixed Modelling (GLMM)</a></li>
+<li class="chapter" data-level="4.9" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#parboot"><i class="fa fa-check"></i><b>4.9</b> Parametric bootstrapping</a></li>
+<li class="chapter" data-level="4.10" data-path="mixed-effects-models.html"><a href="mixed-effects-models.html#secbayes"><i class="fa fa-check"></i><b>4.10</b> Bayesian modelling</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Statistical modelling in R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="mixed-effects-models" class="section level1">
+<h1><span class="header-section-number">4</span> Mixed effects models</h1>
+<p>My thanks in particular to <a href="http://biosciences.exeter.ac.uk/staff/index.php?web_id=david_hodgson">Dave Hodgson</a>, who’s fantastic Master’s course offered up the prototype for this workshop.</p>
+<p>Slides can be downloaded from:</p>
+<ul>
+<li><a href="https://exeter-data-analytics.github.io/StatModelling/04-mixed-effects-models-handout.pdf">(G)LMMs in R</a></li>
+</ul>
+<p>Firstly, install if necessary (using <code>install.packages()</code>; uncomment the code below if required) and load the <code>lme4</code> package:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## load libraries
+<span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(lme4)</code></pre></div>
+<blockquote>
+<p><strong>Note</strong>: In this session I will use <code>tidyverse</code> as the principal way to generate plots etc. because it’s <strong><em>far</em></strong> easier for many of the examples in this workshop. The base R code is provided for those of you that are not familiar with <code>tidyverse</code>.</p>
+</blockquote>
+<p>This practical will focus on how to analyse data when the experimental design (or the surveyed explanatory variables) obliges us to study non-independent experimental units. You will find yourself distinguishing between random effects and fixed effects. You will find yourself frustrated at the lack of consensus regarding how to simplify fixed factors in mixed models. It takes a long time to understand how to deal with blocks (and other random effects): don’t expect understanding to come overnight, and do rely on books and websites to help you. But be warned, at this level of statistical prowess, much of the literature is written in Greek symbols and matrix algebra.</p>
+<p><strong><em>Health Warning: some of these mixed-effects modelling packages are quickly evolving, and future updates might play some havoc with the coding, and outputs from, the scripts written here. You will need to keep your eye on the forums in the future if this happens. As always, let me or your demonstrators know if you encounter difficulties.</em></strong></p>
+<p>If this workshop has whetted your appetite, then a range of nice examples can be found at <a href="http://www.maths.bath.ac.uk/~jjf23/">Julian Faraway’s</a> site: <a href="http://www.maths.bath.ac.uk/~jjf23/mixchange/index.html" class="uri">http://www.maths.bath.ac.uk/~jjf23/mixchange/index.html</a>. These examples are discussed in his book: <a href="https://www.amazon.co.uk/Extending-Linear-Model-Generalized-Nonparametric/dp/158488424X">Extending the Linear Model with R</a>.</p>
+<div id="a-note-on-variable-selection-and-model-simplification" class="section level2">
+<h2><span class="header-section-number">4.1</span> A note on variable selection and model simplification</h2>
+<p>By design we have been a bit wary in focusing on the eponymous null hypothesis significance testing (NHST) ideas (and associated idolisation of p-values). We have done this because we want to emphasise that a statistical model is more than just a p-value, and also that a p-value on its own (without some measure of effect size) is meaningless. We appreciate that this might fly in the face of the way that you might have seen statistical models presented in courses or papers, and this section is our attempt to explain to you some of the controversies surrounding these approaches.</p>
+<p>There are many philosophical complexities with the way that p-values are used in many papers, and there have been many papers published discussing their misuse and misinterpretations. A good one is <a href="https://www.nature.com/articles/nmeth.3288.pdf?origin=ppub">Halsey et al. (2015)</a>.</p>
+<p>This is not to say that null hypothesis significance testing (hereafter NHST) is wrong, it’s just that it’s easy to misuse, even for experienced data modellers. Here are some common challenges / misconceptions:</p>
+<ol style="list-style-type: decimal">
+<li>A p-value is the <em>“probability of observing a test statistic equal to or more extreme than the observed test statistic if the null hypothesis is true”</em>; it is <strong>not</strong> the <em>“probability that the null hypothesis is false”</em>.</li>
+<li>Leads to a binary interpretation: <em>“is there an effect?”</em>“, rather than, <em>“what is the size of the effect”</em>?</li>
+<li>They are heavily dependent on <strong>sample size</strong>:
+<ul>
+<li>a <em>larger</em> study with the same effect size and variance will be <em>more</em> statistically significant. Example: study is exploring differences between sample means from two groups, <span class="math inline">\(\bar{x}\)</span> and <span class="math inline">\(\bar{y}\)</span>.
+<ul>
+<li><span class="math inline">\(~~\bar{x} = 10\)</span>, <span class="math inline">\(\bar{y} = 12\)</span>, <span class="math inline">\(s = 5\)</span> (pooled SD), <span class="math inline">\(n = 5\)</span> (per group): <span class="math inline">\(\mathbf{p = 0.4}\)</span>.</li>
+<li><span class="math inline">\(~~\bar{x} = 10\)</span>, <span class="math inline">\(\bar{y} = 12\)</span>, <span class="math inline">\(s = 5\)</span> (pooled SD), <span class="math inline">\(n = 30\)</span> (per group): <span class="math inline">\(\mathbf{p = 0.0332}\)</span>.</li>
+</ul></li>
+</ul></li>
+<li>The p-value itself is a <strong>random variable</strong>, and can have a very wide variance
+<ul>
+<li>Geoff Cumming’s <a href="https://www.youtube.com/embed/5OL1RqHrZQ8">‘dance of the p-values’</a>.</li>
+<li>Type I, II, S and M errors.</li>
+</ul></li>
+<li>Often, the null hypothesis of a <strong>zero effect</strong> is not a <strong>biologically</strong> valid one.
+<ul>
+<li><a href="http://www.tandfonline.com/doi/abs/10.1198/000313006X152649">The difference between “significant” and “not significant” is not itself statistically significant…</a></li>
+</ul></li>
+<li>Direction and magnitude of effects are important.
+<ul>
+<li>Consider a <strong>large</strong> study which finds a <strong>small</strong> effect size of <span class="math inline">\(x\)</span> (<span class="math inline">\(p &lt; 0.001\)</span>), with the <strong>minimum biologically significant</strong> effect size being <strong><em>larger</em></strong> than <span class="math inline">\(x\)</span>.</li>
+<li>Therefore, the <strong><em>highly (statistically) significant</em></strong> p-value provides strong evidence of a <strong>lack-of-effect</strong>. It corresponds to a <strong>negligible real-world</strong> effect estimated with high precision!</li>
+</ul></li>
+</ol>
+<p>Many of these problems go away when a study is appropriately <strong>powered</strong>, with careful experimental design. In this case the sample size is large enough to have high power for the comparison of interest, and the study is often set up in such a way as to make the comparison of interest meaningful. Note that these kinds of study were what NHST were derived to model.</p>
+<p>That being said, there are times when NHST can be useful, particularly if you have a complex system (perhaps with large numbers of explanatory variables), and you wish to produce a more parsimonious model (perhaps because it is easier to interpret).</p>
+<div id="common-nhst-approaches-to-model-simplification" class="section level3">
+<h3><span class="header-section-number">4.1.1</span> Common NHST approaches to model simplification</h3>
+<p>Traditionally, if the response variable is Gaussian (normal), then you may have come across two frequently used approaches:</p>
+<ul>
+<li>F-tests: based on comparing the residual mean squared error with the regression mean squared error, or</li>
+<li>Likelihood ratio tests (LRT): based on comparing the model deviance between two models.</li>
+</ul>
+<p>Both of these cases are <strong>exact</strong> tests for linear regression with Gaussian errors (but for mixed models these become approximate). Let’s have a look at a simple example using the fruitflies data from earlier practicals. These data are available in the <a href="https://exeter-data-analytics.github.io/StatModelling/_data/fruitfly.rds">“fruitfly.rds”</a> file.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ff &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;fruitfly.rds&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ff_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(longevity <span class="op">~</span><span class="st"> </span>type, <span class="dt">data =</span> ff)
+<span class="kw">summary</span>(ff_lm)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = longevity ~ type, data = ff)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -31.74 -13.74   0.26  11.44  33.26 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)       63.560      3.158  20.130  &lt; 2e-16 ***
+## typeInseminated    0.520      3.867   0.134    0.893    
+## typeVirgin       -15.820      3.867  -4.091 7.75e-05 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 15.79 on 122 degrees of freedom
+## Multiple R-squared:  0.2051, Adjusted R-squared:  0.1921 
+## F-statistic: 15.74 on 2 and 122 DF,  p-value: 8.305e-07</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">anova</span>(ff_lm, <span class="dt">test =</span> <span class="st">&quot;F&quot;</span>)</code></pre></div>
+<pre><code>## Analysis of Variance Table
+## 
+## Response: longevity
+##            Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+## type        2  7845.3  3922.7  15.738 8.305e-07 ***
+## Residuals 122 30407.5   249.2                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>Here the <code>anova()</code> function performs an F-test for the <code>longevity ~ type</code> model vs. the null model (<code>longevity ~ 1</code>). The idea is that <em>if the fit from the competing models is the same</em>, then the ratio of mean squared errors will follow an F-distribution on 2 and 122 degrees-of-freedom (d.f.) in this case.</p>
+<p>Here we obtain a test statistic of 15.738, which can be compared against an F-distribution on 2 and 122 d.f., which gives a p-value of <span class="math inline">\(8.3 \times 10^{-7}\)</span> (i.e. a statistically significant change even at the 1% and 0.1% levels). Thus we would conclude that dropping <code>type</code> produces a statistically significantly inferior model fit compared to when it is left in the model.</p>
+<p>We can do the same thing but using a likelihood ratio test as:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">anova</span>(ff_lm, <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Analysis of Variance Table
+## 
+## Response: longevity
+##            Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+## type        2  7845.3  3922.7  15.738 8.305e-07 ***
+## Residuals 122 30407.5   249.2                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>Here the test statistic produces a p-value of <span class="math inline">\(5.9 \times 10^{-7}\)</span>; again highly statistically significant even at the 0.1% level, but slightly different to the F-test (because they are different tests). Here we are comparing <span class="math inline">\(-2 \times\)</span> the difference in log-likelihoods between the competing models, which under the null hypothesis that the fits are similar, should follow a chi-squared distribution on 2 d.f. here (the d.f. is the difference in the number of parameters between the two nested models). In general, in linear regression with Gaussian errors the F-test is slightly more powerful than the LRT, but you can use either.</p>
+<p>For Generalised Linear Models (GLMs) with non-Gaussian error structure the F-test is no longer valid, and the LRT is <strong>approximate</strong> (the latter is in fact <strong>asymptotically chi-squared</strong>, which means that the approximation gets better for larger sample sizes, but can be misleading in small samples).</p>
+<p>If using F-tests or LRTs to compare models, then the models must be <strong>nested</strong> (i.e. you can get one model to equal the other by fixing some of the parameters—usually setting coefficients to be zero, as in the fruitflies example). An alternative is to use something like Akaike’s Information Criterion (AIC), which does not assess statistical significance and does not require the models to be nested (it is in essence a measure of predictive accuracy).</p>
+<p>For <strong>mixed models</strong> things get trickier again, and there is much debate about optimal ways to perform model simplification and inference—see <a href="https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html">GLMM FAQ</a> for more discussion. A nice description of the types of approaches we can use in different cases can be found at:</p>
+<p><a href="https://rdrr.io/cran/lme4/man/pvalues.html" class="uri">https://rdrr.io/cran/lme4/man/pvalues.html</a></p>
+<p>A useful quote from the <a href="https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html">GLMM FAQ</a> is:</p>
+<blockquote>
+<p>“For special cases that correspond to classical experimental designs (i.e. balanced designs that are nested, split-plot, randomized block, etc.) … we can show that the null distributions of particular ratios of sums of squares follow an F distribution with known numerator and denominator degrees of freedom (and hence the sampling distributions of particular contrasts are t-distributed with known df). In more complicated situations (unbalanced, GLMMs, crossed random effects, models with temporal or spatial correlation, etc.) it is not in general clear that the null distribution of the computed ratio of sums of squares is really an F distribution, for any choice of denominator degrees of freedom.”</p>
+</blockquote>
+<p>The developers of <code>lme4</code> recommend (from <strong>worst</strong> to <strong>best</strong>)<a href="#fn9" class="footnoteRef" id="fnref9"><sup>9</sup></a>:</p>
+<ul>
+<li>Wald Z-tests;</li>
+<li>For <strong>balanced</strong>, <strong>nested LMMs</strong> where degrees of freedom can be computed according to classical rules: Wald t-tests;</li>
+<li>Likelihood ratio test, either by setting up the model so that the parameter can be isolated/dropped (via <code>anova()</code> or <code>drop1()</code>, or via computing likelihood profiles;</li>
+<li>Markov chain Monte Carlo (MCMC) or <strong>parametric bootstrap confidence intervals</strong>.</li>
+</ul>
+<p>If I do perform model simplification or variable selection, even then I would present the final model results in terms of effect sizes and confidence intervals where possible (or via predictive plots), since although CIs suffer with some of the same problems as p-values, at least they focus on the magnitude of the effects. If I have large enough sample sizes and not too many variables, then it may well be fine just to fit one model and perform inference from that.</p>
+<p>In this workshop we will introduce some common scenarios in which mixed models can be applied, and give examples of model simplification and inference in these cases. We will tend to use LRTs and profile confidence intervals simply because they are easier to compute. A <a href="mixed-effects-models.html#parboot">section</a> at the end will explore the use of parametric bootstrapping for those of you who are interested.</p>
+</div>
+</div>
+<div id="non-independent-data-randomised-complete-block-design" class="section level2">
+<h2><span class="header-section-number">4.2</span> Non-independent data: Randomised Complete Block Design</h2>
+<p>Often you will find it impossible to allocate treatments to experimental units at random because they are structured in time or in space. This means that units are not independent of each other, hence their residuals will not be independent, and we have violated an important assumption of generalised linear modelling (and, indeed, of analysis of variance). However the recognition of natural structuring in our population of experimental units can be <strong>very</strong> useful. If the experimental design can be stratified so that all units that share a common ‘trait’ (e.g. share a corner of a field, or share a single incubator) can represent one or more full replicate of the proposed experiment, then we should use this natural structuring to absorb some of our enemy: noise (also called residual deviance).</p>
+<p>An extreme case of using error-absorbers is the Randomised Complete Block Experimental Design. So-called because it includes blocks, each block contains a single replicate of the experiment, and experimental units <strong>within</strong> blocks are allocated to treatment combinations <strong>at random</strong>. The concept is best explained using an example.</p>
+<p>A microbiologist wishes to know which of four growth media is best for rearing large populations of anthrax, quickly. However, this poorly funded scientist does not own a large enough incubator in which to grow lots of replicate populations. Instead he requests space in five different incubators owned by other, better-funded researchers. Each incubator just has space for four bottles of medium. Our scientist allocates each growth medium to one bottle per incubator <strong>at random</strong>, inoculates with anthrax then monitors population growth rate. A schematic is given in Figure <a href="mixed-effects-models.html#fig:bacCabinets">4.1</a>.</p>
+<div class="figure" style="text-align: center"><span id="fig:bacCabinets"></span>
+<img src="_img/bacCabinets.png" alt="Schematic for bacterial growth example" width="80%" height="80%" />
+<p class="caption">
+Figure 4.1: Schematic for bacterial growth example
+</p>
+</div>
+<p>These data are available in the <a href="https://exeter-data-analytics.github.io/StatModelling/_data/bacCabinets.rds">“bacCabinets.rds”</a> file. Read in this dataset and familiarise yourself with its structure.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bac &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;bacCabinets.rds&quot;</span>)</code></pre></div>
+<p>Let’s do the analysis <strong>wrongly</strong> to begin with:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bac_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(growth <span class="op">~</span><span class="st"> </span>media, <span class="dt">data =</span> bac)
+<span class="kw">drop1</span>(bac_lm, <span class="dt">test =</span> <span class="st">&quot;F&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## growth ~ media
+##        Df Sum of Sq    RSS    AIC F value  Pr(&gt;F)  
+## &lt;none&gt;              152.38 48.613                  
+## media   3    88.577 240.96 51.778  3.1002 0.05638 .
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<div class="panel panel-default">
+<div class="panel-heading">
+Question
+</div>
+<div class="panel-body">
+Why is this wrong?
+</div>
+</div>
+<button id="displayTextunnamed-chunk-133" onclick="javascript:toggle('unnamed-chunk-133');">
+Show Answer
+</button>
+<div id="toggleTextunnamed-chunk-133" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Answer
+</div>
+<div class="panel-body">
+Because the analysis does not account for the cabinet effects. There are not 20 <em>independent</em> measurements here.
+</div>
+</div>
+</div>
+<p>Let’s refit the model with a <code>cabinet</code> effect, and then test for the statistical significance of <code>media</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bac_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(growth <span class="op">~</span><span class="st"> </span>media <span class="op">+</span><span class="st"> </span>cabinet, <span class="dt">data =</span> bac)
+<span class="kw">drop1</span>(bac_lm, <span class="dt">test =</span> <span class="st">&quot;F&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## growth ~ media + cabinet
+##         Df Sum of Sq    RSS    AIC F value    Pr(&gt;F)    
+## &lt;none&gt;                15.23 10.551                      
+## media    3    88.577 103.81 42.936  23.264 2.734e-05 ***
+## cabinet  4   137.150 152.38 48.613  27.016 6.380e-06 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>This is better. We need a <code>cabinet</code> effect here to deal with the fact that measurements within cabinets are not independent. Notice that the sum-of-squares for <code>media</code> is the same in this model compared to the one without <code>cabinet</code> in it. This is because we have a <strong>balanced design</strong> (i.e. the same number of measurements in each combination of explanatory variables). However, the F-statistic is different, and this is because this depends on the <strong>residual sum-of-squares</strong>, which is the second model is different due to the inclusion of <code>cabinet</code>, which soaks up some of the residual variance that can be attributed to differences between cabinets.</p>
+<blockquote>
+<p><strong>Note</strong>: here the <code>cabinet</code> effect <strong>must</strong> be included in the model. It does not make sense for us to drop the <code>cabinet</code> effect and test for whether it should be included or not. It needs to be included <strong>by design</strong>! Hence we can ignore the <code>cabinet</code> line output by <code>drop1()</code>.</p>
+</blockquote>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+Try with an <strong>interaction</strong> effect between <code>media</code> and <code>cabinet</code>. What happens and why?
+</div>
+</div>
+<button id="displayTextunnamed-chunk-136" onclick="javascript:toggle('unnamed-chunk-136');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-136" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(<span class="kw">lm</span>(growth <span class="op">~</span><span class="st"> </span>media <span class="op">*</span><span class="st"> </span>cabinet, <span class="dt">data =</span> bac))</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = growth ~ media * cabinet, data = bac)
+## 
+## Residuals:
+## ALL 20 residuals are 0: no residual degrees of freedom!
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept)          2.1         NA      NA       NA
+## media2               1.3         NA      NA       NA
+## media3              -0.6         NA      NA       NA
+## media4              -1.6         NA      NA       NA
+## cabinet2             3.2         NA      NA       NA
+## cabinet3             8.5         NA      NA       NA
+## cabinet4             1.3         NA      NA       NA
+## cabinet5             4.4         NA      NA       NA
+## media2:cabinet2     -1.2         NA      NA       NA
+## media3:cabinet2     -1.7         NA      NA       NA
+## media4:cabinet2     -2.2         NA      NA       NA
+## media2:cabinet3      2.1         NA      NA       NA
+## media3:cabinet3     -2.0         NA      NA       NA
+## media4:cabinet3     -4.0         NA      NA       NA
+## media2:cabinet4      1.1         NA      NA       NA
+## media3:cabinet4     -1.3         NA      NA       NA
+## media4:cabinet4     -1.1         NA      NA       NA
+## media2:cabinet5      0.4         NA      NA       NA
+## media3:cabinet5     -1.8         NA      NA       NA
+## media4:cabinet5     -3.9         NA      NA       NA
+## 
+## Residual standard error: NaN on 0 degrees of freedom
+## Multiple R-squared:      1,  Adjusted R-squared:    NaN 
+## F-statistic:   NaN on 19 and 0 DF,  p-value: NA</code></pre>
+We are faced with all these <code>NA</code>s because the model is <strong>saturated</strong>: there is no replication so we cannot calculate the residual deviance/variance. This also means that there are no degrees-of-freedom remaining in the model to calculate the residual sum-of-squares. We have twenty observations and twenty parameters to estimate. This is analogous to fitting a straight line through <em>two</em> data points; we get a perfect fit, and thus overfits.
+</div>
+</div>
+</div>
+<div id="mixed-model-approach" class="section level3">
+<h3><span class="header-section-number">4.2.1</span> Mixed model approach</h3>
+<p>Let’s re-do this analysis using a <strong>mixed model</strong>. If you haven’t already, you will need to load the <code>lme4</code> package:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lme4)</code></pre></div>
+<blockquote>
+<p><strong>Fixed and random effects</strong>:</p>
+<ul>
+<li><code>media</code> is a <strong>fixed</strong> effect—we chose the media to be tested, each media has a specific identity, we want to estimate the differences in bacterial growth between different media;</li>
+<li><code>cabinet</code> is a <strong>random</strong> effect—we don’t care about the identity of each cabinet, each cabinet is sampled from a population of possible cabinets, we just want to predict and absorb the variance in bacterial growth rate explained by cabinet.</li>
+</ul>
+</blockquote>
+<p>Now on with the analysis:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bac_lmer &lt;-<span class="st"> </span><span class="kw">lmer</span>(growth <span class="op">~</span><span class="st"> </span>media <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>cabinet), <span class="dt">data =</span> bac)
+<span class="kw">summary</span>(bac_lmer)</code></pre></div>
+<pre><code>## Linear mixed model fit by REML [&#39;lmerMod&#39;]
+## Formula: growth ~ media + (1 | cabinet)
+##    Data: bac
+## 
+## REML criterion at convergence: 68.8
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -1.2306 -0.5407  0.1088  0.4320  1.7696 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  cabinet  (Intercept) 8.255    2.873   
+##  Residual             1.269    1.127   
+## Number of obs: 20, groups:  cabinet, 5
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)   5.5800     1.3801   4.043
+## media2        1.7800     0.7125   2.498
+## media3       -1.9600     0.7125  -2.751
+## media4       -3.8400     0.7125  -5.389
+## 
+## Correlation of Fixed Effects:
+##        (Intr) media2 media3
+## media2 -0.258              
+## media3 -0.258  0.500       
+## media4 -0.258  0.500  0.500</code></pre>
+<blockquote>
+<p><strong>Syntax for <code>lmer</code></strong>: The <code>lmer</code> command has two important sections:</p>
+<ul>
+<li>The first part corresponds to the ‘fixed effects’ part of the model (in this case, <code>growth ~ media</code>), which is identical to the model you would enter into <code>glm</code> if there were no problems of non-independence of data.</li>
+<li>The second part is where you enter the ‘random effects’ part of the model, where you tell R how the data is nested and where the non-independence lies. There is a whole world of possibilities here, from spatially autocorrelated variance/covariance matrices to independently varying random slopes and intercepts. We keep it simple in this course. For this example, we assume no interaction between media and cabinet, hence we just want to predict and absorb the additive variance due to different cabinets. Hence our random effect term is <code>(1 | cabinet)</code>. This means: ‘the intercept of our linear model will vary according to cabinet’.</li>
+</ul>
+</blockquote>
+<p>Mathematically this corresponds to: <span class="math display">\[
+    Y_i = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2}+ \beta_3 x_{i3} + \gamma_{C_i} + \epsilon_i
+\]</span> where <span class="math inline">\(\epsilon_i \sim N(0, \sigma^2)\)</span>, the <span class="math inline">\(x_{i*}\)</span> are dummy <strong>binary</strong> variables corresponding to each level of <code>media</code>. For example: <span class="math display">\[
+    x_{i1} = \left\{ \begin{array}{ll}
+    1 &amp; \mbox{if measurement $i$ has media = 2}\\
+    0 &amp; \mbox{otherwise},
+    \end{array}
+    \right.
+\]</span> and similarly for <span class="math inline">\(x_{i2}\)</span> and <span class="math inline">\(x_{i3}\)</span>. Here <span class="math inline">\(\gamma_{C_i}\)</span> is the random effect term for each <code>cabinet</code> (<span class="math inline">\(C_i = 1, \dots, 5\)</span>). The reason why <span class="math inline">\(\gamma_{C_i}\)</span> are denoted as <strong>random</strong> effects, is that we assume they come from some distribution such that <span class="math inline">\(\gamma_{j} \sim N(0, \sigma^2_{\gamma})\)</span> (for <span class="math inline">\(j = 1, \dots, 5\)</span>). I promise this will be the last equation in these notes!</p>
+<div id="reml-vs.-ml" class="section level4">
+<h4><span class="header-section-number">4.2.1.1</span> <strong>REML</strong> vs. <strong>ML</strong></h4>
+<p>To fit these models we use an approach called <strong>maximum likelihood</strong> (<strong>ML</strong>). ML is a very general technique with desirable <em>asymptotic</em> properties. However, ML estimators can be <strong>biased</strong>, particularly for small sample sizes. In mixed models an alternative approach, known as <strong>restricted maximum likelihood</strong> (<strong>REML</strong>), can be used, which produces better estimates of the model coefficients, particularly for small sample sizes. However, the REML likelihood function is different to the ML likelihood function, and only makes sense for mixed models (since it’s designed to estimate the variance components).</p>
+<p>We may have to switch between these two approaches depending on what we want to do. In general, if you want to compare nested models that only differ in the random effects, then you can use either REML or ML. However, if you want to compare models that differ in their fixed effects, then for <strong>balanced, nested</strong> designs we can usually derive suitable tests based on REML fits. For <strong>unbalanced</strong> or <strong>non-nested</strong> designs you will need to use ML. Hence, if we are performing variable selection or model simplification, then we <em>may</em> have to switch to ML when comparing models, but then refit the model using REML in order to produce estimates of the coefficients.</p>
+<blockquote>
+<p><strong>Note:</strong> for various reasons the authors of <code>lme4</code> do not provide p-values as standard from a call to <code>summary()</code> or <code>anova()</code>. We can perform a <strong>likelihood ratio test</strong> for the impact of dropping <code>media</code> from the fitted model. The simplest way to do this is to use the <code>drop1()</code> function:</p>
+<p>Since this is a <strong>balanced design</strong>, then we can use either REML or ML to generate appropriate likelihood ratio tests for assessing the impact of dropping <strong>fixed</strong> effects. In an <strong>unbalanced</strong> design, then we would need to refit the model using ML. The easiest way to do this is <em>in situ</em>, using the <code>update()</code> function and setting the argument <code>REML = F</code>. This does not change the original <code>bac_lmer</code> model object.</p>
+<p>Trying both approaches here should give the same result.</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">drop1</span>(bac_lmer, <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## growth ~ media + (1 | cabinet)
+##        Df     AIC    LRT  Pr(Chi)    
+## &lt;none&gt;     85.544                    
+## media   3 108.333 28.789 2.48e-06 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">drop1</span>(<span class="kw">update</span>(bac_lmer, <span class="dt">REML =</span> F), <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## growth ~ media + (1 | cabinet)
+##        Df     AIC    LRT  Pr(Chi)    
+## &lt;none&gt;     85.544                    
+## media   3 108.333 28.789 2.48e-06 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>We have used a <strong>likelihood ratio test</strong><a href="#fn10" class="footnoteRef" id="fnref10"><sup>10</sup></a> to assess whether the removal of <code>media</code> corresponds to a statistically significantly inferior model fit, which in this case it does at both the 5% and 1% levels. Hence we should leave <code>media</code> in the model. Once we have the final model, we can look at a summary of the model fit:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(bac_lmer)</code></pre></div>
+<pre><code>## Linear mixed model fit by REML [&#39;lmerMod&#39;]
+## Formula: growth ~ media + (1 | cabinet)
+##    Data: bac
+## 
+## REML criterion at convergence: 68.8
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -1.2306 -0.5407  0.1088  0.4320  1.7696 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  cabinet  (Intercept) 8.255    2.873   
+##  Residual             1.269    1.127   
+## Number of obs: 20, groups:  cabinet, 5
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)   5.5800     1.3801   4.043
+## media2        1.7800     0.7125   2.498
+## media3       -1.9600     0.7125  -2.751
+## media4       -3.8400     0.7125  -5.389
+## 
+## Correlation of Fixed Effects:
+##        (Intr) media2 media3
+## media2 -0.258              
+## media3 -0.258  0.500       
+## media4 -0.258  0.500  0.500</code></pre>
+<p><strong>Note</strong> that this summary has been produced from the model fit using REML, even though the last LRT was conducted using the model fitted using ML—this is because we updated the model <em>in situ</em> within <code>drop1()</code>.</p>
+<p>The ‘intercept’ of the <code>lmer</code> model is the mean growth rate in <code>media1</code> for an <strong>average</strong> cabinet. <code>lmer</code> output also gives you information criteria about the model, tells you the standard deviation of the random effects, correlations between levels of fixed effects, and so on.</p>
+<blockquote>
+<p><strong>Note</strong>: we use a likelihood ratio test (LRT) here, rather than an F-test. The F-test would be OK in this particular case, with Gaussian error structure and fully balanced, nested design. However, LRTs are more general, and thus for consistency I will tend to use these (or AIC) throughout where required.</p>
+</blockquote>
+<p>We can derive confidence intervals using <code>confint()</code>, and also produce predictions from the model using <code>predict()</code>.</p>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+Produce a 97% confidence interval for each regression coefficient of the model. What do each of these coefficients mean?
+</div>
+</div>
+<button id="displayTextunnamed-chunk-141" onclick="javascript:toggle('unnamed-chunk-141');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-141" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">confint</span>(bac_lmer, <span class="dt">level =</span> <span class="fl">0.97</span>)</code></pre></div>
+<pre><code>## Computing profile confidence intervals ...</code></pre>
+<pre><code>##                  1.5 %     98.5 %
+## .sig01       1.4056367  6.3307155
+## .sigma       0.7099854  1.5901069
+## (Intercept)  2.2329510  8.9270527
+## media2       0.2810402  3.2789599
+## media3      -3.4589598 -0.4610401
+## media4      -5.3389598 -2.3410401</code></pre>
+<p>The first two terms are the CIs for <span class="math inline">\(\sigma_{\gamma}\)</span> and <span class="math inline">\(\sigma\)</span> respectively. The third term is the CI for bacterial growth within an <strong>average</strong> cabinet. The next three terms correspond to the difference in bacterial growth for <code>media</code> levels 2, 3 and 4, relative to <code>media</code> level 1. Each of these effects are statistically significantly different to the baseline <code>media</code> at the 3% level. The model suggests that <code>media3</code> and <code>media4</code> have attenuated growth compared to <code>media1</code>, whereas <code>media2</code> has exacerbated growth.</p>
+<p>This approach uses the profile likelihood to calculate CIs. There is an option to <code>confint()</code> that allows you to calculate parameteric bootstrapped CIs if you prefer. The latter are likely to be more accurate, and thus are beneficial if your CI/p-value is hovering around the required level of statistical significance and you wish to improve this estimate. However, bootstrapping is a simulation-based approach and can be computationally expensive.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+<p>The <code>abrasion</code> data in the <code>faraway</code> package contains information on an experiment where four materials were fed into a wear testing machine and the amount of wear recorded. Four samples could be processed at the same time and the position of these samples may be important, but we really care about assessing wear rates between different materials. Multiple runs were performed. You can load the package and data as follows:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(faraway)
+<span class="kw">data</span>(abrasion)</code></pre></div>
+Take a look at the data and the help file for abrasion (i.e. <code>?abrasion</code>). Fit an appropriate linear mixed model to these data and assess whether there is any statistical evidence for differences in wear rates between the different materials.
+</div>
+</div>
+<button id="displayTextunnamed-chunk-143" onclick="javascript:toggle('unnamed-chunk-143');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-143" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<p>Note that this is a <strong>crossed</strong> design, so we cannot use F-tests. Instead we must use LRTs and we need to refit the model using ML when assessing the impact of dropping <code>media</code> from the model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## load data
+<span class="kw">library</span>(faraway)</code></pre></div>
+<pre><code>## 
+## Attaching package: &#39;faraway&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:arm&#39;:
+## 
+##     fround, logit, pfround</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(abrasion)
+
+## fit model
+abrasion_lmer &lt;-<span class="st"> </span><span class="kw">lmer</span>(wear <span class="op">~</span><span class="st"> </span>material <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>position) <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>run), <span class="dt">data =</span> abrasion)
+<span class="kw">drop1</span>(<span class="kw">update</span>(abrasion_lmer, <span class="dt">REML =</span> F), <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## wear ~ material + (1 | position) + (1 | run)
+##          Df    AIC    LRT   Pr(Chi)    
+## &lt;none&gt;      134.32                     
+## material  3 151.69 23.364 3.391e-05 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(abrasion_lmer)</code></pre></div>
+<pre><code>## Linear mixed model fit by REML [&#39;lmerMod&#39;]
+## Formula: wear ~ material + (1 | position) + (1 | run)
+##    Data: abrasion
+## 
+## REML criterion at convergence: 100.3
+## 
+## Scaled residuals: 
+##      Min       1Q   Median       3Q      Max 
+## -1.08973 -0.30231  0.02697  0.42254  1.21052 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  position (Intercept) 107.06   10.347  
+##  run      (Intercept)  66.90    8.179  
+##  Residual              61.25    7.826  
+## Number of obs: 16, groups:  position, 4; run, 4
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  265.750      7.668  34.656
+## materialB    -45.750      5.534  -8.267
+## materialC    -24.000      5.534  -4.337
+## materialD    -35.250      5.534  -6.370
+## 
+## Correlation of Fixed Effects:
+##           (Intr) matrlB matrlC
+## materialB -0.361              
+## materialC -0.361  0.500       
+## materialD -0.361  0.500  0.500</code></pre>
+<p>This suggests that there are highly statistically significant differences in wear between <em>at least some</em> of the materials, with material <code>B</code> wearing the fastest, followed by <code>D</code>, <code>C</code> and <code>A</code>.</p>
+<p>Note that we could derive confidence intervals for these effects, or for predictions / plotting etc. if we liked. There are many other options available <a href="http://www.maths.bath.ac.uk/~jjf23/mixchange/crossed.html">here</a>.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="non-independent-data-pseudoreplication-nested-variance-and-derived-variable-analysis" class="section level2">
+<h2><span class="header-section-number">4.3</span> Non-independent data: pseudoreplication, nested variance and derived variable analysis</h2>
+<p>We take an example from Sokal &amp; Rohlf (1981). The experiment involved a simple one-way anova with 3 treatments given to 6 rats. The analysis was complicated by the fact that three preparations were taken from the liver of each rat, and two readings of glycogen content were taken from each preparation. This generated 6 pseudoreplicates per rat to give a total of 36 readings in all. A schematic is given in Figure <a href="mixed-effects-models.html#fig:rats">4.2</a>.</p>
+<div class="figure" style="text-align: center"><span id="fig:rats"></span>
+<img src="_img/rats.png" alt="Schematic for glycogen in rats example" width="80%" height="80%" />
+<p class="caption">
+Figure 4.2: Schematic for glycogen in rats example
+</p>
+</div>
+<p>Clearly, it would be a mistake to analyse these data as if they were a straightforward one-way anova, because that would give us 33 degrees of freedom for error. In fact, since there are only two rats in each treatment, we have only one degree of freedom per treatment, giving a total of 3 d.f. for error.</p>
+<p>The variance is likely to be different at each level of this nested analysis because:</p>
+<ol style="list-style-type: decimal">
+<li>the readings differ because of variation in the glycogen detection method within each liver sample (measurement error);</li>
+<li>the pieces of liver may differ because of heterogeneity in the distribution of glycogen within the liver of a single rat;</li>
+<li>the rats will differ from one another in their glycogen levels because of sex, age, size, genotype, etc.;</li>
+<li>rats allocated different experimental treatments may differ as a result of the fixed effects of treatment.</li>
+</ol>
+<p>If all we want to test is whether the experimental treatments have affected the glycogen levels, then we are not interested in liver bits within rat’s livers, or in preparations within liver bits. We could combine all the pseudoreplicates together, and analyse the 6 averages. This would have the virtue of showing what a tiny experiment this really was. This latter approach also ignores the nested sources of uncertainties. Instead we will use a linear mixed model.</p>
+<p>The new concept here is that there are multiple random effects that are <strong>nested</strong>. These data are available in the <a href="https://exeter-data-analytics.github.io/StatModelling/_data/rats.rds">“rats.rds”</a> file. First, read in the data:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rats &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;rats.rds&quot;</span>)
+<span class="kw">summary</span>(rats)</code></pre></div>
+<pre><code>##     Glycogen     Treatment Rat    Liver 
+##  Min.   :125.0   1:12      1:18   1:12  
+##  1st Qu.:135.8   2:12      2:18   2:12  
+##  Median :141.0   3:12             3:12  
+##  Mean   :142.2                          
+##  3rd Qu.:150.0                          
+##  Max.   :162.0</code></pre>
+<div id="the-wrong-analysis" class="section level3">
+<h3><span class="header-section-number">4.3.1</span> The Wrong Analysis</h3>
+<p>Here is what not to do (try it anyway)!</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rats_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(Glycogen <span class="op">~</span><span class="st"> </span>Treatment <span class="op">*</span><span class="st"> </span>Rat <span class="op">*</span><span class="st"> </span>Liver, <span class="dt">data =</span> rats)</code></pre></div>
+<p>The model has been specified as if it were a full factorial with no nesting and no pseudoreplication. Note that the structure of the data allows this mistake to be made. It is a very common problem with data frames that include pseudoreplication.</p>
+<p>An ANOVA table gives:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">anova</span>(rats_lm, <span class="dt">test =</span> <span class="st">&quot;F&quot;</span>)</code></pre></div>
+<pre><code>## Analysis of Variance Table
+## 
+## Response: Glycogen
+##                     Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+## Treatment            2 1557.56  778.78 36.7927 4.375e-07 ***
+## Rat                  1  413.44  413.44 19.5328 0.0003308 ***
+## Liver                2  113.56   56.78  2.6824 0.0955848 .  
+## Treatment:Rat        2  384.22  192.11  9.0761 0.0018803 ** 
+## Treatment:Liver      4  328.11   82.03  3.8753 0.0192714 *  
+## Rat:Liver            2   50.89   25.44  1.2021 0.3235761    
+## Treatment:Rat:Liver  4  101.44   25.36  1.1982 0.3455924    
+## Residuals           18  381.00   21.17                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<blockquote>
+<p><strong>Note</strong>: I can only use the <code>anova()</code> function in this way because the data are <strong>balanced</strong> (or at least the model formulation above with no nesting and no pseudoreplication ends up treating the data as if they were balanced). In general you have to be very careful to use <code>anova()</code> in this way.</p>
+</blockquote>
+<p>This says that there was a highly statistically significant difference between the treatment means, at least some of the rats were statistically significantly different from one another, and there was a statistically significant interaction effect between treatments and rats. <strong>This is wrong!</strong> The analysis is flawed because it is based on the assumption that there is only one error variance and that its value is 21.2. This value is actually the measurement error; that is to say the variation between one reading and another from the same piece of liver. For testing whether the treatment has had any effect, it is the rats that are the replicates, and there were only 6 of them in the whole experiment. Note also that the way the rats have been coded makes it look like there are only two rat “groups”. Again this is wrong (see <a href="mixed-effects-models.html#secmixed">mixed models</a> section below).</p>
+<p>One way that we could analyse these data is to use a <strong>derived variable</strong> analysis.</p>
+</div>
+<div id="derived-variables-avoid-pseudoreplication" class="section level3">
+<h3><span class="header-section-number">4.3.2</span> Derived variables avoid pseudoreplication</h3>
+<p>The idea is to get rid of the pseudoreplication by averaging over the liver bits and preparations for each rat. A useful way of averaging, in R, is to use <code>aggregate</code> (or <code>tidyverse</code>):</p>
+<div class="tab">
+<button class="tablinksunnamed-chunk-147 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-147', 'unnamed-chunk-147');">
+<tt>tidyverse</tt>
+</button>
+<button class="tablinksunnamed-chunk-147" onclick="javascript:openCode(event, 'option2unnamed-chunk-147', 'unnamed-chunk-147');">
+Base R
+</button>
+</div>
+<div id="option1unnamed-chunk-147" class="tabcontentunnamed-chunk-147">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ratsNew &lt;-<span class="st"> </span>rats <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">group_by</span>(Rat, Treatment) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">Glycogen =</span> <span class="kw">mean</span>(Glycogen))
+ratsNew</code></pre></div>
+<pre><code>## # A tibble: 6 x 3
+## # Groups:   Rat [?]
+##   Rat   Treatment Glycogen
+##   &lt;fct&gt; &lt;fct&gt;        &lt;dbl&gt;
+## 1 1     1             132.
+## 2 1     2             150.
+## 3 1     3             134.
+## 4 2     1             148.
+## 5 2     2             152.
+## 6 2     3             136</code></pre>
+</div>
+<div id="option2unnamed-chunk-147" class="tabcontentunnamed-chunk-147">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ratsNew &lt;-<span class="st"> </span><span class="kw">aggregate</span>(Glycogen <span class="op">~</span><span class="st"> </span>Rat <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span>Treatment, <span class="dt">data =</span> rats, mean)
+ratsNew</code></pre></div>
+<pre><code>##   Rat Treatment Glycogen
+## 1   1         1 132.5000
+## 2   2         1 148.5000
+## 3   1         2 149.6667
+## 4   2         2 152.3333
+## 5   1         3 134.3333
+## 6   2         3 136.0000</code></pre>
+</div>
+<script> javascript:hide('option2unnamed-chunk-147') </script>
+<p>Here, <code>ratsNew</code> is a new dataset (hopefully shorter than its ancestral dataset) but has the same column headings as <code>rats</code>. (Hence be careful to specify the <strong>correct</strong> data set using the <code>data</code> argument where necessary.)</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ratsNew_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(Glycogen <span class="op">~</span><span class="st"> </span>Treatment, <span class="dt">data =</span> ratsNew)
+<span class="kw">drop1</span>(ratsNew_lm, <span class="dt">test =</span> <span class="st">&quot;F&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## Glycogen ~ Treatment
+##           Df Sum of Sq    RSS    AIC F value Pr(&gt;F)
+## &lt;none&gt;                 132.94 24.589               
+## Treatment  2    259.59 392.54 27.085   2.929 0.1971</code></pre>
+<p>This is a statistically valid analysis, but it ignores the uncertainties around the pseudo-replicates, and the interpretation of the response variable is actually the mean of a bunch of measurements, not the measurements themselves. In balanced designs this is OK, but it may not be possible to generate derived variables for some studies (how do you average a categorical response for example)?</p>
+</div>
+<div id="secmixed" class="section level3">
+<h3><span class="header-section-number">4.3.3</span> Mixed model approach</h3>
+<div id="nested-and-crossed-random-effects" class="section level4">
+<h4><span class="header-section-number">4.3.3.1</span> Nested and crossed random effects</h4>
+<p>The bacterial loads example we saw earlier is an example of a <strong>crossed</strong> random effect i.e. the <code>cabinet</code> level <code>1</code> corresponds to the <strong>same</strong> cabinet for each of the <code>media</code> levels. In the <code>rats</code> data set this is no longer so, and we have to be careful to get the model formula correct. <strong>This section is subtle but important!</strong></p>
+<p>Notice that in the <code>rats</code> data the <code>Rat</code> column is coded as a <code>1</code> or a <code>2</code>. This means that we could use the formula:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rats_lmer &lt;-<span class="st"> </span><span class="kw">lmer</span>(Glycogen <span class="op">~</span><span class="st"> </span>Treatment <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>Rat), <span class="dt">data =</span> rats)</code></pre></div>
+<p><strong>without</strong> throwing an error.</p>
+<div class="panel panel-default">
+<div class="panel-heading">
+Question
+</div>
+<div class="panel-body">
+Why is this wrong?
+</div>
+</div>
+<button id="displayTextunnamed-chunk-150" onclick="javascript:toggle('unnamed-chunk-150');">
+Show Answer
+</button>
+<div id="toggleTextunnamed-chunk-150" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Answer
+</div>
+<div class="panel-body">
+<p>It is wrong because this would add <strong>two</strong> random effect terms, one for rat <code>1</code> and one for rat <code>2</code>. In fact there are 6 rats altogether. The way that the data have been coded allows for these kinds of mistakes to happen. The same is true for <code>Liver</code>, which is coded as a <code>1</code>, <code>2</code> or <code>3</code>. This means that we could write:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rats_lmer &lt;-<span class="st"> </span><span class="kw">lmer</span>(Glycogen <span class="op">~</span><span class="st"> </span>Treatment <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>Rat) <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>Liver), <span class="dt">data =</span> rats)</code></pre></div>
+<p>thinking that we are including the correct random effects for <code>Rat</code> and <code>Liver</code>. In fact, this assumes that the data come from a <strong>crossed</strong> design, in which there are 2 rats and 3 parts of the liver, and that <code>Liver = 1</code> corresponds to the same type of measurement in rats <code>1</code> and <code>2</code> and so on. Sometimes this is appropriate, but not here!</p>
+The nature of the way that many data sets are coded makes these kinds of mistakes very easy to make!
+</div>
+</div>
+</div>
+<p>In this case we must tell <code>lmer()</code> that <code>Liver</code> is <strong>nested</strong> within <code>Rat</code>, and <code>Rat</code> within <code>Treatment</code>. We can do this in various ways, but the easiest thing here is to generate a unique coding for each of the 6 rats.</p>
+<div class="tab">
+<button class="tablinksunnamed-chunk-151 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-151', 'unnamed-chunk-151');">
+<tt>tidyverse</tt>
+</button>
+<button class="tablinksunnamed-chunk-151" onclick="javascript:openCode(event, 'option2unnamed-chunk-151', 'unnamed-chunk-151');">
+Base R
+</button>
+</div>
+<div id="option1unnamed-chunk-151" class="tabcontentunnamed-chunk-151">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rats &lt;-<span class="st"> </span>rats <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">unite</span>(Rat, Treatment, Rat, 
+          <span class="dt">sep =</span> <span class="st">&quot;_&quot;</span>, <span class="dt">remove =</span> F) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">Rat =</span> <span class="kw">factor</span>(
+        <span class="kw">as.numeric</span>(<span class="kw">factor</span>(Rat))))</code></pre></div>
+</div>
+<div id="option2unnamed-chunk-151" class="tabcontentunnamed-chunk-151">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rats<span class="op">$</span>Rat &lt;-<span class="st"> </span><span class="kw">paste</span>(rats<span class="op">$</span>Treatment, 
+    <span class="st">&quot;_&quot;</span>, rats<span class="op">$</span>Rat)
+rats<span class="op">$</span>Rat &lt;-<span class="st"> </span><span class="kw">factor</span>(
+    <span class="kw">as.numeric</span>(<span class="kw">factor</span>(rats<span class="op">$</span>Rat)))</code></pre></div>
+</div>
+<script> javascript:hide('option2unnamed-chunk-151') </script>
+<p>We can use <strong>nested</strong> random effects to account for the hierarchy of measurements:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rats_lmer &lt;-<span class="st"> </span><span class="kw">lmer</span>(Glycogen <span class="op">~</span><span class="st"> </span>Treatment <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>Rat <span class="op">/</span><span class="st"> </span>Liver), <span class="dt">data =</span> rats)
+<span class="kw">drop1</span>(<span class="kw">update</span>(rats_lmer, <span class="dt">REML =</span> F), <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## Glycogen ~ Treatment + (1 | Rat/Liver)
+##           Df    AIC    LRT Pr(Chi)  
+## &lt;none&gt;       245.27                 
+## Treatment  2 247.77 6.4962 0.03885 *
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<blockquote>
+<p><strong>Note</strong>: the syntax <code>Rats / Liver</code> means that the <code>Liver</code> levels are <strong>nested</strong> within the <code>Rat</code> levels. In this case we do not have to recode <code>Liver</code> to be unique, since the nesting ensures that <code>lmer()</code> knows that <code>Liver = 1</code> inside <code>Rat = 1</code> is different from <code>Liver = 1</code> inside <code>Rat = 2</code>.</p>
+</blockquote>
+<div class="panel panel-default">
+<div class="panel-heading">
+Task
+</div>
+<div class="panel-body">
+<p>The data for the alcohol example in the slides can be found in the <a href="https://exeter-data-analytics.github.io/StatModelling/_data/drunk.rds">“drunk.rds”</a> file. Read this data set into R and:</p>
+<ol style="list-style-type: decimal">
+<li>Conduct a derived variable analysis, to test for the impact of <code>freshener</code> use on the model fit using a likelihood ratio test.</li>
+<li>Produce 97% confidence intervals for the <code>freshener</code> effect.</li>
+<li>Fit a mixed model using <code>lmer()</code>, taking care to get the nesting of the random effects correct.</li>
+<li>Use a likelihood ratio test to assess the impact of <code>freshener</code> on the model fit. Does it matter whether you use REML or ML here, and why?</li>
+<li>Produce an estimate of the <code>freshener</code> effect with 97% profile confidence intervals.</li>
+<li>How do these estimates compare?
+</div>
+</div></li>
+</ol>
+<button id="displayTextunnamed-chunk-154" onclick="javascript:toggle('unnamed-chunk-154');">
+Show Solution
+</button>
+<div id="toggleTextunnamed-chunk-154" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Solution
+</div>
+<div class="panel-body">
+<div class="tab">
+<button class="tablinksunnamed-chunk-154 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-154', 'unnamed-chunk-154');">
+<tt>tidyverse</tt>
+</button>
+<button class="tablinksunnamed-chunk-154" onclick="javascript:openCode(event, 'option2unnamed-chunk-154', 'unnamed-chunk-154');">
+Base R
+</button>
+</div>
+<div id="option1unnamed-chunk-154" class="tabcontentunnamed-chunk-154">
+<ol style="list-style-type: decimal">
+<li></li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">drunk &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;drunk.rds&quot;</span>)
+alc &lt;-<span class="st"> </span>drunk <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">group_by</span>(student, freshener) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">alcohol =</span> <span class="kw">mean</span>(alcohol)) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">ungroup</span>()
+alc_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(alcohol <span class="op">~</span><span class="st"> </span>freshener, 
+    <span class="dt">data =</span> alc)
+<span class="kw">drop1</span>(alc_lm, <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## alcohol ~ freshener
+##           Df  Sum of Sq        RSS     AIC Pr(&gt;Chi)  
+## &lt;none&gt;                  0.00042582 -53.320           
+## freshener  1 0.00028843 0.00071424 -52.216  0.07813 .
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li></li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">confint</span>(alc_lm, <span class="dt">level =</span> <span class="fl">0.97</span>)[<span class="dv">2</span>, ]</code></pre></div>
+<pre><code>##       1.5 %      98.5 % 
+## -0.01391368  0.04164701</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li></li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">drunk_lmer &lt;-<span class="st"> </span><span class="kw">lmer</span>(alcohol <span class="op">~</span><span class="st"> </span>freshener <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>student <span class="op">/</span><span class="st"> </span>sample), <span class="dt">data =</span> drunk)</code></pre></div>
+<ol start="4" style="list-style-type: decimal">
+<li></li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">drop1</span>(<span class="kw">update</span>(drunk_lmer, <span class="dt">REML =</span> F), 
+    <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## alcohol ~ freshener + (1 | student/sample)
+##           Df     AIC    LRT Pr(Chi)  
+## &lt;none&gt;       -812.16                 
+## freshener  1 -811.06 3.1033 0.07813 .
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">drop1</span>(drunk_lmer, <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## alcohol ~ freshener + (1 | student/sample)
+##           Df     AIC    LRT Pr(Chi)  
+## &lt;none&gt;       -812.16                 
+## freshener  1 -811.06 3.1033 0.07813 .
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>Doesn’t matter whether you use REML or ML here, since data are balanced and nested.</p>
+<ol start="5" style="list-style-type: decimal">
+<li></li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">confint</span>(drunk_lmer, <span class="dt">level =</span> <span class="fl">0.97</span>)[<span class="dv">5</span>, ]</code></pre></div>
+<pre><code>## Computing profile confidence intervals ...</code></pre>
+<pre><code>##        1.5 %       98.5 % 
+## -0.004529647  0.032262984</code></pre>
+<ol start="6" style="list-style-type: decimal">
+<li>The profile likelihood based CI from the mixed model is slightly narrower than the exact CI generated from the derived variable analysis, but both are marginal in terms of their statistical significance (and give the same LRT statistic here).</li>
+</ol>
+</div>
+<div id="option2unnamed-chunk-154" class="tabcontentunnamed-chunk-154">
+<ol style="list-style-type: decimal">
+<li></li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">drunk &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;drunk.rds&quot;</span>)
+alc &lt;-<span class="st"> </span><span class="kw">aggregate</span>(alcohol <span class="op">~</span><span class="st"> </span>student <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span>freshener, <span class="dt">data =</span> drunk, mean)
+alc_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(alcohol <span class="op">~</span><span class="st"> </span>freshener, 
+    <span class="dt">data =</span> alc)
+<span class="kw">drop1</span>(alc_lm, <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## alcohol ~ freshener
+##           Df  Sum of Sq        RSS     AIC Pr(&gt;Chi)  
+## &lt;none&gt;                  0.00042582 -53.320           
+## freshener  1 0.00028843 0.00071424 -52.216  0.07813 .
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li></li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">confint</span>(alc_lm, <span class="dt">level =</span> <span class="fl">0.97</span>)[<span class="dv">2</span>, ]</code></pre></div>
+<pre><code>##       1.5 %      98.5 % 
+## -0.01391368  0.04164701</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li></li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">drunk_lmer &lt;-<span class="st"> </span><span class="kw">lmer</span>(alcohol <span class="op">~</span><span class="st"> </span>freshener <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>student <span class="op">/</span><span class="st"> </span>sample), <span class="dt">data =</span> drunk)</code></pre></div>
+<ol start="4" style="list-style-type: decimal">
+<li></li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">drop1</span>(<span class="kw">update</span>(drunk_lmer, <span class="dt">REML =</span> F), 
+    <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## alcohol ~ freshener + (1 | student/sample)
+##           Df     AIC    LRT Pr(Chi)  
+## &lt;none&gt;       -812.16                 
+## freshener  1 -811.06 3.1033 0.07813 .
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">drop1</span>(drunk_lmer, <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## alcohol ~ freshener + (1 | student/sample)
+##           Df     AIC    LRT Pr(Chi)  
+## &lt;none&gt;       -812.16                 
+## freshener  1 -811.06 3.1033 0.07813 .
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>Doesn’t matter whether you use REML or ML here, since data are balanced and nested.</p>
+<ol start="5" style="list-style-type: decimal">
+<li></li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">confint</span>(drunk_lmer, <span class="dt">level =</span> <span class="fl">0.97</span>)[<span class="dv">5</span>, ]</code></pre></div>
+<pre><code>## Computing profile confidence intervals ...</code></pre>
+<pre><code>##        1.5 %       98.5 % 
+## -0.004529647  0.032262984</code></pre>
+<ol start="6" style="list-style-type: decimal">
+<li>The profile likelihood based CI from the mixed model is slightly narrower than the exact CI generated from the derived variable analysis, but both are marginal in terms of their statistical significance (and give the same LRT statistic here).</li>
+</ol>
+</div>
+<script> javascript:hide('option2unnamed-chunk-154') </script>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="non-independent-data-split-plot-analyses" class="section level2">
+<h2><span class="header-section-number">4.4</span> Non-independent data: Split-plot analyses</h2>
+<p>Split-plot experiments are like nested designs in that they involve plots of different sizes and hence have multiple error terms (one error term for each plot size). They are also like nested designs in that they involve pseudoreplication: measurements made on the smaller plots are pseudoreplicates as far as the treatments applied to larger plots are concerned. This is spatial pseudoreplication, and arises because the smaller plots nested within the larger plots are not spatially independent of one another. The only real difference between nested analysis and split plot analysis is that other than blocks, all of the factors in a split-plot experiment are typically fixed effects, whereas in most nested analyses most (or all) of the factors are random effects.</p>
+<p>This experiment involves the yield of cereals in a factorial experiment with 3 treatments, each applied to plots of different sizes within 4 blocks. The largest plots (half of each block) were irrigated or not because of the practical difficulties of watering large numbers of small plots. Next, the irrigated plots were split into 3 smaller split-plots and seeds were sown at different densities. Again, because the seeds were machine sown, larger plots were preferred. Finally, each sowing density plot was split into 3 small split-split plots and fertilisers applied by hand (N alone, P alone and N + P together). A schematic is given in Figure <a href="mixed-effects-models.html#fig:splityields">4.3</a>.</p>
+<div class="figure" style="text-align: center"><span id="fig:splityields"></span>
+<img src="_img/splitPlot.png" alt="Schematic for split plot example" width="80%" height="80%" />
+<p class="caption">
+Figure 4.3: Schematic for split plot example
+</p>
+</div>
+<p>The data look like:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center">Control</th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center">Irrigated</th>
+<th align="center"> </th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"></td>
+<td align="center"><strong>Density / Fertiliser</strong></td>
+<td align="center">N</td>
+<td align="center">NP</td>
+<td align="center">P</td>
+<td align="center">N</td>
+<td align="center">NP</td>
+<td align="center">P</td>
+</tr>
+<tr class="even">
+<td align="center"></td>
+<td align="center">high</td>
+<td align="center">81</td>
+<td align="center">93</td>
+<td align="center">92</td>
+<td align="center">78</td>
+<td align="center">122</td>
+<td align="center">98</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Block A</strong></td>
+<td align="center">medium</td>
+<td align="center">92</td>
+<td align="center">92</td>
+<td align="center">89</td>
+<td align="center">121</td>
+<td align="center">119</td>
+<td align="center">110</td>
+</tr>
+<tr class="even">
+<td align="center"></td>
+<td align="center">low</td>
+<td align="center">90</td>
+<td align="center">107</td>
+<td align="center">95</td>
+<td align="center">80</td>
+<td align="center">100</td>
+<td align="center">87</td>
+</tr>
+<tr class="odd">
+<td align="center"></td>
+<td align="center">high</td>
+<td align="center">74</td>
+<td align="center">74</td>
+<td align="center">81</td>
+<td align="center">136</td>
+<td align="center">132</td>
+<td align="center">133</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Block B</strong></td>
+<td align="center">medium</td>
+<td align="center">98</td>
+<td align="center">106</td>
+<td align="center">98</td>
+<td align="center">99</td>
+<td align="center">123</td>
+<td align="center">94</td>
+</tr>
+<tr class="odd">
+<td align="center"></td>
+<td align="center">low</td>
+<td align="center">83</td>
+<td align="center">95</td>
+<td align="center">80</td>
+<td align="center">102</td>
+<td align="center">105</td>
+<td align="center">109</td>
+</tr>
+<tr class="even">
+<td align="center"></td>
+<td align="center">high</td>
+<td align="center">82</td>
+<td align="center">94</td>
+<td align="center">78</td>
+<td align="center">119</td>
+<td align="center">136</td>
+<td align="center">122</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Block C</strong></td>
+<td align="center">medium</td>
+<td align="center">112</td>
+<td align="center">91</td>
+<td align="center">104</td>
+<td align="center">90</td>
+<td align="center">113</td>
+<td align="center">118</td>
+</tr>
+<tr class="even">
+<td align="center"></td>
+<td align="center">low</td>
+<td align="center">85</td>
+<td align="center">88</td>
+<td align="center">88</td>
+<td align="center">60</td>
+<td align="center">114</td>
+<td align="center">104</td>
+</tr>
+<tr class="odd">
+<td align="center"></td>
+<td align="center">high</td>
+<td align="center">85</td>
+<td align="center">83</td>
+<td align="center">89</td>
+<td align="center">116</td>
+<td align="center">133</td>
+<td align="center">136</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Block D</strong></td>
+<td align="center">medium</td>
+<td align="center">79</td>
+<td align="center">87</td>
+<td align="center">86</td>
+<td align="center">109</td>
+<td align="center">126</td>
+<td align="center">131</td>
+</tr>
+<tr class="odd">
+<td align="center"></td>
+<td align="center">low</td>
+<td align="center">86</td>
+<td align="center">89</td>
+<td align="center">78</td>
+<td align="center">73</td>
+<td align="center">114</td>
+<td align="center">114</td>
+</tr>
+</tbody>
+</table>
+<p>These data are available in the <a href="https://exeter-data-analytics.github.io/StatModelling/_data/splityield.rds">“splityield.rds”</a> file. First, let’s read in the data and take a look at it.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">splityield &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;splityield.rds&quot;</span>)
+<span class="kw">head</span>(splityield)
+<span class="kw">summary</span>(splityield)</code></pre></div>
+<pre><code>##   yield block irrigation density fertilizer
+## 1    90     A    control     low          N
+## 2    95     A    control     low          P
+## 3   107     A    control     low         NP
+## 4    92     A    control  medium          N
+## 5    89     A    control  medium          P
+## 6    92     A    control  medium         NP</code></pre>
+<pre><code>##      yield        block      irrigation   density   fertilizer
+##  Min.   : 60.00   A:18   control  :36   high  :24   N :24     
+##  1st Qu.: 86.00   B:18   irrigated:36   medium:24   NP:24     
+##  Median : 95.00   C:18                  low   :24   P :24     
+##  Mean   : 99.72   D:18                                        
+##  3rd Qu.:114.00                                               
+##  Max.   :136.00</code></pre>
+<div id="analysing-split-plot-designs-using-lmer" class="section level3">
+<h3><span class="header-section-number">4.4.1</span> Analysing split-plot designs using <code>lmer</code></h3>
+<p>Now, how do we set up a mixed effects model to analyse these data? <code>block</code> is the only random effect but our data are nested. Our fixed effects are <code>irrigation</code>, <code>density</code> and <code>fertilizer</code>. Here is the model, including prediction of the variance due to block’s random effect on the intercept of the model.</p>
+<p><strong>Note</strong>: Ordinarily we would write the nested random effect terms using the syntax:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">split_lmer &lt;-<span class="st"> </span><span class="kw">lmer</span>(yield <span class="op">~</span><span class="st"> </span>irrigation <span class="op">*</span><span class="st"> </span>density <span class="op">*</span><span class="st"> </span>fertilizer <span class="op">+</span><span class="st"> </span>
+<span class="st">                       </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>block <span class="op">/</span><span class="st"> </span>irrigation <span class="op">/</span><span class="st"> </span>density <span class="op">/</span><span class="st"> </span>fertilizer), <span class="dt">data =</span> splityield)</code></pre></div>
+<pre><code>## Error: number of levels of each grouping factor must be &lt; number of observations</code></pre>
+<p>However, if you run this, you will notice that the function returns an error. This is because there are no replicates within the final nesting (i.e. the table above on has a single replicate in each cell). To overcome this we need to remove the final nesting. Hence we can run:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">split_lmer &lt;-<span class="st"> </span><span class="kw">lmer</span>(yield <span class="op">~</span><span class="st"> </span>irrigation <span class="op">*</span><span class="st"> </span>density <span class="op">*</span><span class="st"> </span>fertilizer <span class="op">+</span><span class="st"> </span>
+<span class="st">                       </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>block <span class="op">/</span><span class="st"> </span>irrigation <span class="op">/</span><span class="st"> </span>density), <span class="dt">data =</span> splityield)</code></pre></div>
+<blockquote>
+<p><strong>Aside:</strong> Another way of writing <code>(1 | block / irrigation / density / fertilizer)</code> is:</p>
+<p><code>(1 | block) + (1 | block:irrigation) + (1 | block:irrigation:density) + (1 | block:irrigation:density:fertilizer)</code>.</p>
+<p>Pretty grim eh? However, in this case we note that the final nested random effect only has one replicate per group, so we could simply remove this term. Leaving:</p>
+<p><code>(1 | block) + (1 | block:irrigation) + (1 | block:irrigation:density)</code>.</p>
+<p>This is equivalent to <code>(1 | block / irrigation / density)</code></p>
+</blockquote>
+<p>We can now perform model simplification (remembering to refit the model using ML in each case):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">drop1</span>(<span class="kw">update</span>(split_lmer, <span class="dt">REML =</span> F), <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## yield ~ irrigation * density * fertilizer + (1 | block/irrigation/density)
+##                               Df    AIC    LRT Pr(Chi)
+## &lt;none&gt;                           573.51               
+## irrigation:density:fertilizer  4 569.00 3.4938  0.4788</code></pre>
+<p>We can see that the three-way interaction term is not statistically significant, so we can drop it from the model and then test dropping the two-way interaction effects.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">split_lmer &lt;-<span class="st"> </span><span class="kw">update</span>(split_lmer, <span class="op">~</span><span class="st"> </span>. <span class="op">-</span><span class="st"> </span>irrigation<span class="op">:</span>density<span class="op">:</span>fertilizer)
+<span class="kw">drop1</span>(<span class="kw">update</span>(split_lmer, <span class="dt">REML =</span> F), <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## yield ~ irrigation + density + fertilizer + (1 | block/irrigation/density) + 
+##     irrigation:density + irrigation:fertilizer + density:fertilizer
+##                       Df    AIC     LRT  Pr(Chi)   
+## &lt;none&gt;                   569.00                    
+## irrigation:density     2 576.71 11.7088 0.002867 **
+## irrigation:fertilizer  2 577.05 12.0424 0.002427 **
+## density:fertilizer     4 565.19  4.1888 0.381061   
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>We are thus safe to remove the <code>density:fertilizer</code> interaction term:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">split_lmer &lt;-<span class="st"> </span><span class="kw">update</span>(split_lmer, <span class="op">~</span><span class="st"> </span>. <span class="op">-</span><span class="st"> </span>density<span class="op">:</span>fertilizer)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">drop1</span>(<span class="kw">update</span>(split_lmer, <span class="dt">REML =</span> F), <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## yield ~ irrigation + density + fertilizer + (1 | block/irrigation/density) + 
+##     irrigation:density + irrigation:fertilizer
+##                       Df    AIC    LRT  Pr(Chi)   
+## &lt;none&gt;                   565.19                   
+## irrigation:density     2 572.90 11.709 0.002867 **
+## irrigation:fertilizer  2 572.34 11.144 0.003803 **
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>We thus have a simplified final model. If you really want to know all the coefficients, type <code>summary(split.lmer)</code>, but here we will try to understand the interaction terms graphically.</p>
+<p>A useful way to understand these is to use the <code>interaction.plot()</code> function. The variables are listed in a non-obvious order: first the factor to go on the <span class="math inline">\(x\)</span>-axis, then the factor to go as different lines on the plot, then the response variable.</p>
+<p>There are 3 plots to look at so we make a <span class="math inline">\(2 \times 2\)</span> plotting area:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))
+<span class="kw">interaction.plot</span>(splityield<span class="op">$</span>fertilizer, splityield<span class="op">$</span>density, splityield<span class="op">$</span>yield) 
+<span class="kw">interaction.plot</span>(splityield<span class="op">$</span>fertilizer, splityield<span class="op">$</span>irrigation, splityield<span class="op">$</span>yield) 
+<span class="kw">interaction.plot</span>(splityield<span class="op">$</span>density, splityield<span class="op">$</span>irrigation, splityield<span class="op">$</span>yield)
+<span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-163-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>The really pronounced interaction is that between irrigation and density, with a reversal of the high to low density difference on the irrigated and control plots. Overall, the 3-way interaction was not statistically significant, nor was the 2-way interaction between density and fertilizer. The 2-way interaction between irrigation and fertilizer, however, was highly statistically significant.</p>
+<p>Another way to visualise the model outputs would be to generate a plot of the predicted yield (plus confidence intervals), for each combination of explanatory factors. I have created a <code>data.frame</code> with these predictions using bootstrapping. The code to replicate this can be found <a href="mixed-effects-models.html#parboot">here</a>, but is a bit time consuming to run, so I have included the predictions as a file called <a href="https://exeter-data-analytics.github.io/StatModelling/_data/split_pred.rds">“split_pred.rds”</a>.</p>
+<p>First, read in the predictions:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">split_pred &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;split_pred.rds&quot;</span>)</code></pre></div>
+<p><a name="splitplot"></a></p>
+<p>Now to plot these predictions (note, once again these ease of <code>ggplot2</code> compared to base R graphics):</p>
+<div class="tab">
+<button class="tablinksunnamed-chunk-166 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-166', 'unnamed-chunk-166');">
+<tt>tidyverse</tt>
+</button>
+<button class="tablinksunnamed-chunk-166" onclick="javascript:openCode(event, 'option2unnamed-chunk-166', 'unnamed-chunk-166');">
+Base R
+</button>
+</div>
+<div id="option1unnamed-chunk-166" class="tabcontentunnamed-chunk-166">
+<p>In <code>ggplot2</code> we can use the <code>geom_pointrange()</code> function, a <code>colour</code> aesthetic and a <code>facet_wrap()</code>.</p>
+</div>
+<div id="option2unnamed-chunk-166" class="tabcontentunnamed-chunk-166">
+<p>To plot the CIs in base R, we can proceed as follows:</p>
+<ol style="list-style-type: decimal">
+<li>Set the figure layout to have two figures side-by-side.</li>
+<li>Calculate limits for the <span class="math inline">\(y\)</span>-axis based on the range of the CIs to be plotted.</li>
+<li>Calculate manual limits for the <span class="math inline">\(x\)</span>-axis to enable us to jitter the error bars around each fertiliser level.</li>
+<li>For each level of <code>irrigation</code>:
+<ul>
+<li>Extract the subset of data corresponding to the level of <code>irrigation</code>.</li>
+<li>Produce an empty plot (setting the <span class="math inline">\(y\)</span>-limits and <span class="math inline">\(x\)</span>-limits). Remove the <span class="math inline">\(x\)</span>-axis (using the <code>xaxt = &quot;n&quot;</code> argument). This latter step is so that we can add the <code>fertilizer</code> labels manually in the next step.</li>
+<li>For each level of <code>density</code>:
+<ul>
+<li>Extract the subset of data corresponding to the level of <code>density</code>.</li>
+<li>Sort this so that the levels of <code>fertilizer</code> are the same at each stage of the <code>i</code> loop<a href="#fn11" class="footnoteRef" id="fnref11"><sup>11</sup></a>.</li>
+<li>Add points for the estimates and add confidence intervals using the <code>arrows()</code> function<a href="#fn12" class="footnoteRef" id="fnref12"><sup>12</sup></a>. Notice that I have used a <code>for</code> loop to allow me to plot the three CIs for each level of <code>fertilizer</code>. All that this loop does is to run the <code>arrows()</code> command 3 times, substituting <code>j</code> each time for the corresponding row of the sorted data set (which will be of length three here). You could do this explicitly in three lines of code if you prefer. Notice that I’ve jittered the points slightly so that the three levels of <code>density</code> can be plotted side-by-side.</li>
+</ul></li>
+<li>Add a new <span class="math inline">\(x\)</span>-axis and set appropriate labels for the points.</li>
+<li>Add a legend.</li>
+</ul></li>
+</ol>
+<p>Phew! (Now check out the <code>tidyverse</code> solution and tell me it’s not worth the effort to learn <code>ggplot2</code>!)</p>
+</div>
+<script> javascript:hide('option2unnamed-chunk-166') </script>
+<div class="tab">
+<button class="tablinksunnamed-chunk-167 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-167', 'unnamed-chunk-167');">
+<tt>tidyverse</tt>
+</button>
+<button class="tablinksunnamed-chunk-167" onclick="javascript:openCode(event, 'option2unnamed-chunk-167', 'unnamed-chunk-167');">
+Base R
+</button>
+</div>
+<div id="option1unnamed-chunk-167" class="tabcontentunnamed-chunk-167">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## plot confidence intervals
+<span class="kw">ggplot</span>(newdata, 
+    <span class="kw">aes</span>(<span class="dt">x =</span> fertilizer, <span class="dt">colour =</span> density)) <span class="op">+</span><span class="st"> </span>
+<span class="kw">geom_pointrange</span>(
+    <span class="kw">aes</span>(<span class="dt">y =</span> yield, <span class="dt">ymin =</span> lci, <span class="dt">ymax =</span> uci), 
+    <span class="dt">position =</span> <span class="kw">position_dodge</span>(<span class="dt">width =</span> <span class="fl">0.5</span>)) <span class="op">+</span>
+<span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>irrigation) <span class="op">+</span>
+<span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;CIs based on fixed-effects </span>
+<span class="st">     uncertainty ONLY&quot;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-245-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="option2unnamed-chunk-167" class="tabcontentunnamed-chunk-167">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## set plot layout
+<span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))
+    
+## set plot limits
+ylims &lt;-<span class="st"> </span><span class="kw">min</span>(newdata[, <span class="op">-</span><span class="kw">c</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>)])
+ylims &lt;-<span class="st"> </span><span class="kw">c</span>(ylims, <span class="kw">max</span>(newdata[, <span class="op">-</span><span class="kw">c</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>)]))
+xlims &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">3.5</span>)
+
+<span class="cf">for</span>(m <span class="cf">in</span> <span class="kw">levels</span>(newdata<span class="op">$</span>irrigation)) {
+    ## extract control predictions
+    temp &lt;-<span class="st"> </span>newdata[newdata<span class="op">$</span>irrigation <span class="op">==</span><span class="st"> </span>m, ]
+    
+    ## produce empty plot
+    <span class="kw">plot</span>(<span class="ot">NULL</span>, <span class="dt">ylim =</span> ylims, <span class="dt">xlim =</span> xlims, 
+         <span class="dt">xaxt =</span> <span class="st">&quot;n&quot;</span>, <span class="dt">main =</span> <span class="kw">paste</span>(<span class="st">&quot;irrigation =&quot;</span>, m),
+         <span class="dt">xlab =</span> <span class="st">&quot;fertilizer&quot;</span>, <span class="dt">ylab =</span> <span class="st">&quot;yield&quot;</span>)
+    
+    ## plot yield against fertiliser stratified by density
+    <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(<span class="kw">levels</span>(newdata<span class="op">$</span>density))) {
+        temp1 &lt;-<span class="st"> </span>temp[
+            temp<span class="op">$</span>density <span class="op">==</span><span class="st"> </span><span class="kw">levels</span>(newdata<span class="op">$</span>density)[i], ]
+        temp1 &lt;-<span class="st"> </span>temp1[<span class="kw">order</span>(temp1<span class="op">$</span>fertilizer), ]
+        <span class="cf">for</span>(j <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(temp1)){
+            <span class="kw">points</span>(j <span class="op">-</span><span class="st"> </span><span class="fl">0.2</span> <span class="op">*</span><span class="st"> </span>(<span class="dv">2</span> <span class="op">-</span><span class="st"> </span>i), temp1<span class="op">$</span>yield[j], 
+                <span class="dt">col =</span> i, <span class="dt">pch =</span> <span class="dv">16</span>)
+            <span class="kw">arrows</span>(j <span class="op">-</span><span class="st"> </span><span class="fl">0.2</span> <span class="op">*</span><span class="st"> </span>(<span class="dv">2</span> <span class="op">-</span><span class="st"> </span>i), temp1<span class="op">$</span>lci[j], 
+                j <span class="op">-</span><span class="st"> </span><span class="fl">0.2</span> <span class="op">*</span><span class="st"> </span>(<span class="dv">2</span> <span class="op">-</span><span class="st"> </span>i), temp1<span class="op">$</span>uci[j], 
+                <span class="dt">length =</span> <span class="fl">0.1</span>, <span class="dt">col =</span> i, 
+                <span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">code =</span> <span class="dv">3</span>)
+        }
+    }
+    
+    ## add custom x-axis
+    <span class="kw">axis</span>(<span class="dt">side =</span> <span class="dv">1</span>, <span class="dt">at =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">3</span>, 
+         <span class="dt">labels =</span> <span class="kw">levels</span>(newdata<span class="op">$</span>fertilizer))
+    
+    ## add legend
+    <span class="kw">legend</span>(<span class="fl">0.1</span>, 
+        <span class="kw">diff</span>(<span class="kw">par</span>(<span class="st">&quot;usr&quot;</span>)[<span class="dv">3</span><span class="op">:</span><span class="dv">4</span>]) <span class="op">*</span><span class="st"> </span><span class="fl">0.95</span> <span class="op">+</span><span class="st"> </span><span class="kw">par</span>(<span class="st">&quot;usr&quot;</span>)[<span class="dv">3</span>], 
+        <span class="dt">legend =</span> <span class="kw">levels</span>(newdata<span class="op">$</span>density),
+        <span class="dt">col =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">3</span>, <span class="dt">lty =</span> <span class="dv">1</span>, <span class="dt">pch =</span> <span class="dv">16</span>)
+}</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-246-1.png" width="960" style="display: block; margin: auto;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## reset plot layout
+<span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</code></pre></div>
+</div>
+<script> javascript:hide('option2unnamed-chunk-167') </script>
+<p>So we can see that in the control group the <code>medium</code> density sowing seems to produce slightly higher yields on average than the <code>low</code> or <code>high</code> density settings, but we note that these differences are not statistically significantly different at the 5% level. However, irrigation tends to not only produce higher yields on average (except for the <code>N</code> fertiliser), but also to favour <code>high</code> density sowing efforts, which are now much preferred over <code>low</code> density sowing efforts (although not too dissimilar from <code>medium</code> density efforts). The model tends to favour the <code>NP</code> fertiliser in all cases, though there’s not much between <code>NP</code> and <code>P</code>.</p>
+<blockquote>
+<p><strong>Note</strong>: This approach does now take into account the random effects variances or covariances. It is therefore likely to underestimate the variance. To account for these additional uncertainties is difficult. If you want a more consistent approach, go <a href="mixed-effects-models.html#secbayes">Bayesian</a>.</p>
+</blockquote>
+</div>
+</div>
+<div id="non-independent-data-absorbing-the-influence-of-random-effects" class="section level2">
+<h2><span class="header-section-number">4.5</span> Non-independent data: Absorbing the influence of random effects</h2>
+<p>Eight groups of students walked through Hell’s Gate National Park and estimated the distance to groups of individuals of several species of mammalian herbivores. Here we work with data on distances to three key species: Thomson’s gazelle, warthog and zebra. We are interested in whether distances to these animals differ among species, whether distances depend on animal group size, and also whether the relationship between distance and group size differs among species. These data are available in the <a href="https://exeter-data-analytics.github.io/StatModelling/_data/hg.rds">“hg.rds”</a> file.</p>
+<p>A naïve analysis would ignore the identity of the student group, and therefore treat all the distance observations as independent. It would probably fit a <code>lm</code> of distance against species, number and the interaction between species and number. My own exploration of the data suggests that raw distances are skewed, and that a log-transformation improves homoscedasticity and normality of residuals. So before analysing we do this transformation.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hg &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;hg.rds&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hg<span class="op">$</span>ldist &lt;-<span class="st"> </span><span class="kw">log</span>(hg<span class="op">$</span>Distance)
+hg_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(ldist <span class="op">~</span><span class="st"> </span>Species <span class="op">*</span><span class="st"> </span>Number, <span class="dt">data =</span> hg)
+<span class="kw">drop1</span>(hg_lm, <span class="dt">test =</span> <span class="st">&quot;F&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## ldist ~ Species * Number
+##                Df Sum of Sq    RSS     AIC F value   Pr(&gt;F)   
+## &lt;none&gt;                      212.51 -346.77                    
+## Species:Number  2    5.3917 217.91 -339.19  5.7846 0.003305 **
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>This suggests a statistically significant interaction between <code>Species</code> and <code>Number</code> (<span class="math inline">\(F_{2, 456} = 5.78\)</span>, <span class="math inline">\(p = 0.003\)</span>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(hg_lm)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = ldist ~ Species * Number, data = hg)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -2.32646 -0.39255  0.04353  0.44779  1.85666 
+## 
+## Coefficients:
+##                         Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)            5.4357462  0.0689700  78.813  &lt; 2e-16 ***
+## Specieswarthog        -0.4178168  0.1066872  -3.916 0.000104 ***
+## Specieszebra          -0.1247300  0.1203792  -1.036 0.300685    
+## Number                 0.0009105  0.0118508   0.077 0.938790    
+## Specieswarthog:Number  0.0156732  0.0254035   0.617 0.537563    
+## Specieszebra:Number   -0.0742589  0.0238692  -3.111 0.001981 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.6827 on 456 degrees of freedom
+## Multiple R-squared:  0.09402,    Adjusted R-squared:  0.08409 
+## F-statistic: 9.465 on 5 and 456 DF,  p-value: 1.338e-08</code></pre>
+<p>The interaction appears to be driven by a decrease in distance with increasing group size, but only in zebras. We can draw the relevant figure (notice that this is where <code>tidyverse</code> comes into its own, with much more concise code resulting in a better plot).</p>
+<div class="tab">
+<button class="tablinksunnamed-chunk-171 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-171', 'unnamed-chunk-171');">
+<tt>tidyverse</tt>
+</button>
+<button class="tablinksunnamed-chunk-171" onclick="javascript:openCode(event, 'option2unnamed-chunk-171', 'unnamed-chunk-171');">
+Base R
+</button>
+</div>
+<div id="option1unnamed-chunk-171" class="tabcontentunnamed-chunk-171">
+<p>Generate ‘fake’ data in order to plot fitted lines:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">newdata &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(
+        <span class="dt">Number =</span> <span class="kw">seq</span>(<span class="kw">min</span>(hg<span class="op">$</span>Number), 
+            <span class="kw">max</span>(hg<span class="op">$</span>Number), <span class="dt">length =</span> <span class="dv">100</span>),
+        <span class="dt">Species =</span> <span class="kw">levels</span>(hg<span class="op">$</span>Species)
+    )</code></pre></div>
+<p>Now get the predicted values for the fake data, and back-transform log-distance to real distances, using the <code>exp</code> command:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">newdata &lt;-<span class="st"> </span>newdata <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">Distance =</span> 
+        <span class="kw">exp</span>(<span class="kw">predict</span>(hg_lm, newdata)))</code></pre></div>
+<p>Now plot the fitted lines against the observed data points:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(hg, <span class="kw">aes</span>(<span class="dt">x =</span> Number, <span class="dt">y =</span> Distance, 
+    <span class="dt">col =</span> Species)) <span class="op">+</span>
+<span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span>
+<span class="kw">geom_line</span>(<span class="dt">data =</span> newdata)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-249-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<div id="option2unnamed-chunk-171" class="tabcontentunnamed-chunk-171">
+<p>Generate ‘fake’ data in order to plot fitted lines:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">newdata &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(
+    <span class="dt">Number =</span> <span class="kw">seq</span>(<span class="kw">min</span>(hg<span class="op">$</span>Number), <span class="kw">max</span>(hg<span class="op">$</span>Number), 
+        <span class="dt">length =</span> <span class="dv">100</span>),
+    <span class="dt">Species =</span> <span class="kw">levels</span>(hg<span class="op">$</span>Species)
+)</code></pre></div>
+<p>Now get the predicted values for the fake data, and back-transform log-distance to real distances, using the <code>exp</code> command:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">newdata<span class="op">$</span>Distance &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="kw">predict</span>(hg_lm, newdata))</code></pre></div>
+<p>Now plot the fitted lines against the observed data points:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(Distance <span class="op">~</span><span class="st"> </span>Number, <span class="dt">data =</span> hg, <span class="dt">type =</span> <span class="st">&quot;n&quot;</span>)
+<span class="kw">points</span>(Distance <span class="op">~</span><span class="st"> </span>Number, <span class="dt">data =</span> hg, 
+       <span class="dt">subset =</span> (Species <span class="op">==</span><span class="st"> &quot;thomsons gazelle&quot;</span>), 
+       <span class="dt">pch =</span> <span class="dv">16</span>)
+<span class="kw">points</span>(Distance <span class="op">~</span><span class="st"> </span>Number, <span class="dt">data =</span> hg, 
+       <span class="dt">subset =</span> (Species <span class="op">==</span><span class="st"> &quot;warthog&quot;</span>), 
+       <span class="dt">pch =</span> <span class="dv">16</span>,
+       <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>)
+<span class="kw">points</span>(Distance <span class="op">~</span><span class="st"> </span>Number, <span class="dt">data =</span> hg, 
+       <span class="dt">subset =</span> (Species <span class="op">==</span><span class="st"> &quot;zebra&quot;</span>), 
+       <span class="dt">pch =</span> <span class="dv">16</span>,
+       <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>)
+<span class="kw">lines</span>(Distance <span class="op">~</span><span class="st"> </span>Number, <span class="dt">data =</span> newdata, 
+      <span class="dt">subset =</span> (newdata<span class="op">$</span>Species <span class="op">==</span><span class="st"> &quot;thomsons gazelle&quot;</span>), 
+      <span class="dt">lwd =</span> <span class="dv">2</span>)
+<span class="kw">lines</span>(Distance <span class="op">~</span><span class="st"> </span>Number, <span class="dt">data =</span> newdata,
+      <span class="dt">subset =</span> (newdata<span class="op">$</span>Species <span class="op">==</span><span class="st"> &quot;warthog&quot;</span>), 
+      <span class="dt">lwd =</span> <span class="dv">2</span>, 
+      <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>)
+<span class="kw">lines</span>(Distance <span class="op">~</span><span class="st"> </span>Number, <span class="dt">data =</span> newdata,
+      <span class="dt">subset =</span> (newdata<span class="op">$</span>Species <span class="op">==</span><span class="st"> &quot;zebra&quot;</span>), 
+      <span class="dt">lwd =</span> <span class="dv">2</span>, 
+      <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>)
+<span class="kw">legend</span>(<span class="dv">15</span>, <span class="dv">1000</span>, 
+       <span class="dt">pch =</span> <span class="kw">rep</span>(<span class="dv">16</span>, <span class="dv">3</span>), 
+       <span class="dt">col =</span> <span class="kw">c</span>(<span class="st">&quot;black&quot;</span>, <span class="st">&quot;red&quot;</span>, <span class="st">&quot;blue&quot;</span>), 
+       <span class="dt">legend =</span> <span class="kw">c</span>(<span class="st">&quot;gazelle&quot;</span>, <span class="st">&quot;warthog&quot;</span>, <span class="st">&quot;zebra&quot;</span>))</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-252-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<script> javascript:hide('option2unnamed-chunk-171') </script>
+<p>This naïve analysis is fundamentally flawed because the distance estimations are not independent of each other. Several estimates come from each of 8 student groups, and it’s easy to imagine (or remember) that observers vary dramatically in the bias of their distance estimates (and indeed in their estimates of group size, possibly even species identity). It’s entirely possible that a group of observers who estimate “short” distances also encountered strangely large groups of zebras: such a correlation between <code>Group.Name</code> and <code>Distance</code> could drive the observed relationship for zebras.</p>
+<p>One solution would be to fit <code>Group.Name</code> as a categorical explanatory variable to our model. This approach has two main problems:</p>
+<ol style="list-style-type: decimal">
+<li>It wastes valuable degrees of freedom (8 student groups, therefore 7 d.f. as a main effect and 7 d.f. more for each interaction), giving the residual variance fewer d.f. and therefore weakening the power of our analysis.</li>
+<li>It could easily result in a complicated minimal adequate model involving something that we don’t really care about and which does not appear in our hypothesis: <code>Group.Name</code>.</li>
+</ol>
+<p>Instead we would like to be able to absorb the variance in distance estimates among student groups. Such a model would estimate the relationship between <code>Distance</code>, <code>Species</code> and <code>Number</code> for an <strong>average</strong> group of observers. It could also tell us just how much variance exists among groups of observers.</p>
+<p>This is a classic example of where a <strong>mixed-effects model</strong> is useful. We care about the influence of <code>Species</code> and <code>Number</code> on <code>Distance</code>. These are <strong>fixed effects</strong>. We know that <code>Group.Name</code> will have an influence on <code>Distance</code>, but the categories of <code>Group.Name</code> are uninformative to the lay reader and cannot be replicated in future field trips. Hence we treat <code>Group.Name</code> as a <strong>random effect</strong>. An ideal mixed-effects model will test the influence of <code>Species</code> and <code>Number</code> on <code>Distance</code>, meanwhile absorbing the influence of <code>Group.Name</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hg_lmer &lt;-<span class="st"> </span><span class="kw">lmer</span>(ldist <span class="op">~</span><span class="st"> </span>Species <span class="op">*</span><span class="st"> </span>Number <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>Group.Name), <span class="dt">data =</span> hg)</code></pre></div>
+<p>Note that there is no nesting going on here; <code>Species</code> and <code>Number</code> have the same interpretation regardless of the <code>Group.Name</code>. Let’s take a look at the summary of the fitted model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(hg_lmer)</code></pre></div>
+<pre><code>## Linear mixed model fit by REML [&#39;lmerMod&#39;]
+## Formula: ldist ~ Species * Number + (1 | Group.Name)
+##    Data: hg
+## 
+## REML criterion at convergence: 814.2
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -4.4891 -0.6386 -0.0128  0.5896  2.6806 
+## 
+## Random effects:
+##  Groups     Name        Variance Std.Dev.
+##  Group.Name (Intercept) 0.2085   0.4566  
+##  Residual               0.3046   0.5519  
+## Number of obs: 462, groups:  Group.Name, 8
+## 
+## Fixed effects:
+##                         Estimate Std. Error t value
+## (Intercept)            5.4411458  0.1721299  31.611
+## Specieswarthog        -0.3947870  0.0869880  -4.538
+## Specieszebra          -0.2975063  0.0997439  -2.983
+## Number                -0.0001202  0.0099875  -0.012
+## Specieswarthog:Number -0.0049066  0.0208474  -0.235
+## Specieszebra:Number   -0.0289725  0.0199376  -1.453
+## 
+## Correlation of Fixed Effects:
+##             (Intr) Spcswr Spcszb Number Spcsw:N
+## Speciswrthg -0.216                             
+## Specieszebr -0.173  0.362                      
+## Number      -0.235  0.415  0.318               
+## Spcswrthg:N  0.101 -0.710 -0.148 -0.460        
+## Spcszbr:Nmb  0.084 -0.196 -0.747 -0.416  0.200</code></pre>
+<p>This summary table is packed with information. First, we can see that the standard deviation in <code>Distance</code> among student groups is 0.46, which is almost as big as the residual standard deviation of 0.55. This suggests variation among observers is important and could dramatically change our results. Second, the estimates of slopes and differences between species are going in the ‘same direction’ as the estimates from the naïve <code>lm()</code> analysis, but seem to be smaller.</p>
+<p>With <strong>unbalanced</strong> experimental designs like this, the fixed effects part of the model cannot be simplified in the usual way. This is because the removal of a fixed effect will <strong>fundamentally</strong> change the model fit: it’s not just a case of dumping the deviance explained by a fixed effect into the residual deviance, because the residual deviance is different for each nested level of the experimental design. Furthermore, if the experiment is unbalanced, we should beware of using F-tests to check the statistical significance of terms. Instead, we should use AIC or <strong>likelihood ratio tests</strong>, and if we do this we need to change the fitting mechanism from REML to ML whilst performing LRT. (We do this <em>in situ</em> using the <code>update()</code> function.)</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">drop1</span>(<span class="kw">update</span>(hg_lmer, <span class="dt">REML =</span> F), <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## ldist ~ Species * Number + (1 | Group.Name)
+##                Df    AIC    LRT Pr(Chi)
+## &lt;none&gt;            800.99               
+## Species:Number  2 799.15 2.1605  0.3395</code></pre>
+<p>As usual, likelihood ratio tests in this context have a chi-squared distribution with d.f. equal to the difference in d.f. between the models. Here we have 8 - 6 = 2 d.f. So, here we find no evidence for an interaction between <code>Species</code> and <code>Number</code> (<span class="math inline">\(X^2_2 = 2.16\)</span>, <span class="math inline">\(p = 0.34\)</span>).</p>
+<p>Since we have an <strong>unbalanced</strong> design here, we can continue model simplification by dropping each of the main effect terms from the current model and seeing which has the largest impact on model fit (in this case the model simplification will be different depending on the <strong><em>order</em></strong> in which variables are added/removed from the model).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## set baseline model from previous round
+hg_lmer &lt;-<span class="st"> </span><span class="kw">update</span>(hg_lmer, <span class="op">~</span><span class="st"> </span>. <span class="op">-</span><span class="st"> </span>Species<span class="op">:</span>Number)
+
+## now drop terms compare to baseline model
+<span class="kw">drop1</span>(<span class="kw">update</span>(hg_lmer, <span class="dt">REML =</span> F), <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## ldist ~ Species + Number + (1 | Group.Name)
+##         Df    AIC    LRT   Pr(Chi)    
+## &lt;none&gt;     799.15                     
+## Species  2 849.64 54.490 1.471e-12 ***
+## Number   1 797.68  0.528    0.4674    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>Here dropping <code>Number</code> has little impact on the model fit, whereas dropping <code>Species</code> results in a statistically significantly inferior fit. Hence the next stage is to drop <code>Number</code>. Therefore our baseline model now has just the main effect for <code>Species</code>. The final stage is to drop <code>Species</code> and assess the change in fit relative to our current model.</p>
+<div class="panel panel-default">
+<div class="panel-heading">
+Question
+</div>
+<div class="panel-body">
+Why do we need to do this last step, since we assessed the impact of removing <code>Species</code> before?
+</div>
+</div>
+<button id="displayTextunnamed-chunk-177" onclick="javascript:toggle('unnamed-chunk-177');">
+Show Answer
+</button>
+<div id="toggleTextunnamed-chunk-177" style="display: none">
+<div class="panel panel-default">
+<div class="panel-heading panel-heading1">
+Answer
+</div>
+<div class="panel-body">
+Because the LRT at the previous stage was comparing the baseline model <code>ldist ~ Species + Number</code> with the model <code>ldist ~ Number</code>. Since we have now removed <code>Number</code>, the new LRT will compare the baseline model <code>ldist ~ Species</code> with the null model <code>ldist ~ 1</code> (i.e. a model with just a single intercept value). In <strong>unbalanced</strong> designs these two comparisons are different tests and thus can give different results.
+</div>
+</div>
+</div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## set baseline model from previous round
+hg_lmer &lt;-<span class="st"> </span><span class="kw">update</span>(hg_lmer, <span class="op">~</span><span class="st"> </span>. <span class="op">-</span><span class="st"> </span>Number)
+
+## now drop terms compare to baseline model
+<span class="kw">drop1</span>(<span class="kw">update</span>(hg_lmer, <span class="dt">REML =</span> F), <span class="dt">test =</span> <span class="st">&quot;Chisq&quot;</span>)</code></pre></div>
+<pre><code>## Single term deletions
+## 
+## Model:
+## ldist ~ Species + (1 | Group.Name)
+##         Df    AIC    LRT   Pr(Chi)    
+## &lt;none&gt;     797.68                     
+## Species  2 847.64 53.965 1.913e-12 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>This suggests there is a clear effect of <code>Species</code> identity on <code>log(Distance)</code> (<span class="math inline">\(X^2_2 = 54.0\)</span>, <span class="math inline">\(p &lt; 0.001\)</span>).</p>
+<p>Now we’d like to see our model summary (notice that R has automatically kept the REML fit; since we only converted the model objects to use ML during the model comparison exercise):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(hg_lmer)</code></pre></div>
+<pre><code>## Linear mixed model fit by REML [&#39;lmerMod&#39;]
+## Formula: ldist ~ Species + (1 | Group.Name)
+##    Data: hg
+## 
+## REML criterion at convergence: 797.1
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -4.4743 -0.6479 -0.0538  0.5904  2.6838 
+## 
+## Random effects:
+##  Groups     Name        Variance Std.Dev.
+##  Group.Name (Intercept) 0.2161   0.4649  
+##  Residual               0.3042   0.5516  
+## Number of obs: 462, groups:  Group.Name, 8
+## 
+## Fixed effects:
+##                Estimate Std. Error t value
+## (Intercept)     5.43619    0.17008  31.962
+## Specieswarthog -0.41088    0.06060  -6.780
+## Specieszebra   -0.40508    0.06627  -6.113
+## 
+## Correlation of Fixed Effects:
+##             (Intr) Spcswr
+## Speciswrthg -0.179       
+## Specieszebr -0.164  0.466</code></pre>
+<p>This final summary tells us that the standard deviation among observer groups is almost as big as the residual standard deviation in distances. It tells us that both warthogs and zebra are closer to the observer than Thomson’s gazelles, which are approximately <span class="math inline">\(e^{5.44} = 230\)</span> metres away on average. The number of animals in a group has negligible influence on distance given the uncertainties in the data.</p>
+<p>We’re now left with a final model that has a single categorical variable. We could provide a boxplot of the raw data to describe it, but in this instance it would be misleading because it would not differentiate between observer-level noise and residual noise. In this instance we will produce confidence intervals for the mean distance from the road for each species and plot them.</p>
+<p>The simplest way to generate confidence intervals for each of the three parameters of the model is to refit the model three times, changing the baseline species each time and using the <code>confint</code> function to extract the confidence intervals (converting to the correct scale at the end). For consistency we’ll use a bootstrap method to generate the intervals (using 500 replicates, which is the default, though you might want to change to a larger number in practice). (Note that you could use a <code>predict()</code> solution as in the <a href="mixed-effects-models.html#parboot">earlier example</a>, which is often easier for more complex predictions.)</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hg_cis &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="ot">NA</span>, <span class="kw">length</span>(<span class="kw">levels</span>(hg<span class="op">$</span>Species)), <span class="dv">3</span>)
+hg_spec &lt;-<span class="st"> </span><span class="kw">levels</span>(hg<span class="op">$</span>Species)
+<span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(hg_spec)){
+    hg<span class="op">$</span>Species &lt;-<span class="st"> </span><span class="kw">relevel</span>(hg<span class="op">$</span>Species, <span class="dt">ref =</span> <span class="kw">levels</span>(hg<span class="op">$</span>Species)[i])
+    hg_lmer &lt;-<span class="st"> </span><span class="kw">update</span>(hg_lmer, <span class="dt">data =</span> hg)
+    hg_cis[i, ] &lt;-<span class="st"> </span><span class="kw">c</span>(
+        <span class="kw">coef</span>(<span class="kw">summary</span>(hg_lmer))[ , <span class="st">&quot;Estimate&quot;</span>][<span class="dv">1</span>], 
+        <span class="kw">confint</span>(hg_lmer, <span class="dt">quiet =</span> T, <span class="dt">method =</span> <span class="st">&quot;boot&quot;</span>)[<span class="dv">3</span>, ]
+    )
+}
+hg_cis &lt;-<span class="st"> </span><span class="kw">exp</span>(hg_cis)
+hg_cis &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(hg_cis)
+<span class="kw">colnames</span>(hg_cis) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;lci&quot;</span>, <span class="st">&quot;uci&quot;</span>)
+hg_cis<span class="op">$</span>Species &lt;-<span class="st"> </span>hg_spec
+hg_cis</code></pre></div>
+<pre><code>##       mean      lci      uci          Species
+## 1 229.5666 169.8597 327.1454 thomsons gazelle
+## 2 152.2176 111.4347 213.6262          warthog
+## 3 153.1030 107.7038 211.2413            zebra</code></pre>
+<div class="tab">
+<button class="tablinksunnamed-chunk-182 active" onclick="javascript:openCode(event, 'option1unnamed-chunk-182', 'unnamed-chunk-182');">
+<tt>tidyverse</tt>
+</button>
+<button class="tablinksunnamed-chunk-182" onclick="javascript:openCode(event, 'option2unnamed-chunk-182', 'unnamed-chunk-182');">
+Base R
+</button>
+</div>
+<div id="option1unnamed-chunk-182" class="tabcontentunnamed-chunk-182">
+<p>In <code>ggplot2</code> we can use the <code>geom_pointrange()</code> function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(hg_cis, <span class="kw">aes</span>(<span class="dt">x =</span> Species)) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_pointrange</span>(
+        <span class="kw">aes</span>(<span class="dt">y =</span> mean, <span class="dt">ymin =</span> lci, 
+        <span class="dt">ymax =</span> uci)) <span class="op">+</span>
+<span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;Species&quot;</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">ylab</span>(<span class="st">&quot;Distance from road (m)&quot;</span>)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-253-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<div id="option2unnamed-chunk-182" class="tabcontentunnamed-chunk-182">
+<p>To plot the CIs in base R, we can proceed as follows:</p>
+<ol style="list-style-type: decimal">
+<li>Calculate limits for the <span class="math inline">\(y\)</span>-axis based on the range of the CIs to be plotted.</li>
+<li>Calculate manual limits for the <span class="math inline">\(x\)</span>-axis to enable the species names to render correctly.</li>
+<li>Produce a scatterplot of points defined on the ranges set above, but remove the <span class="math inline">\(x\)</span>-axis (using the <code>xaxt = &quot;n&quot;</code> argument). This latter step is so that we can add the species labels manually in the next step.</li>
+<li>Add a new <span class="math inline">\(x\)</span>-axis and set appropriate labels for the points.</li>
+<li>Add confidence intervals using the <code>arrows()</code> function. Notice that Ive used a <code>for</code> loop to allow me to plot the three CIs in one line of code as in the earlier example. You could do this explicitly in three lines of code if you prefer.</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ylims &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="kw">max</span>(hg_cis[, <span class="op">-</span><span class="kw">ncol</span>(hg_cis)]))
+xlims &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.5</span>, <span class="fl">3.5</span>)
+<span class="kw">plot</span>(<span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(hg_cis), hg_cis<span class="op">$</span>mean, 
+     <span class="dt">xlab =</span> <span class="st">&quot;Species&quot;</span>, 
+     <span class="dt">ylab =</span> <span class="st">&quot;Distance from road (m)&quot;</span>, 
+     <span class="dt">xaxt =</span> <span class="st">&quot;n&quot;</span>, <span class="dt">pch =</span> <span class="dv">16</span>, <span class="dt">ylim =</span> ylims, 
+     <span class="dt">xlim =</span> xlims)
+<span class="kw">axis</span>(<span class="dv">1</span>, <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(hg_cis), hg_cis<span class="op">$</span>Species)
+<span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(hg_cis)) {
+    <span class="kw">arrows</span>(i, hg_cis<span class="op">$</span>lci[i], 
+           i, hg_cis<span class="op">$</span>uci[i], 
+           <span class="dt">code =</span> <span class="dv">3</span>, 
+           <span class="dt">angle =</span> <span class="dv">90</span>, 
+           <span class="dt">length =</span> <span class="fl">0.1</span>)
+}</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-254-1.png" width="480" style="display: block; margin: auto;" /></p>
+</div>
+<script> javascript:hide('option2unnamed-chunk-182') </script>
+</div>
+<div id="model-checking-with-mixed-models" class="section level2">
+<h2><span class="header-section-number">4.6</span> Model checking with mixed models</h2>
+<p>We need to be just as conscious of testing the assumptions of mixed effects models as we are with any other. The assumptions are:</p>
+<ol style="list-style-type: decimal">
+<li>Within-group errors are independent and normally distributed with mean zero and variance <span class="math inline">\(\sigma^2\)</span>.</li>
+<li>Within-group errors are independent of the random effects.</li>
+<li>Random effects are normally distributed with mean zero.</li>
+<li>Random effects have a covariance matrix <span class="math inline">\(\Psi\)</span> that does not depend on the group… this is rather advanced.</li>
+<li>Random effects are independent for different groups, except as specified by nesting… I’m not really sure what this means.</li>
+</ol>
+<p>Several model check plots would help us to confirm/deny these assumptions, but note that QQ-plots may not be relevant because of the model structure. Two commonly-used plots are:</p>
+<ol style="list-style-type: decimal">
+<li>A simple plot of residuals against fitted values, irrespective of random effects (note we have to do this “by hand” here):</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw">resid</span>(hg_lmer) <span class="op">~</span><span class="st"> </span><span class="kw">fitted</span>(hg_lmer))</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-183-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>It can often be useful to check the distribution of residuals in each of the groups (e.g. blocks) to check assumptions 1 and 2. We can do this by plotting the residuals against the fitted values, separately for each level of the random effect, using the precious <code>coplot</code> function:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">coplot</span>(<span class="kw">resid</span>(hg_lmer) <span class="op">~</span><span class="st"> </span><span class="kw">fitted</span>(hg_lmer) <span class="op">|</span><span class="st"> </span>hg<span class="op">$</span>Group.Name)</code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-184-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>You’ll notice that each sub-figure of this plot, which refers to an individual group of observers, doesn’t contain much data. Therefore it’s hard to judge whether the spread of residuals around fitted values is the same for each observer group. But, with better-replicated experiments (i.e. with many more animals seen per observer group) we could check that the residuals are homoscedastic both <strong>within</strong> and <strong>among</strong> observers. (Note that the order of the coplots relating to the groups denoted in the top plot is left-to-right, bottom-to-top: so <code>bilbo's badgers</code> are bottom-left, <code>Mega-my-fauna</code> are bottom-middle and so on…)</p>
+</div>
+<div id="why-arent-glms-much-good-at-modelling-non-independent-data" class="section level2">
+<h2><span class="header-section-number">4.7</span> Why aren’t GLMs much good at modelling non-independent data?</h2>
+<p>This is a short section, but very important. When you perform ANOVA or linear regression with a Gaussian (normal) error structure, you can use F-tests which are based on ‘model’ and ‘residual’ mean-squares or deviances (remember an F-statistic is the ratio of two variances). When data are non-independent, this is really useful because you can choose which part of the experimental design structure from which to select your residual deviance. Remember that you can also use likelihood ratio testing, in which case the chi-squared test statistic is an <strong>exact</strong> test (although subtlely different to the F-test).</p>
+<p>When you perform Generalised Linear Modelling with non-normal error structures, you have to use likelihood ratio testing (i.e. chi-square tests). In the case of a standard GLM, then the LRT test statistic is <strong>asymptotically chi-squared</strong> (i.e. it’s approximately chi-squared, where the approximation gets better as the sample size gets bigger). However, these are based only on ‘model’ deviance and do not take into account residual deviance. Hence a model of non-independent data cannot provide correct chi-square tests because they ignore the nesting in the experimental design.</p>
+<blockquote>
+<p><strong>Moral</strong>: It’s far better to use <strong>Generalised Linear Mixed Modelling</strong> in these cases.</p>
+</blockquote>
+</div>
+<div id="generalised-linear-mixed-modelling-glmm" class="section level2">
+<h2><span class="header-section-number">4.8</span> Generalised Linear Mixed Modelling (GLMM)</h2>
+<p>Obviously given your expertise with non-normal data and error structures, by now (if you’re still reading) you’ll be craving a mixed-effects modelling technique that copes with Poisson, binomial, quasi etc. errors: <code>glmer()</code> gives it a good try.</p>
+<p>As an example, suppose our hypotheses change. Now we believe that the group sizes vary among species and with distance from the road. Using <code>Number</code> as a response variable is unlikely to have normal residuals (I’m confident). If this was a GLM, we would start by trying <code>family = poisson</code>, because the data are counts (close to zero). Miraculously, that’s all we have to do in <code>glmer()</code> as well.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hometime &lt;-<span class="st"> </span><span class="kw">glmer</span>(Number <span class="op">~</span><span class="st"> </span>Species <span class="op">*</span><span class="st"> </span>ldist <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>Group.Name), 
+    <span class="dt">data =</span> hg, <span class="dt">family =</span> poisson)
+<span class="kw">summary</span>(hometime)</code></pre></div>
+<pre><code>## Generalized linear mixed model fit by maximum likelihood (Laplace
+##   Approximation) [glmerMod]
+##  Family: poisson  ( log )
+## Formula: Number ~ Species * ldist + (1 | Group.Name)
+##    Data: hg
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##   2241.8   2270.8  -1113.9   2227.8      455 
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -1.9259 -0.9735 -0.4698  0.5877  9.6966 
+## 
+## Random effects:
+##  Groups     Name        Variance Std.Dev.
+##  Group.Name (Intercept) 0.128    0.3577  
+## Number of obs: 462, groups:  Group.Name, 8
+## 
+## Fixed effects:
+##                               Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)                    2.50760    0.34501   7.268 3.64e-13 ***
+## Specieswarthog                -1.84315    0.43850  -4.203 2.63e-05 ***
+## Speciesthomsons gazelle       -1.11766    0.45641  -2.449 0.014332 *  
+## ldist                         -0.23485    0.06493  -3.617 0.000298 ***
+## Specieswarthog:ldist           0.32048    0.08687   3.689 0.000225 ***
+## Speciesthomsons gazelle:ldist  0.23311    0.08697   2.680 0.007354 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation of Fixed Effects:
+##             (Intr) Spcswr Spcstg ldist  Spcsw:
+## Speciswrthg -0.571                            
+## Spcsthmsnsg -0.502  0.413                     
+## ldist       -0.920  0.607  0.533              
+## Spcswrthg:l  0.576 -0.988 -0.417 -0.629       
+## Spcsthgzll:  0.541 -0.435 -0.989 -0.591  0.451</code></pre>
+<p>Simplification to find the Minimal Adequate Model is… a challenge for you to complete!</p>
+<p>Congratulations.</p>
+</div>
+<div id="parboot" class="section level2">
+<h2><span class="header-section-number">4.9</span> Parametric bootstrapping</h2>
+<p>Bootstrapping is a resampling technique that was designed for inference when it is not possible (or hard) to generate theoretical sampling distributions for particular quantities of interest. It was introduced by <a href="https://en.wikipedia.org/wiki/Bradley_Efron">Bradley Efron</a> in 1979. The name is based on the adage: “to pull oneself up by one’s bootstraps”.</p>
+<p>The basic idea is that we can generate <strong>empirical</strong> sampling distributions for a quantity of interest (e.g. a median for example) by sampling from the underlying system a very large number of times and calculating the quantity in each case. This sampling distribution can be used directly to generate confidence intervals for example. Of course, in practice we cannot sample multiple times from the underlying system (we often only have one replicate—the <strong>observed data</strong>). Instead, bootstrapping aims to approximate this idea by instead <strong>re-sampling with replacement</strong> from the observed data, and then generating empirical bootstrapped sampling distributions. These ideas have been developed greatly over the years, but the technique is attractive because it is simple to implement (although the estimates are often slightly biased). <code>lme4</code> has a function <code>bootMer()</code> that can be used to implement specific types of bootstrapping—in this case we want to use <strong>parametric</strong> bootstrapping. We do not dwell on the details here, but if you want more information please come and see me.</p>
+<p>To generate the confidence intervals used in the <a href="#secsplit">split-plot</a> design <a href="#splitplot">earlier</a>, you can use the following code:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## new data to predict to
+newdata &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(
+    <span class="dt">density =</span> <span class="kw">levels</span>(splityield<span class="op">$</span>density),
+    <span class="dt">irrigation =</span> <span class="kw">levels</span>(splityield<span class="op">$</span>irrigation),
+    <span class="dt">fertilizer =</span> <span class="kw">levels</span>(splityield<span class="op">$</span>fertilizer)
+)
+
+## prediction function to use in bootstrap routine
+predFun &lt;-<span class="st"> </span><span class="cf">function</span>(mod) {
+  <span class="kw">predict</span>(mod, <span class="dt">newdata =</span> newdata, <span class="dt">re.form =</span> <span class="ot">NA</span>)
+}
+
+## produce 1000 bootstrapped samples
+boot1 &lt;-<span class="st"> </span><span class="kw">bootMer</span>(split_lmer, predFun, <span class="dt">nsim =</span> <span class="dv">1000</span>, <span class="dt">type =</span> <span class="st">&quot;parametric&quot;</span>, <span class="dt">re.form =</span> <span class="ot">NA</span>)
+
+## function to produce percentile based CIs
+sumBoot &lt;-<span class="st"> </span><span class="cf">function</span>(merBoot) {
+    <span class="kw">data.frame</span>(
+        <span class="dt">yield =</span> <span class="kw">apply</span>(merBoot<span class="op">$</span>t, <span class="dv">2</span>, <span class="cf">function</span>(x){
+            <span class="kw">mean</span>(x, <span class="dt">na.rm =</span> T)
+        }),
+        <span class="dt">lci =</span> <span class="kw">apply</span>(merBoot<span class="op">$</span>t, <span class="dv">2</span>, <span class="cf">function</span>(x){
+            <span class="kw">quantile</span>(x, <span class="dt">probs =</span> <span class="fl">0.025</span>, <span class="dt">na.rm =</span> T)
+        }),
+        <span class="dt">uci =</span> <span class="kw">apply</span>(merBoot<span class="op">$</span>t, <span class="dv">2</span>, <span class="cf">function</span>(x){
+            <span class="kw">quantile</span>(x, <span class="dt">probs =</span> <span class="fl">0.975</span>, <span class="dt">na.rm =</span> T)
+        })
+    )
+}
+
+## bind CIs to newdata
+split_pred &lt;-<span class="st"> </span><span class="kw">cbind</span>(newdata, <span class="kw">sumBoot</span>(boot1))</code></pre></div>
+</div>
+<div id="secbayes" class="section level2">
+<h2><span class="header-section-number">4.10</span> Bayesian modelling</h2>
+<p>Many of the challenges associated with <strong>mixed effects</strong> models go away if you move your inference into a <strong>Bayesian</strong> framework. That’s not to say that other challenges do not arise in their place, mainly in terms of variable selection, however, in general I would recommend using a Bayesian framework for complex models with hierarchical structures, particularly spatio-temporal modelling.</p>
+<p>For GLMMs there is an R package called <a href="https://cran.r-project.org/web/packages/MCMCglmm/index.html"><code>MCMCglmm</code></a> that will fit a wide range of models in a Bayesian framework. Alternatively there are general purpose Bayesian packages such as <a href="https://www.mrc-bsu.cam.ac.uk/software/bugs/the-bugs-project-winbugs/">WinBUGS</a>, <a href="http://www.openbugs.net/w/FrontPage">OpenBUGS</a>, <a href="http://mcmc-jags.sourceforge.net/">JAGS</a> or more recently <a href="http://mc-stan.org/">Stan</a>.</p>
+<p>These approaches are beyond the scope of this course, but we are hoping to run a Bayesian Modelling workshop next year, so keep your ears to the ground!</p>
+
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="footnotes">
+<hr />
+<ol start="9">
+<li id="fn9"><p>see <a href="https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html">GLMM FAQ</a><a href="mixed-effects-models.html#fnref9">↩</a></p></li>
+<li id="fn10"><p>you could also use an F-test using the <code>Anova()</code> function in the <code>car</code> package in this particular case<a href="mixed-effects-models.html#fnref10">↩</a></p></li>
+<li id="fn11"><p>at this point, <code>temp1</code> will have three rows, one for each level of <code>fertilizer</code><a href="mixed-effects-models.html#fnref11">↩</a></p></li>
+<li id="fn12"><p>I’ll let you check the help file for <code>arrows()</code> to figure out the arguments and what they are doing<a href="mixed-effects-models.html#fnref12">↩</a></p></li>
+</ol>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="generalised-linear-models.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": null,
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"download": ["_main.pdf"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "";
+    if (src === "" || src === "true") src = "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>
