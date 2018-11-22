@@ -11,3 +11,7 @@ cp -r dataFiles.zip _site/
 cp Slides/02-linear-models/*-handout.pdf _site/
 cp Slides/03-generalised-linear-models/*-handout.pdf _site/
 cp Slides/04-mixed-effects-models/*-handout.pdf _site/
+cd _site
+zip slides.zip *-handout.pdf
+cd ..
+
