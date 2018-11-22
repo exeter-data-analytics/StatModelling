@@ -32,11 +32,11 @@ texfile="03-generalised-linear-models"
 if [ $compileall == "1" ]; then
     compile="\def\handoutmode{1} \input{$texfile.tex}"
     pdflatex $compile
-    #pdfannotextractor $texfile.pdf
+    pdfannotextractor $texfile.pdf
     compile="\def\filename{$texfile.pdf} \input{handout.tex}"
     pdflatex $compile
     mv handout.pdf $texfile-handout.pdf
-    rm handout.aux handout.log
+    rm $texfile.pax handout.aux handout.log
 fi
 
 pdflatex $texfile.tex
