@@ -505,8 +505,9 @@ What is:
 
 Here we have **samples** *nested* within **students**, with `freshener` as our **fixed** effect.
 
-```{r, echo = F, message = F}
-drunk_lmer <- lmer(alcohol ~ freshener + (1 | student / sample), data = drunk)
+```{r, echo = T, message = F}
+drunk_lmer <- lmer(alcohol ~ freshener + 
+    (1 | student / sample), data = drunk)
 Anova(drunk_lmer, test = "F")
 ```
 
@@ -518,7 +519,7 @@ Suggests negligible difference between blood alcohol content between treatments,
 
 However, does not answer the specific question:
 
-> What is the probability of testing positive given that you've used breath freshener, relative to drinking alcohol^[can be tackled using Bayesian methods]?
+> What is the probability that you've used breath freshener relative to drinking alcohol, given your alcohol content^[can be tackled using Bayesian methods]?
 
 Beware of **proxy** measurements (and [prosecutor's fallacy](https://en.wikipedia.org/wiki/Prosecutor%27s_fallacy)).
 
