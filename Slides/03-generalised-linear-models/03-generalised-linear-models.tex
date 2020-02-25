@@ -1,6 +1,6 @@
 %=============================================================================%
-% Author: 	John Joseph Valletta
-% Date: 	07/11/2018
+% Author: 	John Joseph Valletta (modified by Richard B Sherley)
+% Date: 	07/11/2018 (Modified 25/02/2020)
 % Title: 	Fews slides for generalised linear model workshop
 %=============================================================================%
 
@@ -28,7 +28,7 @@
 \usepackage{verbatim}
 \usepackage{longtable}
 \usepackage{hyperref}
-\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=black} 
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=white} 
 
 % Listing set up
 \lstdefinestyle{R}{
@@ -60,7 +60,7 @@ morekeywords={}            		% if you want to add more keywords to the set
 
 % Presentation configuration
 \mode<presentation>{\usetheme{Madrid}}
-\definecolor{tealblue}{rgb}{0, 0.5, 0.5}
+\definecolor{tealblue}{rgb}{0, 0.3, 0.6}
 \usecolortheme[named=tealblue]{structure}
 \useinnertheme{circles} % circles, rectanges, rounded, inmargin
 \usefonttheme[onlymath]{serif} % makes math fonts like the usual LaTeX ones
@@ -72,8 +72,8 @@ morekeywords={}            		% if you want to add more keywords to the set
 % Titlepage
 \title[GLMs in R]{Generalised linear models in R}
 %\subtitle{Built-in data types}
-\author{John Joseph Valletta}
-\date[November 2018]{November 2018}
+\author{Richard B. Sherley}
+\date[March 2020]{March 2020}
 \institute[]{University of Exeter, Penryn Campus, UK}
 \titlegraphic{
 \hfill
@@ -92,6 +92,12 @@ morekeywords={}            		% if you want to add more keywords to the set
 \titlepage
 \end{frame}
 
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{Reminder}
+Extensive notes, handouts of these slides, and data files for the practicals are available at: 
+\href{https://exeter-data-analytics.github.io/StatModelling/}{https://exeter-data-analytics.github.io/StatModelling/}
+\end{frame}
 %=============================================================================%
 %=============================================================================%
 \begin{frame}{Recap: Linear regression}
