@@ -294,6 +294,86 @@ plot(fit)
 \end{figure}
 
 \end{frame}
+%=============================================================================%
+%=============================================================================%
+\begin{frame}[fragile]
+\frametitle{Model checking}
+
+A couple of examples where the homogeneity of variance assumption is \textbf{violated}
+
+\begin{figure}
+\includegraphics<1>[width=.8\textwidth]{funnel.pdf}
+\end{figure}
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}[fragile]
+\frametitle{Model checking: Leverage and Influence}
+
+\begin{itemize}\addtolength{\itemsep}{0.4\baselineskip}
+    \item Obs. 1  – \textbf{large leverage} (outlier in x and y), but not influential
+    \item Obs. 2  – \textbf{large residual}, but not an outlier in x or y. Not influential
+    \item Obs. 3  – not an outlier for y, but has large \textbf{leverage and large residual}: very influential (high Cook's distance).
+\end{itemize}
+
+\vspace{0.2cm}
+
+\begin{figure}
+\includegraphics<1>[width=.45\textwidth]{residual-leaverage-influence.jpeg}
+\end{figure}
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}
+\frametitle{Model checking: Plot your data!}
+
+\begin{itemize}
+    \item \textbf{Always} visualise your data before fitting any model
+    \item Assumption of a linear relationship...
+    \item Scatterplots can indicate unequal variance, nonlinearity and outliers
+\end{itemize}
+
+\vfill
+
+\begin{figure}
+\includegraphics<1>[width=.9\textwidth]{Anscombe.pdf}
+\end{figure}
+
+\vspace{2.3cm}
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}
+\frametitle{Model checking: Plot your data!}
+
+\begin{itemize}
+    \item \textbf{Always} visualise your data before fitting any model
+    \item Assumption of a linear relationship...
+    \item Scatterplots can indicate unequal variance, nonlinearity and outliers
+\end{itemize}
+
+\vfill
+
+\begin{figure}
+\includegraphics<1>[width=.9\textwidth]{Anscombe.pdf}
+\end{figure}
+
+\vfill
+
+\begin{block}{Anscombe (1973) American Statistician 27: 17–21}
+\begin{itemize}
+    \item $r^2$ = 0.68 in all four cases
+    \item Test that $H_0$ = 0 identical in all four cases ($t$ = 4.24, $P$ = 0.002)
+\end{itemize}
+\end{block}
+
+\end{frame}
 
 %=============================================================================%
 %=============================================================================%
@@ -408,6 +488,25 @@ $$
 $$
 
 \end{itemize}
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{Summary}
+
+\textbf{Linear regression} is a powerful tool:
+
+\begin{itemize}
+
+\item It splits the data into \textbf{signal} (trend/mean) and \textbf{noise} (residual error)
+\item It can cope with \textbf{multiple variables} 
+\item It can incorporate different \textbf{types} of variable
+\item It can be used to produce \textbf{point} and \textbf{interval} estimates for the parameters
+\item It can be used to assess the importance of variables
+\end{itemize}
+
+\textbf{But} always \textbf{check} that the model fit is sensible, that the assumptions are met and the results make sense!
 
 \end{frame}
 
