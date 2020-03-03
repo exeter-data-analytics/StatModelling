@@ -206,11 +206,31 @@ glm(height ~ weight, data=df, family=gaussian(link=identity))
 \texttt{sqrt}\tabularnewline
 \texttt{Gamma} & \textbf{\texttt{inverse}}, \texttt{identity} or
 \texttt{log}\tabularnewline
-\texttt{inverse.gaussian} & \textbf{\texttt{1/mu\^{}2}}\tabularnewline
+\texttt{inverse.gaussian} & \textbf{\texttt{1/$\mu^2$}}\tabularnewline
 \texttt{quasi} & user-defined\tabularnewline
 \texttt{quasibinomial} & \textbf{\texttt{logit}}\tabularnewline
 \texttt{quasipoisson} & \textbf{\texttt{log}}\tabularnewline
 \end{longtable}
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{GLM Workflow}
+
+\begin{enumerate}\addtolength{\itemsep}{\baselineskip}
+    \item<1-> Exploratory data analysis
+    \item<2-> Choose a suitable \textbf{error term} 
+    \item<3-> Choose a suitable \textbf{mean function} (and \textbf{link function})
+    \item<4-> Fit model
+    \begin{itemize}
+    \item Residual checks and model fit diagnostics
+    \item Revise model (if necessary)
+    \end{itemize}
+    \item<5-> Model simplification if required
+    \item<6-> Check final model
+
+\end{enumerate}
 
 \end{frame}
 
@@ -230,7 +250,7 @@ Count data is \textbf{discrete} and \textbf{non-negative}
 $$
 \begin{aligned}
 Y & \sim \mathcal{N}(\mu, \sigma^2) &&& Y & \sim \mathcal{P}ois(\mu) \\
-\mu & = \beta_0 + \beta_1X &&& \log{\mu} & = \beta_0 + \beta_1X
+\mu & = \beta_0 + \beta_1X &&& \log({\mu}) & = \beta_0 + \beta_1X
 \end{aligned}
 $$}
 
@@ -248,7 +268,7 @@ $$}
 \end{itemize}
 
 \begin{figure}
-\includegraphics[width=.75\textwidth]{poissondist.pdf}
+\includegraphics[width=.95\textwidth]{poissondist.pdf}
 \end{figure}
 
 \end{frame}
@@ -266,11 +286,11 @@ Y & \sim \mathcal{P}ois(\lambda) \\
 $$
 
 \vfill
-Using the rules of logarithm (i.e $\log{\lambda} = k$, then $\lambda = e^k$):
+Using the rules of logarithm (i.e $\log({\lambda}) = k$, then $\lambda = e^k$):
 
 $$
 \begin{aligned}
-\log{\lambda} & = \beta_0 + \beta_1X \\
+\log({\lambda}) & = \beta_0 + \beta_1X \\
 \lambda & = e^{\beta_0 + \beta_1X }
 \end{aligned}
 $$
@@ -287,13 +307,112 @@ glm(outcome ~ explanatory, data=df, family=poisson(link=log))
 
 %=============================================================================%
 %=============================================================================%
+\begin{frame}{Example: Cuckoo data}
+
+How does nestling mass affect begging rates between \textbf{reed warbler chicks} and \textbf{cuckoo chicks}?
+
+\begin{figure}
+\includegraphics<1>[width=.65\textwidth]{cuckoo.png}
+\includegraphics<2>[width=.65\textwidth]{cuckoo_raw.pdf}
+\end{figure}
+
+Kilner RM, Noble DG and Davies NB (1999). Nature \textbf{397}: 667–672.
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
 \begin{frame}{Cuckoo data}
 
 \begin{figure}
-\includegraphics<1>[width=.75\textwidth]{cuckooanalysis.png}
-\includegraphics<2>[width=.65\textwidth]{cuckooafter.png}
+\includegraphics[width=.75\textwidth]{cuckooanalysis.png}
 \end{figure}
 
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{Cuckoo model}
+
+\visible<1->{Count data are \textbf{discrete} and \textbf{positive}}
+\vfill
+
+\visible<2->{So, we will try a \textbf{Poisson model} with a \textbf{log} link function:
+
+\vfill
+
+$$
+\begin{aligned}
+\log({\lambda}) & = \beta_0 + \beta_1M_i + \beta_2S_i + \beta_3M_iS_i  \\
+\end{aligned}
+$$
+}
+\vfill
+
+\visible<3->{Where $M_i$ is nestling mass and $S_i$ a \textbf{dummy} variable
+\vfill
+$$
+S_i = \left\{\begin{array}{ll}
+        1 & \mbox{if $i$ is warbler},\\
+        0 & \mbox{otherwise}
+        \end{array}
+        \right.
+$$}
+\vfill
+
+\visible<4->{And $M_iS_i$ is an \textbf{interaction} term allowing \textbf{different} slopes for the two species}
+
+\end{frame}
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{Cuckoo model}
+\visible<1->{
+The mean regression lines for the two species look like this:
+\vfill
+\begin{itemize}
+    \item \textbf{Cuckoo}  ($S_i = 0$):
+ $$
+\begin{aligned}
+\log({\lambda}) & = \beta_0 + \beta_1M_i + (\beta_2 \times 0) + (\beta_3 \times M_i \times 0) \\
+\log({\lambda}) & = \beta_0 + \beta_1M_i \\
+\end{aligned}
+$$
+\end{itemize}
+}
+\visible<2->{
+\begin{itemize}
+\item \textbf{Intercept} = $\beta_0$, \textbf{Gradient} = $\beta_1$ 
+\end{itemize}
+}
+\vfill
+
+\visible<3->{
+\begin{itemize}
+    \item \textbf{Warbler}  ($S_i = 1$):
+ $$
+\begin{aligned}
+\log({\lambda}) & = \beta_0 + \beta_1M_i + (\beta_2 x 1) + (\beta_3 \times M_i \times 1) \\
+\log({\lambda}) & = \beta_0 + \beta_1M_i + \beta_2 +  \beta_3M_i \\
+\log({\lambda}) & = (\beta_0 + \beta_2) + (\beta_1 +  \beta_3)M_i \\
+\end{aligned}
+$$
+\end{itemize}
+}
+\visible<4->{
+\begin{itemize}
+ \item \textbf{Intercept} = ($\beta_0 + \beta_2$), \textbf{Gradient} = ($\beta_1 + \beta_3$)  
+\end{itemize}
+}
+
+\end{frame}
+
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{Cuckoo model}
+\begin{figure}
+\includegraphics[width=.65\textwidth]{cuckooafter.png}
+\end{figure}
 \end{frame}
 
 %=============================================================================%
@@ -326,7 +445,7 @@ $$
 $$
 \begin{aligned}
 Y & \sim \mathcal{N}(\mu, \sigma^2) &&& Y  \sim \mathcal{P}ois(\lambda) &&&&&& Y  \sim \mathcal{B}ern(p)\\
-\mu & = \beta_0 + \beta_1X &&& \log{\lambda} = \beta_0 + \beta_1X &&&&&& ?? = \beta_0 + \beta_1X
+\mu & = \beta_0 + \beta_1X &&& \log({\lambda}) = \beta_0 + \beta_1X &&&&&& ?? = \beta_0 + \beta_1X
 \end{aligned}
 $$
 
@@ -367,6 +486,23 @@ $$
 \begin{lstlisting}[style=R]
 glm(response ~ explanatory, data=df, family=binomial(link=logit))
 \end{lstlisting}
+
+\end{frame}
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{1992 US election survey}
+
+Voters were asked if they preferred George Bush (Republican) or Bill Clinton (Democrat). 
+\vfill
+\begin{itemize}
+    \item  Income was characterised on a 5-point scale (1 – poor to 5 – rich). 
+    \item Question: Do voters with higher incomes prefer conservative candidates?
+\end{itemize}
+\vfill
+\begin{figure}
+\includegraphics[width=.8\textwidth]{presidents.png}
+\end{figure}
 
 \end{frame}
 
@@ -444,9 +580,27 @@ $$
 \begin{aligned}
 P(\mbox{Republican vote at}~X = 3) &= \mbox{logit}^{-1}\left(-1.3 + 0.3 \times 3\right)\\
 &= \frac{e^{-1.3 + 0.3 \times 3}}{1 + e^{-1.3 + 0.3 \times 3}}\\
-&= 0.48.
+&= 0.40.
 \end{aligned}
 $$
+
+\end{frame}
+
+
+%=============================================================================%
+%=============================================================================%
+\begin{frame}{Summary}
+
+\begin{itemize}
+
+\item \textbf{GLMs} are powerful and flexible
+\vfill
+\item They can be used to fit a wide variety of data types
+\vfill
+\item Model checking becomes trickier
+\vfill
+\item Extensions include: mixed models; survival models; generalised additive models (GAMs).
+\end{itemize}
 
 \end{frame}
 
