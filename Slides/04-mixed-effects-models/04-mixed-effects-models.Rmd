@@ -1,12 +1,18 @@
 ---
-title: "Repeated Measures and Mixed Models in R Workshop"
-author: "T. J. McKinley ([t.mckinley@exeter.ac.uk](mailto:t.mckinley@exeter.ac.uk))"
+title: "Repeated Measures and Mixed Models in R"
+author: "Richard B. Sherley"
+date: "March 2020"
+institute: "University of Exeter, Penryn Campus, UK"
 fontsize: 12pt
 output: 
     beamer_presentation:
         latex_engine: xelatex
 header-includes:
     - \input{header.tex}
+    - \AtBeginDocument{\title[(G)LMMs in R]{Repeated Measures and Mixed Models in R}}
+    - \AtBeginDocument{\author[Richard B. Sherley]{Richard B. Sherley \\ r.sherley@exeter.ac.uk}}
+    - \AtBeginDocument{\institute[]{University of Exeter, Penryn Campus, UK}}
+    - \titlegraphic{\centering \includegraphics[width=12cm]{logo.jpg}}
 ---
 
 ```{r, include = F}
@@ -21,7 +27,7 @@ knitr::knit_hooks$set(chunk = function(x, options) {
 
 ## Structure of the workshop
 
-Full (and more comprehensive notes) are provided at:
+Full notes are at:
 
 \bc
 
@@ -31,9 +37,8 @@ Full (and more comprehensive notes) are provided at:
 
 You are encouraged to go through these in more detail outside of the workshop.
 
-Today we will discuss the main concepts, and work through some (although not all) of the examples in **Section 4** of the notes.
+We will discuss the main concepts, and work through some of the examples in **Section 4** of the notes.
 
-I would encourage you to work from the HTML here, but a PDF is available as a link in the HTML notes.
 
 ## RStudio server
 
@@ -45,7 +50,7 @@ CLES have kindly offered the use of their RStudio server in case anyone needs it
 
 \ec
 
-**Please note that this server is only for use for this workshop, unless you otherwise have permission to use it .**
+**Please note that this server is only for use for this workshop, unless you otherwise have permission to use it.**
 
 You will need to log-in using your University log-in details.
 
@@ -74,24 +79,18 @@ cols <- c("#F4ABAB", "#91CDF2", "#5AA566", "#A57C42")
 
 Assumptions: 
 
-1. A linear model is relevant.
-2. Variances are equal across all fitted values. 
-3. Errors are normally distributed.
-4. Samples collected at random.
+1. A **linear** mean function is relevant.
+2. Variances are **equal** across all fitted values. 
+3. Errors are **normally** distributed.
+4. Samples collected at **random**.
 5. Errors are **independent**.
 
 Can use F-tests (see Section 4.1.1 of the notes).
 
-## Aside: Null Hypothesis Significance Testing (NHST)
+## Null Hypothesis Significance Testing (NHST)
 \small
-We have not spent much time on significance testing in these workshops. This is because, whilst useful in some circumstances, NHST techniques are frequently misused and misunderstood.
+Section 4.1 in the notes explains the pros-and-cons of NHST.
 
-We have added a section in the notes (Section 4.1) explaining the pros-and-cons of NHST.
-
-That being said, there are times when NHST can be useful, particularly if you have a complex system (perhaps with large numbers of explanatory variables), and you wish to produce a more parsimonious model (perhaps because it is easier to interpret). 
-
-## Aside: NHST
-\small
 Traditionally, if the response variable is Gaussian (normal), then you may have come across two frequently used approaches:
 
 * **F-tests**: based on comparing the residual mean squared error with the regression mean squared error, or
@@ -99,15 +98,11 @@ Traditionally, if the response variable is Gaussian (normal), then you may have 
 
 Both of these cases are exact tests for linear regression with Gaussian errors (but for mixed models these become approximate). 
 
-## Aside: NHST
+## Null Hypothesis Significance Testing (NHST)
 \small
 \gap[-1]
-For mixed models things get trickier again, and there is no consensus. A useful quote from the [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html) is:
+For mixed models things get trickier again, and there is no consensus. 
 
-> "For special cases that correspond to classical experimental designs (i.e. balanced designs that are nested, split-plot, randomized block, etc.) ... we can show that the null distributions of particular ratios of sums of squares follow an F distribution with known numerator and denominator degrees of freedom (and hence the sampling distributions of particular contrasts are t-distributed with known df). In more complicated situations (unbalanced, GLMMs, crossed random effects, models with temporal or spatial correlation, etc.) it is not in general clear that the null distribution of the computed ratio of sums of squares is really an F distribution, for any choice of denominator degrees of freedom."
-
-## Aside: NHST
-\small
 See [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html) for more discussion. A nice description of the types of approaches we can use in different cases can be found at:
 
 \bc
@@ -116,9 +111,9 @@ See [GLMM FAQ](https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html) for more
 
 \ec
 
-I always try to present final model results in terms of effect sizes and confidence intervals where possible (or via predictive plots). If we have large enough sample sizes and not too many variables, then it may well be fine just to fit one model and perform inference from that.
+Present final model results in terms of effect sizes and confidence intervals where possible (or via predictive plots).
 
-In this workshop we will introduce some common scenarios in which mixed models can be applied, and give examples of model simplification and inference in these cases.
+We will introduce some common scenarios in which mixed models can be applied, and give examples of model simplification and inference in these cases.
 
 ## Recap: linear model
 
@@ -234,23 +229,10 @@ anova(update(bac_lm, ~ . - media), bac_lm)
 
 It does not make sense to drop `cabinet` here. Why not?
 
-## Aside: the `update()` function
-\small
-R provides a neat function to help update parts of a model, without having to re-write the full code.
-
-For example, to drop the `media` term from `bac_lm`, we can write^[to permanently update, we would need to save over the original object e.g. \texttt{bac\_lm <- update(bac\_lm, ...)}]
-```{r, eval = F}
-update(bac_lm, ~ . - media)
-```
-\gap[-1]
-The `~ .` notation means *"everything on the right-hand side of the original formula"*, then the `- media` notation says to remove `media`.
-
-We can also use this in other ways (see the workshop examples).
-\gap
 
 ## Mixed effects model
 \small 
-This simple **balanced** design can be analysed in a straightforward way here, however in general we may have more complex error structures, unbalanced designs and/or potentially many blocks of different structures.
+This simple **balanced** design can be analysed in a straightforward way.
 
 We ideally want a general framework that **accounts** for the variations due to the **blocks**, but models the effect we're interested in: here the effect of **media** on **bacterial growth**. Furthermore, we don't want to use up too many degrees-of-freedom.
 
@@ -319,7 +301,7 @@ bac_lmer
 
 ## Analyse it properly---part II
 
-Since these data are **balanced**, and the error structure is Gaussian, we are safe to ask for an F-test here to assess what happens when `media` is dropped from the model^[we need to use the `Anova()` function in the `car` package to do this, in the workshop we will see other approaches]
+These data are **balanced**, and the error structure is Gaussian. We can use an F-test here to assess what happens when `media` is dropped from the model^[need to use `Anova()` function in `car` package to do this, see notes for other approaches]
 ```{r, message = F, warning = F, echo = -1}
 library(car)
 Anova(bac_lmer, test = "F")
@@ -375,7 +357,7 @@ In this case the residuals are **not independent** once again, but the error str
 \ecol
 \ecols
 
-## Nested Errors: Example
+## Nested errors: Example
 
 \bcols
 \bcol{0.48}
@@ -405,9 +387,9 @@ To prove his innocence he conducted an experiment.
 \ec
 
 ## Results
-\gap[-3]
+\gap[1]
 
-```{r drunkres, echo = F, fig.width = 8, fig.height = 8, resize.width = "0.7\\textwidth", resize.height = "0.7\\textwidth"}
+```{r drunkres, echo = F, fig.width = 8, fig.height = 8, resize.width = "0.6\\textwidth", resize.height = "0.6\\textwidth"}
 drunk <- read.csv("./data/blood_alcohol.csv", header = T)
 stripchart(alcohol ~ sample * student, data = drunk, subset = (freshener == "no"), vertical = T, 
            pch = 16, method = "jitter", jitter = 0.2,
@@ -447,7 +429,7 @@ anova(drunk_lm, test = "F")
 
 ## Derived variables in R
 
-I'm using `tidyverse` here, but base R versions are in the workshop notes.
+Using `tidyverse` (base R version  in the notes).
 
 ```{r}
 alc <- drunk %>%
@@ -459,7 +441,7 @@ alc
 
 ## Derived variables in R
 
-Because I'm only dropping a single variable, I'm safe to use the `anova()` function.
+Dropping a single variable, so safe to `anova()`.
 
 ```{r}
 alc_lm <- lm(alcohol ~ freshener, data = alc)
@@ -473,13 +455,18 @@ This is a statistically valid analysis, however:
 * it ignores the uncertainties around the pseudo-replicates;
 * the interpretation of the response variable is actually the mean of a bunch of measurements, not the measurements themselves. 
 
-In balanced designs this is OK, but it may not be possible to generate derived variables for some studies (how do you average a categorical response for example)?
+OK with a balanced design. 
+
+**But** may not be possible to generate derived variables for some studies (e.g. how do you average a categorical response)?
 
 ## Mixed effects model
 
-We ideally want a general purpose way to build a model that **accounts** for the variation due to the **pseudoreplicates**, but models the effect we're interested in: here the effect of **breath freshener** on **alcohol content**.
+Ideal:  
+A general purpose way to build a model that **accounts** for the variation due to the **pseudoreplicates**, but models the effect we're interested in. 
 
-Again, this can be done with a **mixed model**.
+Here the effect of **breath freshener** on **alcohol content**.
+
+Can be done with a **mixed model**.
 
 ## Mixed model
 
@@ -628,7 +615,7 @@ This experiment involves the yield of cereals in a factorial experiment with:
 
 ## Example: split-plot design
 
-\gap[-1]
+\gap[1]
 
 \bc
 
